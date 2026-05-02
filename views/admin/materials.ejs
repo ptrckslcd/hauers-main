@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Materials Library | Hauers Admin</title>
+  <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <script src="/js/theme-toggle.js"></script>
+</head>
+<body data-role="admin">
+
+  <div id="navbar-placeholder"><%- include('../partials/navbar') %></div>
+
+  <div class="app-shell sidebar-collapsed">
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div id="sidebar-placeholder"><%- include('../partials/admin-sidebar') %></div>
+
+    <main class="page-content">
+
+      <!-- ── Page header ── -->
+      <header class="page-header">
+        <div>
+          <h1 class="page-title">Materials Library</h1>
+
+        </div>
+        <button class="cta-pill" id="am-add-btn" type="button">
+          <span class="material-symbols-outlined" style="font-size:18px;margin-right:0.45rem">add_circle</span>
+          Add Material
+        </button>
+      </header>
+
+      <!-- ── KPI Tiles ── -->
+      <div class="dash-grid dash-grid--4col">
+        <div class="dash-card admin-kpi-card">
+          <div class="admin-kpi-header">
+            <span class="card-label">Total Resources</span>
+            <span class="admin-kpi-icon admin-kpi-icon--blue">
+              <span class="material-symbols-outlined">library_books</span>
+            </span>
+          </div>
+          <div class="admin-kpi-val" id="am-total">—</div>
+          <p class="card-sub">available to reviewees</p>
+        </div>
+
+        <div class="dash-card admin-kpi-card">
+          <div class="admin-kpi-header">
+            <span class="card-label">Recommended</span>
+            <span class="admin-kpi-icon" style="background:rgba(255,153,51,0.12);color:var(--fs-orange)">
+              <span class="material-symbols-outlined">star</span>
+            </span>
+          </div>
+          <div class="admin-kpi-val" id="am-rec">—</div>
+          <p class="card-sub">priority items</p>
+        </div>
+
+        <div class="dash-card admin-kpi-card">
+          <div class="admin-kpi-header">
+            <span class="card-label">Video Content</span>
+            <span class="admin-kpi-icon" style="background:rgba(239,68,68,0.12);color:#ef4444">
+              <span class="material-symbols-outlined">play_circle</span>
+            </span>
+          </div>
+          <div class="admin-kpi-val" id="am-videos">—</div>
+          <p class="card-sub">lecture videos</p>
+        </div>
+
+        <div class="dash-card admin-kpi-card">
+          <div class="admin-kpi-header">
+            <span class="card-label">Avg. Study Time</span>
+            <span class="admin-kpi-icon admin-kpi-icon--green">
+              <span class="material-symbols-outlined">timer</span>
+            </span>
+          </div>
+          <div class="admin-kpi-val" id="am-time">— m</div>
+          <p class="card-sub">per resource</p>
+        </div>
+      </div>
+
+      <!-- ── Search & Filters ── -->
+      <div id="am-search"></div>
+
+      <div class="rm-filter-bar" id="am-filters">
+        <div class="rm-filter-row">
+          <span class="rm-filter-label">Domain</span>
+          <button class="rm-filter-chip active" data-filter="domain" data-val="all">All</button>
+          <button class="rm-filter-chip" data-filter="domain" data-val="Verbal Ability">Verbal</button>
+          <button class="rm-filter-chip" data-filter="domain" data-val="Numerical Ability">Numerical</button>
+          <button class="rm-filter-chip" data-filter="domain" data-val="Clerical Ability">Clerical</button>
+        </div>
+        <div class="rm-filter-row">
+          <span class="rm-filter-label">Type</span>
+          <button class="rm-filter-chip active" data-filter="type" data-val="all">All Types</button>
+          <button class="rm-filter-chip" data-filter="type" data-val="Reference">Reference</button>
+          <button class="rm-filter-chip" data-filter="type" data-val="Video">Video</button>
+          <button class="rm-filter-chip" data-filter="type" data-val="Drill Set">Practice Exam</button>
+        </div>
+      </div>
+
+      <p class="sw-result-msg" id="am-result-msg" style="margin-bottom:0.75rem"></p>
+
+      <!-- ── Materials Table ── -->
+      <div class="dash-card" style="padding:0; overflow:hidden">
+        <div style="overflow-x: auto">
+          <table class="admin-table" id="am-table">
+            <thead>
+              <tr>
+                <th>Resource</th>
+                <th>Domain</th>
+                <th>Type</th>
+                <th>Est. Time</th>
+                <th>Priority</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="am-tbody">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       ADD / EDIT MATERIAL MODAL
+  ══════════════════════════════════════════════════════ -->
+  <div class="ep-overlay" id="am-overlay" hidden>
+    <div class="ep-modal" style="max-width:540px;width:100%">
+      <div class="ep-modal-header">
+        <h3 class="ep-modal-title" id="am-modal-title">Add New Material</h3>
+        <button class="ep-close" id="am-close" type="button">×</button>
+      </div>
+      <form id="am-form" class="ep-form">
+        <div class="ep-field">
+          <label class="ep-label">Title <span style="color:var(--fs-pink)">*</span></label>
+          <input type="text" id="am-title" class="ep-input" placeholder="e.g. Fractions Mastery Guide" required>
+        </div>
+        
+        <div class="ep-field">
+          <label class="ep-label">Description <span style="color:var(--fs-pink)">*</span></label>
+          <textarea id="am-desc" class="ep-input" rows="2" placeholder="Brief summary of the content…" required></textarea>
+        </div>
+
+        <div class="ep-form-row">
+          <div class="ep-field">
+            <label class="ep-label">Domain <span style="color:var(--fs-pink)">*</span></label>
+            <select id="am-domain" class="ep-input ep-select">
+              <option value="Verbal Ability">Verbal Ability</option>
+              <option value="Numerical Ability">Numerical Ability</option>
+              <option value="Clerical Ability">Clerical Ability</option>
+              <option value="General Information">General Info</option>
+            </select>
+          </div>
+          <div class="ep-field">
+            <label class="ep-label">Resource Type <span style="color:var(--fs-pink)">*</span></label>
+            <select id="am-type" class="ep-input ep-select">
+              <option value="Reference">Reference (PDF/Text)</option>
+              <option value="Video">Video Lecture</option>
+              <option value="Drill Set">Practice Exam</option>
+              <option value="Manual">Training Manual</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="ep-form-row">
+          <div class="ep-field">
+            <label class="ep-label">Est. Minutes</label>
+            <input type="number" id="am-mins" class="ep-input" placeholder="e.g. 15" min="1">
+          </div>
+          <div class="ep-field">
+            <label class="ep-label">Difficulty</label>
+            <select id="am-diff" class="ep-input ep-select">
+              <option value="Easy">Easy</option>
+              <option value="Medium">Medium</option>
+              <option value="Hard">Hard</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="ep-field" style="margin-top:0.5rem">
+          <label class="ob-day-chip" style="display:inline-flex">
+            <input type="checkbox" id="am-recommended">
+            <span>⭐ Recommended for Priority Study</span>
+          </label>
+        </div>
+
+        <div class="ep-form-actions">
+          <button type="button" class="ep-btn-cancel" id="am-cancel">Cancel</button>
+          <button type="submit" class="cta-pill" id="am-submit">Save Resource</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/js/search-widget.js"></script>
+  <script src="/js/admin-shell.js"></script>
+  <script>
+    (async () => {
+      let materials = [];
+      let editId = null; // Track which material is being edited
+
+      const tbody = document.getElementById('am-tbody');
+      const overlay = document.getElementById('am-overlay');
+      const form = document.getElementById('am-form');
+      const modalTitle = document.getElementById('am-modal-title');
+
+      /* ── Toast Utility ── */
+      function showToast(msg, isDelete = false) {
+        const t = document.createElement('div');
+        t.className = 'ep-toast show';
+        t.style.bottom = '2rem';
+        t.style.right = '2rem';
+        t.style.zIndex = '9999';
+        t.innerHTML = `
+          <div style="display:flex;align-items:center;gap:0.75rem">
+            <span class="material-symbols-outlined" style="color:${isDelete ? '#ff4d4d' : '#4ade80'}">
+              ${isDelete ? 'delete' : 'check_circle'}
+            </span>
+            <span>${msg}</span>
+          </div>
+        `;
+        document.body.appendChild(t);
+        setTimeout(() => {
+          t.classList.remove('show');
+          setTimeout(() => t.remove(), 400);
+        }, 3000);
+      }
+
+      /* ── Data ── */
+      async function loadData() {
+        try {
+          const r = await fetch('/reviewee/api/materials'); 
+          if (!r.ok) return;
+          const data = await r.json();
+          materials = data.materials || [];
+          renderTable(materials);
+          updateKpis();
+        } catch (_) {}
+      }
+
+      function updateKpis() {
+        document.getElementById('am-total').textContent = materials.length;
+        document.getElementById('am-rec').textContent = materials.filter(m => m.recommended).length;
+        document.getElementById('am-videos').textContent = materials.filter(m => m.type === 'Video').length;
+        const avg = materials.length ? Math.round(materials.reduce((s, m) => s + (m.estMinutes || 0), 0) / materials.length) : 0;
+        document.getElementById('am-time').textContent = avg + ' m';
+      }
+
+      /* ── Table & Actions ── */
+      window.editMaterial = (id) => {
+        const m = materials.find(it => it.id === id);
+        if (!m) return;
+        editId = id;
+        modalTitle.textContent = 'Edit Material';
+        
+        document.getElementById('am-title').value = m.title;
+        document.getElementById('am-desc').value = m.desc;
+        document.getElementById('am-domain').value = m.domain;
+        document.getElementById('am-type').value = m.type;
+        document.getElementById('am-mins').value = m.estMinutes;
+        document.getElementById('am-diff').value = m.difficulty;
+        document.getElementById('am-recommended').checked = !!m.recommended;
+        
+        overlay.hidden = false;
+      };
+
+      window.deleteMaterial = (id) => {
+        if (!confirm('Are you sure you want to delete this resource? This cannot be undone.')) return;
+        materials = materials.filter(it => it.id !== id);
+        renderTable(materials);
+        updateKpis();
+        showToast('Resource deleted successfully', true);
+      };
+
+      function renderTable(list) {
+        if (!tbody) return;
+        if (!list.length) {
+          tbody.innerHTML = '<tr><td colspan="6" style="padding:4rem; text-align:center; color:var(--text-subdued)"><span class="material-symbols-outlined" style="font-size:3rem; display:block; margin-bottom:1rem; opacity:0.3">inventory_2</span>No resources found.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = list.map(m => `
+          <tr data-id="${m.id}">
+            <td>
+              <div style="display:flex;align-items:center;gap:0.75rem">
+                <span style="font-size:1.25rem">${m.icon || '📄'}</span>
+                <div>
+                  <div style="font-weight:600;color:var(--text-main)">${m.title}</div>
+                  <div style="font-size:0.75rem;color:var(--text-subdued)">${m.desc.substring(0, 45)}${m.desc.length > 45 ? '...' : ''}</div>
+                </div>
+              </div>
+            </td>
+            <td><span class="q-domain-badge ${m.domain.toLowerCase().split(' ')[0]}">${m.domain.replace(' Ability','')}</span></td>
+            <td><span class="rm-type">${m.type}</span></td>
+            <td><span style="font-weight:600">${m.estMinutes}m</span></td>
+            <td>${m.recommended ? '<span class="status-badge status-badge--verified"><span class="material-symbols-outlined" style="font-size:14px">star</span> Priority</span>' : '<span style="color:var(--text-subdued);font-size:0.75rem">—</span>'}</td>
+            <td>
+              <div style="display:flex;gap:0.4rem">
+                <button class="tbl-view-btn" onclick="editMaterial(${m.id})">Edit</button>
+                <button class="tbl-view-btn" style="color:#ff4d4d; background:rgba(255,77,77,0.08); border-color:rgba(255,77,77,0.2)" onclick="deleteMaterial(${m.id})">
+                  <span class="material-symbols-outlined" style="font-size:16px">delete</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      /* ── Filtering ── */
+      let activeDomain = 'all';
+      let activeType = 'all';
+      function filterData() {
+        const filtered = materials.filter(m => {
+          const d = activeDomain === 'all' || m.domain === activeDomain;
+          const t = activeType === 'all' || m.type === activeType;
+          return d && t;
+        });
+        renderTable(filtered);
+      }
+
+      document.querySelectorAll('.rm-filter-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          const filter = chip.dataset.filter;
+          document.querySelectorAll(`.rm-filter-chip[data-filter="${filter}"]`).forEach(c => c.classList.remove('active'));
+          chip.classList.add('active');
+          if (filter === 'domain') activeDomain = chip.dataset.val;
+          if (filter === 'type') activeType = chip.dataset.val;
+          filterData();
+        });
+      });
+
+      /* ── Search ── */
+      new SearchWidget({
+        containerId: 'am-search',
+        placeholder: 'Search by title or topic...',
+        apiUrl: '/reviewee/api/search',
+        defaultParams: { scope: 'materials' },
+        onResults: results => renderTable(results),
+        onClear: () => filterData()
+      }).mount();
+
+      /* ── Modal ── */
+      document.getElementById('am-add-btn').onclick = () => {
+        editId = null;
+        modalTitle.textContent = 'Add New Material';
+        form.reset();
+        overlay.hidden = false;
+      };
+      
+      const closeModal = () => {
+        overlay.hidden = true;
+        editId = null;
+      };
+
+      document.getElementById('am-close').onclick = closeModal;
+      document.getElementById('am-cancel').onclick = closeModal;
+
+      form.onsubmit = e => {
+        e.preventDefault();
+        
+        const materialData = {
+          title: document.getElementById('am-title').value,
+          desc: document.getElementById('am-desc').value,
+          domain: document.getElementById('am-domain').value,
+          type: document.getElementById('am-type').value,
+          estMinutes: parseInt(document.getElementById('am-mins').value) || 0,
+          difficulty: document.getElementById('am-diff').value,
+          recommended: document.getElementById('am-recommended').checked,
+          icon: document.getElementById('am-type').value === 'Video' ? '🎬' : '📄'
+        };
+
+        if (editId) {
+          // Update existing
+          const idx = materials.findIndex(it => it.id === editId);
+          if (idx !== -1) {
+            materials[idx] = { ...materials[idx], ...materialData };
+            showToast('Material updated successfully');
+          }
+        } else {
+          // Add new
+          const newM = { id: Date.now(), ...materialData };
+          materials.unshift(newM);
+          showToast('New material added to library');
+        }
+
+        renderTable(materials);
+        updateKpis();
+        closeModal();
+      };
+
+      await loadData();
+    })();
+  </script>
+</body>
+</html>

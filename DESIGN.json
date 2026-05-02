@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-05-02T12:09:00Z",
+  "title": "Design System: Hauers",
+  "extensions": {
+    "colorMeta": {
+      "primary": { "role": "primary", "displayName": "Institutional Blue", "canonical": "#2563EB" },
+      "primary-dark": { "role": "primary", "displayName": "Deep Navy", "canonical": "#1E40AF" },
+      "neutral-bg": { "role": "neutral", "displayName": "Academic Gray", "canonical": "#E4EBF4" },
+      "surface": { "role": "surface", "displayName": "Paper White", "canonical": "#FFFFFF" },
+      "border": { "role": "border", "displayName": "Structured Border", "canonical": "#B0C4DF" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Plus Jakarta Sans", "purpose": "Authority and emphasis." },
+      "body": { "displayName": "Inter", "purpose": "General legibility." }
+    },
+    "shadows": [
+      { "name": "card", "value": "0 2px 8px rgba(15, 23, 42, 0.12)", "purpose": "Standard surface elevation." }
+    ],
+    "breakpoints": [
+      { "name": "mobile", "value": "719px" },
+      { "name": "tablet", "value": "1060px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The main action button.",
+      "html": "<button class=\"ds-btn-primary\">START REVIEW</button>",
+      "css": ".ds-btn-primary { background: #2563EB; color: #fff; padding: 10px 20px; border-radius: 4px; font-weight: 700; border: none; cursor: pointer; transition: transform 0.2s, background 0.2s; } .ds-btn-primary:hover { transform: translateY(-2px); background: #1E40AF; }"
+    },
+    {
+      "name": "Dashboard Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Standard container for dashboard tiles.",
+      "html": "<div class=\"ds-card\"><h3>Card Title</h3><p>Content goes here.</p></div>",
+      "css": ".ds-card { background: #FFFFFF; border: 1.5px solid #B0C4DF; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Institutional Console",
+    "overview": "The Hauers design system is built to evoke the authority and precision of a high-stakes academic testing environment.",
+    "keyCharacteristics": [
+      "Rigid architectural grid (4px base)",
+      "Deep institutional blues",
+      "Layered semantic shadows",
+      "Typographic hierarchy signalling authority"
+    ],
+    "rules": [
+      { "name": "The Rarity Rule", "body": "The primary blue accent is used on ≤10% of any given screen.", "section": "colors" }
+    ],
+    "dos": [
+      "Do maintain a strict 4px grid rhythm",
+      "Do ensure every card has a visible 1.5px border"
+    ],
+    "donts": [
+      "Don't use glassmorphism or background blurs",
+      "Don't use side-stripe borders greater than 1px as a colored accent"
+    ]
+  }
+}

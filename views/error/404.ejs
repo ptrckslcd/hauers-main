@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 — Page Not Found | Hauers</title>
+  <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet">
+  <script src="/js/theme-toggle.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+      padding: 2rem;
+      background: var(--bg-base);
+    }
+
+    /* ── Ambient orbs ────────────────────────────────────── */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(100px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .orb-1 {
+      width: 520px; height: 520px;
+      background: rgba(255, 214, 51, 0.13);
+      top: -160px; left: -160px;
+      animation: driftA 14s ease-in-out infinite;
+    }
+    .orb-2 {
+      width: 440px; height: 440px;
+      background: rgba(255, 51, 102, 0.11);
+      bottom: -130px; right: -130px;
+      animation: driftB 16s ease-in-out infinite;
+    }
+    .orb-3 {
+      width: 360px; height: 360px;
+      background: rgba(255, 153, 51, 0.09);
+      top: 55%; left: 55%;
+      transform: translate(-50%, -50%);
+      animation: driftC 11s ease-in-out infinite;
+    }
+    @keyframes driftA {
+      0%, 100% { transform: translate(0, 0); }
+      50%       { transform: translate(35px, 28px); }
+    }
+    @keyframes driftB {
+      0%, 100% { transform: translate(0, 0); }
+      50%       { transform: translate(-28px, -35px); }
+    }
+    @keyframes driftC {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); }
+      50%       { transform: translate(-50%, -50%) scale(1.18); }
+    }
+
+    /* ── Subtle grid overlay ─────────────────────────────── */
+    .grid-bg {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background-image:
+        linear-gradient(rgba(128,128,128,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(128,128,128,0.04) 1px, transparent 1px);
+      background-size: 44px 44px;
+    }
+
+    /* ── Main content ────────────────────────────────────── */
+    .nf-wrap {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      max-width: 520px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Icon ring */
+    .nf-icon-ring {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      background: rgba(255, 153, 51, 0.09);
+      border: 1.5px solid rgba(255, 153, 51, 0.22);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.75rem;
+      animation: pulseRing 3.5s ease-in-out infinite;
+    }
+    .nf-icon-ring .material-symbols-outlined {
+      font-size: 34px;
+      background: var(--brand-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 40;
+    }
+    @keyframes pulseRing {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(255, 153, 51, 0.18); }
+      50%       { box-shadow: 0 0 0 16px rgba(255, 153, 51, 0); }
+    }
+
+    /* Big 404 */
+    .nf-404-wrap {
+      position: relative;
+      display: inline-block;
+      margin-bottom: 1.5rem;
+      line-height: 0.85;
+    }
+    .nf-404 {
+      font-size: clamp(6.5rem, 20vw, 13rem);
+      font-weight: 900;
+      letter-spacing: -0.05em;
+      background: var(--brand-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: block;
+      filter: drop-shadow(0 0 48px rgba(255, 153, 51, 0.18));
+    }
+    /* Glitch layers */
+    .nf-404-wrap::before,
+    .nf-404-wrap::after {
+      content: '404';
+      position: absolute;
+      top: 0; left: 0;
+      font-size: clamp(6.5rem, 20vw, 13rem);
+      font-weight: 900;
+      letter-spacing: -0.05em;
+      line-height: 0.85;
+      background: var(--brand-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      pointer-events: none;
+    }
+    .nf-404-wrap::before {
+      animation: glitchTop 8s infinite;
+      clip-path: polygon(0 18%, 100% 18%, 100% 42%, 0 42%);
+    }
+    .nf-404-wrap::after {
+      animation: glitchBot 8s infinite;
+      clip-path: polygon(0 62%, 100% 62%, 100% 82%, 0 82%);
+    }
+    @keyframes glitchTop {
+      0%, 88%, 100% { transform: none; opacity: 0; }
+      90%  { transform: translateX(-6px); opacity: 0.85; filter: hue-rotate(70deg); }
+      92%  { transform: translateX(6px);  opacity: 0.85; filter: hue-rotate(-30deg); }
+      94%  { transform: none; opacity: 0; }
+    }
+    @keyframes glitchBot {
+      0%, 90%, 100% { transform: none; opacity: 0; }
+      92%  { transform: translateX(6px);  opacity: 0.75; filter: hue-rotate(-70deg); }
+      94%  { transform: translateX(-6px); opacity: 0.75; filter: hue-rotate(30deg); }
+      96%  { transform: none; opacity: 0; }
+    }
+
+    /* Text */
+    .nf-heading {
+      font-size: clamp(1.2rem, 4vw, 1.65rem);
+      font-weight: 700;
+      color: var(--text-main);
+      letter-spacing: -0.02em;
+      margin-bottom: 0.65rem;
+    }
+    .nf-desc {
+      font-size: 0.95rem;
+      color: var(--text-subdued);
+      line-height: 1.7;
+      margin-bottom: 2.25rem;
+      max-width: 360px;
+    }
+
+    /* CTAs */
+    .nf-actions {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .nf-btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.7rem 1.5rem;
+      background: var(--brand-gradient);
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border-radius: 99px;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.2s;
+      box-shadow: 0 4px 22px rgba(255, 153, 51, 0.28);
+    }
+    .nf-btn-primary:hover {
+      opacity: 0.85;
+      transform: translateY(-2px);
+    }
+    .nf-btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.7rem 1.5rem;
+      background: transparent;
+      color: var(--text-main);
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 500;
+      border-radius: 99px;
+      text-decoration: none;
+      border: 1.5px solid var(--border-default);
+      cursor: pointer;
+      transition: background 0.18s, border-color 0.18s, transform 0.18s;
+    }
+    .nf-btn-secondary:hover {
+      background: var(--card-bg);
+      border-color: rgba(255, 153, 51, 0.4);
+      transform: translateY(-2px);
+    }
+    .nf-btn-primary .material-symbols-outlined,
+    .nf-btn-secondary .material-symbols-outlined {
+      font-size: 18px;
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      -webkit-text-fill-color: currentColor;
+    }
+
+    /* Error code footnote */
+    .nf-code {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-subdued);
+      opacity: 0.45;
+      margin-top: 2.75rem;
+    }
+
+    /* ── Theme toggle ────────────────────────────────────── */
+    .nf-theme-toggle {
+      position: fixed;
+      top: 1.25rem;
+      right: 1.25rem;
+      background: var(--card-bg);
+      border: 1.5px solid var(--border-subdued);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text-subdued);
+      transition: background 0.18s, border-color 0.18s, color 0.18s;
+      z-index: 10;
+    }
+    .nf-theme-toggle:hover {
+      background: var(--border-subdued);
+      color: var(--text-main);
+    }
+    .nf-theme-toggle .material-symbols-outlined {
+      font-size: 20px;
+      font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20;
+    }
+    [data-theme='dark']         .nf-theme-toggle .icon-moon { display: none; }
+    :root:not([data-theme='dark']) .nf-theme-toggle .icon-sun  { display: none; }
+  </style>
+</head>
+<body>
+  <!-- Ambient orbs -->
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <!-- Grid overlay -->
+  <div class="grid-bg"></div>
+
+  <!-- Theme toggle -->
+  <button id="theme-toggle-btn" class="nf-theme-toggle" aria-label="Toggle theme">
+    <span class="material-symbols-outlined icon-sun">light_mode</span>
+    <span class="material-symbols-outlined icon-moon">dark_mode</span>
+  </button>
+
+  <!-- 404 content -->
+  <div class="nf-wrap">
+
+    <!-- Pulsing icon ring -->
+    <div class="nf-icon-ring">
+      <span class="material-symbols-outlined">travel_explore</span>
+    </div>
+
+    <!-- Big glitchy 404 -->
+    <div class="nf-404-wrap">
+      <span class="nf-404">404</span>
+    </div>
+
+    <!-- Copy -->
+    <h1 class="nf-heading">Looks like you're lost.</h1>
+    <p class="nf-desc">
+      This page doesn't exist — but your next exam success does.
+      Head back to Hauers and continue your CSE review journey.
+    </p>
+
+    <!-- Actions -->
+    <div class="nf-actions">
+      <a href="/" class="nf-btn-primary">
+        <span class="material-symbols-outlined">home</span>
+        Go Home
+      </a>
+      <a href="/reviewee/quiz" class="nf-btn-secondary">
+        <span class="material-symbols-outlined">quiz</span>
+        Take a Quiz
+      </a>
+    </div>
+
+    <p class="nf-code">Error 404 &mdash; Page Not Found</p>
+  </div>
+
+  <script>
+    if (typeof initThemeToggle === 'function') initThemeToggle();
+  </script>
+</body>
+</html>

@@ -1,0 +1,245 @@
+const express       = require('express');
+const path          = require('path');
+const fs            = require('fs');
+const requireAdmin  = require('../middleware/requireAdmin');
+const questions     = require('../data/mock-questions');
+const adminDashboard = require('../data/mock-admin-dashboard');
+const users         = require('../data/mock-users');
+
+const router = express.Router();
+
+router.get('/dashboard', requireAdmin, (req, res) => {
+  res.render('admin-dashboard');
+});
+
+router.get('/users', requireAdmin, (req, res) => {
+  res.render('admin-users');
+});
+
+router.get('/users/:id', requireAdmin, (req, res) => {
+  res.render('admin-user-detail');
+});
+
+router.get('/question-bank', requireAdmin, (req, res) => {
+  res.render('admin-question-bank');
+});
+
+router.get('/question-bank/:id', requireAdmin, (req, res) => {
+  res.render('admin-question-detail');
+});
+
+router.get('/analytics', requireAdmin, (req, res) => {
+  res.render('admin-analytics');
+});
+
+router.get('/materials', requireAdmin, (req, res) => {
+  res.render('admin-materials');
+});
+
+router.get('/announcements', requireAdmin, (req, res) => {
+  res.render('admin-announcements');
+});
+
+router.get('/settings', requireAdmin, (req, res) => {
+  res.render('admin-account-settings');
+});
+
+/* ── API: update admin profile ──────────────────────────── */
+router.post('/api/profile/update', requireAdmin, (req, res) => {
+  const { firstName, lastName, email } = req.body || {};
+
+  if (!firstName?.trim() || !lastName?.trim() || !email?.trim()) {
+    return res.status(400).json({ error: 'First name, last name, and email are required.' });
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+    return res.status(400).json({ error: 'Please enter a valid email address.' });
+  }
+
+  req.session.user.firstName = firstName.trim();
+  req.session.user.lastName  = lastName.trim();
+  req.session.user.email     = email.trim();
+
+  const idx = users.findIndex(u => u.id === req.session.user.id);
+  if (idx !== -1) {
+    users[idx].firstName = firstName.trim();
+    users[idx].lastName  = lastName.trim();
+    users[idx].email     = email.trim();
+  }
+
+  const filePath = path.join(__dirname, '../data/mock-users.js');
+  fs.writeFile(filePath, `module.exports = ${JSON.stringify(users, null, 2)};
+`, () => {});
+
+  res.json({
+    success: true,
+    user: {
+      firstName: req.session.user.firstName,
+      lastName:  req.session.user.lastName,
+      email:     req.session.user.email,
+    },
+  });
+});
+
+/* ── API: change admin password ────────────────────────── */
+router.post('/api/settings/password', requireAdmin, (req, res) => {
+  const { currentPassword, newPassword, confirmPassword } = req.body || {};
+
+  if (!currentPassword || !newPassword || !confirmPassword) {
+    return res.status(400).json({ error: 'All fields are required.' });
+  }
+  if (newPassword.length < 6) {
+    return res.status(400).json({ error: 'New password must be at least 6 characters.' });
+  }
+  if (newPassword !== confirmPassword) {
+    return res.status(400).json({ error: 'New passwords do not match.' });
+  }
+
+  const idx = users.findIndex(u => u.id === req.session.user.id);
+  if (idx === -1 || users[idx].password !== currentPassword) {
+    return res.status(400).json({ error: 'Current password is incorrect.' });
+  }
+
+  users[idx].password = newPassword;
+  const filePath = path.join(__dirname, '../data/mock-users.js');
+  fs.writeFile(filePath, `module.exports = ${JSON.stringify(users, null, 2)};
+`, () => {});
+
+  res.json({ success: true });
+});
+
+/* ── API: all users ─────────────────────────────────────────── */
+router.get('/api/users', requireAdmin, (req, res) => {
+  const users = require('../data/mock-users');
+  const reviewees = users
+    .filter(u => u.role === 'reviewee')
+    .map(({ password: _, ...u }) => u);        // strip passwords
+  res.json({ users: reviewees, total: reviewees.length });
+});
+
+/* ── API: single user ───────────────────────────────────────── */
+router.get('/api/users/:id', requireAdmin, (req, res) => {
+  const users = require('../data/mock-users');
+  const user = users.find(u => u.id === parseInt(req.params.id, 10));
+  if (!user || user.role !== 'reviewee') return res.status(404).json({ error: 'Not found' });
+  const { password: _, ...safe } = user;
+  res.json(safe);
+});
+
+/* ── API: all questions (admin — includes answers) ─────────── */
+router.get('/api/questions', requireAdmin, (req, res) => {
+  res.json({ questions, total: questions.length });
+});
+
+/* ── API: create question ──────────────────────────────────── */
+router.post('/api/questions', requireAdmin, (req, res) => {
+  const { question, domain, difficulty, choices, answer } = req.body || {};
+  const validDomains = ['Verbal Ability', 'Numerical Ability', 'Clerical Ability'];
+  const validDifficulties = ['Easy', 'Medium', 'Hard'];
+
+  if (!question || typeof question !== 'string' || !question.trim())
+    return res.status(400).json({ error: 'Question text is required.' });
+  if (!validDomains.includes(domain))
+    return res.status(400).json({ error: 'Invalid domain.' });
+  if (!validDifficulties.includes(difficulty))
+    return res.status(400).json({ error: 'Invalid difficulty.' });
+  if (!Array.isArray(choices) || choices.length !== 4 || choices.some(c => !c || !String(c).trim()))
+    return res.status(400).json({ error: 'All four choices are required.' });
+  if (!answer || !choices.includes(answer))
+    return res.status(400).json({ error: 'Correct answer must match one of the choices.' });
+
+  const newId = questions.length ? Math.max(...questions.map(q => q.id)) + 1 : 1;
+  const newQ = {
+    id: newId,
+    question: question.trim(),
+    choices: choices.map(c => String(c).trim()),
+    answer: String(answer).trim(),
+    domain,
+    difficulty,
+  };
+  questions.push(newQ);
+  const filePath = path.join(__dirname, '../data/mock-questions.js');
+  fs.writeFile(filePath, 'module.exports = ' + JSON.stringify(questions, null, 2) + ';\n', () => {});
+  res.status(201).json({ success: true, question: newQ });
+});
+
+/* ── API: update question ──────────────────────────────────── */
+router.put('/api/questions/:id', requireAdmin, (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const idx = questions.findIndex(q => q.id === id);
+  if (idx === -1) return res.status(404).json({ error: 'Question not found.' });
+
+  const { question, domain, difficulty, choices, answer } = req.body || {};
+  const validDomains = ['Verbal Ability', 'Numerical Ability', 'Clerical Ability'];
+  const validDifficulties = ['Easy', 'Medium', 'Hard'];
+
+  if (!question || typeof question !== 'string' || !question.trim())
+    return res.status(400).json({ error: 'Question text is required.' });
+  if (!validDomains.includes(domain))
+    return res.status(400).json({ error: 'Invalid domain.' });
+  if (!validDifficulties.includes(difficulty))
+    return res.status(400).json({ error: 'Invalid difficulty.' });
+  if (!Array.isArray(choices) || choices.length !== 4 || choices.some(c => !c || !String(c).trim()))
+    return res.status(400).json({ error: 'All four choices are required.' });
+  if (!answer || !choices.includes(answer))
+    return res.status(400).json({ error: 'Correct answer must match one of the choices.' });
+
+  questions[idx] = {
+    ...questions[idx],
+    question: question.trim(),
+    choices: choices.map(c => String(c).trim()),
+    answer: String(answer).trim(),
+    domain,
+    difficulty,
+  };
+  const filePath = path.join(__dirname, '../data/mock-questions.js');
+  fs.writeFile(filePath, 'module.exports = ' + JSON.stringify(questions, null, 2) + ';\n', () => {});
+  res.json({ success: true, question: questions[idx] });
+});
+
+/* ── API: delete question ──────────────────────────────────── */
+router.delete('/api/questions/:id', requireAdmin, (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const idx = questions.findIndex(q => q.id === id);
+  if (idx === -1) return res.status(404).json({ error: 'Question not found.' });
+  questions.splice(idx, 1);
+  const filePath = path.join(__dirname, '../data/mock-questions.js');
+  fs.writeFile(filePath, 'module.exports = ' + JSON.stringify(questions, null, 2) + ';\n', () => {});
+  res.json({ success: true });
+});
+
+/* ── API: search ─────────────────────────────────────────────── */
+// GET /admin/api/search?q=term&scope=questions&domain=all&difficulty=all
+router.get('/api/search', requireAdmin, (req, res) => {
+  const { q = '', scope = 'questions', domain = 'all', difficulty = 'all' } = req.query;
+  const query = q.toLowerCase().trim();
+
+  if (scope === 'questions') {
+    let results = questions;
+    if (query) {
+      results = results.filter(qn =>
+        qn.question.toLowerCase().includes(query) ||
+        qn.domain.toLowerCase().includes(query)   ||
+        qn.choices.some(c => c.toLowerCase().includes(query))
+      );
+    }
+    if (domain     !== 'all') results = results.filter(qn => qn.domain     === domain);
+    if (difficulty !== 'all') results = results.filter(qn => qn.difficulty === difficulty);
+    return res.json({ results, total: results.length, query });
+  }
+
+  res.status(400).json({ error: 'Unknown scope' });
+});
+
+/* ── API: admin dashboard stats ─────────────────────────── */
+router.get('/api/dashboard', requireAdmin, (req, res) => {
+  res.json(adminDashboard);
+});
+
+/* ── API: current admin user ─────────────────────────────── */
+router.get('/api/user', requireAdmin, (req, res) => {
+  const u = req.session.user;
+  if (!u) return res.status(401).json({ error: 'Not authenticated' });
+  res.json({ firstName: u.firstName, lastName: u.lastName, email: u.email });
+});
+
+module.exports = router;

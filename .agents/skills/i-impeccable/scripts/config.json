@@ -1,0 +1,7 @@
+{
+  "files": ["views/**/*.ejs"],
+  "exclude": ["views/partials/**/*.ejs"],
+  "insertBefore": "</body>",
+  "commentSyntax": "html",
+  "cspChecked": true
+}

@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home | Hauers</title>
+  <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <script src="/js/theme-toggle.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+</head>
+<body data-role="reviewee">
+
+  <div id="navbar-placeholder"><%- include('../partials/navbar') %></div>
+
+  <div class="app-shell sidebar-collapsed">
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div id="sidebar-placeholder"><%- include('../partials/sidebar') %></div>
+
+    <main class="page-content home-page">
+
+      <!-- Load error -->
+      <div class="home-load-error" id="home-load-error" role="alert" hidden>
+        <span class="material-symbols-outlined" aria-hidden="true">wifi_off</span>
+        <p class="home-load-error-text">Could not load your dashboard.</p>
+        <button type="button" class="home-btn home-btn--ghost home-retry-btn" id="home-retry-btn">Try again</button>
+      </div>
+
+      <!-- ── Header ── -->
+      <header class="home-header">
+        <div class="home-greet-block">
+          <h1 class="home-greet-name" id="home-greeting-name">—</h1>
+        </div>
+        <div class="home-header-actions">
+          <a href="/reviewee/review" class="home-btn home-btn--primary" id="btn-continue">
+            <span class="material-symbols-outlined" aria-hidden="true">play_circle</span>
+            Continue Studying
+          </a>
+          <a href="/reviewee/progress" class="home-btn home-btn--ghost">
+            <span class="material-symbols-outlined" aria-hidden="true">insights</span>
+            View Progress
+          </a>
+        </div>
+      </header>
+
+      <!-- ── Diagnostic callout ── -->
+      <section class="home-pretest-callout" id="pretest-banner" aria-labelledby="home-pretest-heading" hidden>
+        <span class="material-symbols-outlined home-pretest-icon" aria-hidden="true">assignment_late</span>
+        <div class="home-pretest-body">
+          <h2 class="home-pretest-title" id="home-pretest-heading">Complete your diagnostic first</h2>
+          <p class="home-pretest-desc">The 45-minute diagnostic measures your baseline across all exam domains. It unlocks your personalised study plan and today's recommendations.</p>
+        </div>
+        <a href="/reviewee/diagnostic" class="home-btn home-btn--primary home-pretest-cta">Start Diagnostic</a>
+      </section>
+
+      <!-- ── Main grid ── -->
+      <div class="home-main-grid">
+
+        <!-- Readiness: compact interactive profile -->
+        <div class="dash-card home-readiness-card" id="home-readiness-card">
+          <div class="home-readiness-layout">
+            <section class="home-readiness-summary" aria-labelledby="home-readiness-heading">
+              <p class="home-card-eyebrow">Exam Readiness</p>
+              <h2 class="visually-hidden" id="home-readiness-heading">Exam readiness profile</h2>
+              <div class="home-score-row">
+                <span class="home-score-num" id="home-score-num">—</span>
+                <span class="home-score-denom">/100</span>
+                <span class="home-score-badge" id="home-score-badge" hidden></span>
+              </div>
+              <p class="home-gap-note" id="home-gap-note">Take diagnostic to see your score</p>
+
+              <div class="home-focus-box" id="home-focus-box">
+                <span class="home-focus-label">Focus next</span>
+                <strong id="home-focus-domain">Diagnostic required</strong>
+                <p id="home-focus-copy">Finish the diagnostic to reveal your weakest domain and next action.</p>
+              </div>
+            </section>
+
+            <section class="home-readiness-visual" aria-label="Interactive domain readiness chart">
+              <div class="home-domain-chart-wrap" id="home-domain-chart-wrap">
+                <canvas id="home-domain-chart" aria-label="Domain score radar chart"></canvas>
+              </div>
+              <div class="home-domain-pills" id="home-domain-pills" aria-label="Domain insights"></div>
+            </section>
+          </div>
+        </div>
+
+        <!-- Activity: 3 separate cards -->
+        <div class="home-stats-row">
+
+          <div class="dash-card home-stat-card">
+            <div class="home-stat-ico-wrap home-stat-ico-wrap--blue" aria-hidden="true">
+              <span class="material-symbols-outlined">event_available</span>
+            </div>
+            <div class="home-stat-copy">
+              <span class="home-stat-value" id="home-session-count">0</span>
+              <span class="home-stat-label">Sessions completed</span>
+            </div>
+          </div>
+
+          <div class="dash-card home-stat-card">
+            <div class="home-stat-ico-wrap home-stat-ico-wrap--fire" aria-hidden="true">
+              <span class="material-symbols-outlined">local_fire_department</span>
+            </div>
+            <div class="home-stat-copy">
+              <span class="home-stat-value" id="home-streak">0</span>
+              <span class="home-stat-label">Day study streak</span>
+            </div>
+          </div>
+
+          <div class="dash-card home-stat-card" id="home-tile-exam">
+            <div class="home-stat-ico-wrap home-stat-ico-wrap--amber" aria-hidden="true">
+              <span class="material-symbols-outlined">hourglass_bottom</span>
+            </div>
+            <div class="home-stat-copy">
+              <span class="home-stat-value home-stat-value--days" id="home-days-left">—</span>
+              <span class="home-stat-label">Days to exam</span>
+              <span class="home-stat-meta" id="home-exam-date-label" hidden></span>
+            </div>
+          </div>
+
+          <div class="dash-card home-stat-card">
+            <div class="home-stat-ico-wrap home-stat-ico-wrap--green" aria-hidden="true">
+              <span class="material-symbols-outlined">quiz</span>
+            </div>
+            <div class="home-stat-copy">
+              <span class="home-stat-value" id="home-questions-count">0</span>
+              <span class="home-stat-label">Questions answered</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── Recommendations ── -->
+      <section class="home-recs-section" aria-labelledby="home-recs-heading">
+        <div class="home-recs-header">
+          <div>
+            <h2 class="home-recs-title" id="home-recs-heading">For You Today</h2>
+            <p class="home-recs-sub" id="home-rec-sub">Based on your weakest domains</p>
+          </div>
+          <a href="/reviewee/materials" class="home-recs-seeall">
+            See all learning materials
+            <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+          </a>
+        </div>
+        <div id="home-rec-list" class="home-rec-list">
+          <div class="home-rec-empty">
+            <span class="material-symbols-outlined" aria-hidden="true">auto_stories</span>
+            <p>Complete your diagnostic to get personalised recommendations.</p>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="/js/app-shell.js"></script>
+  <script>
+  (function () {
+
+    var DOMAIN_COLORS = {
+      'Verbal Ability':      '#818cf8',
+      'Numerical Ability':   '#f97316',
+      'Analytical Ability':  '#2dd4bf',
+      'Clerical Ability':    '#ec4899',
+      'General Information': '#10b981',
+    };
+
+    /* Canonical domain order — ensures General Info always appears */
+    var CANONICAL_DOMAINS = [
+      'Verbal Ability',
+      'Numerical Ability',
+      'Analytical Ability',
+      'General Information',
+    ];
+
+    /* ─── Safe broadcast (no innerHTML from user data) ─── */
+    function safeBroadcastUrl(raw) {
+      if (!raw || typeof raw !== 'string') return '';
+      try {
+        var u = new URL(raw.trim(), window.location.origin);
+        if (u.protocol !== 'http:' && u.protocol !== 'https:') return '';
+        if (u.origin !== window.location.origin) return '';
+        return u.pathname + u.search + u.hash;
+      } catch (_) { return ''; }
+    }
+
+    function appendBroadcast() {
+      var broadcasts;
+      try { broadcasts = JSON.parse(localStorage.getItem('hauers_broadcasts') || '[]'); }
+      catch (_) { return; }
+      if (!Array.isArray(broadcasts) || !broadcasts.length) return;
+      var a = broadcasts[0];
+      if (!a || typeof a !== 'object') return;
+      var main = document.querySelector('.page-content');
+      if (!main || document.getElementById('dash-announcement')) return;
+      var wrap = document.createElement('div');
+      wrap.id = 'dash-announcement';
+      wrap.className = 'home-broadcast';
+      wrap.setAttribute('role', 'status');
+      var ico = document.createElement('span');
+      ico.className = 'material-symbols-outlined home-broadcast-icon';
+      ico.setAttribute('aria-hidden', 'true');
+      ico.textContent = 'campaign';
+      var body = document.createElement('div');
+      body.className = 'home-broadcast-body';
+      var t = document.createElement('strong'); t.textContent = String(a.title || '');
+      var c = document.createElement('span');  c.textContent = String(a.content || '');
+      body.appendChild(t); body.appendChild(c);
+      var sl = safeBroadcastUrl(a.link);
+      if (sl) { var al = document.createElement('a'); al.href = sl; al.textContent = 'Read more'; al.rel = 'noopener noreferrer'; body.appendChild(al); }
+      var btn = document.createElement('button');
+      btn.type = 'button'; btn.className = 'home-broadcast-close'; btn.setAttribute('aria-label', 'Dismiss');
+      btn.addEventListener('click', function () { wrap.remove(); });
+      var ci = document.createElement('span'); ci.className = 'material-symbols-outlined'; ci.setAttribute('aria-hidden', 'true'); ci.textContent = 'close';
+      btn.appendChild(ci);
+      wrap.appendChild(ico); wrap.appendChild(body); wrap.appendChild(btn);
+      main.insertBefore(wrap, main.firstChild);
+    }
+
+    /* ─── Escape for innerHTML ─── */
+    function esc(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    /* ─── Domain class ─── */
+    function domClass(x) {
+      if (x === 'Verbal Ability') return 'verbal';
+      if (x === 'Numerical Ability') return 'numerical';
+      if (x === 'Analytical Ability') return 'analytical';
+      if (x === 'Clerical Ability') return 'clerical';
+      return 'general';
+    }
+
+    /* Short labels keep the chart narrow; full names in tooltip */
+    var DOMAIN_SHORT = {
+      'Verbal Ability':      'Verbal',
+      'Numerical Ability':   'Numerical',
+      'Analytical Ability':  'Analytical',
+      'Clerical Ability':    'Clerical',
+      'General Information': 'Gen. Info',
+    };
+
+    function domainAdvice(domain, score) {
+      var short = (domain || 'this domain').replace(' Ability', '').toLowerCase();
+      if (score >= 80) return 'Maintain this area with quick drills while you focus more time elsewhere.';
+      if (score >= 65) return 'Close to passing. Do timed practice and review missed items in ' + short + '.';
+      if (score > 0) return 'Prioritise guided review and short drills in ' + short + ' before your next full session.';
+      return 'No score yet. Complete the diagnostic to unlock a targeted action for this domain.';
+    }
+
+    /* index === -1 means "Overall"; any other index = specific domain */
+    function updateDomainInsight(domainScores, index, overallScore) {
+      var domainEl = document.getElementById('home-focus-domain');
+      var copyEl   = document.getElementById('home-focus-copy');
+      var pillsEl  = document.getElementById('home-domain-pills');
+      if (!domainScores || !domainScores.length || !domainEl || !copyEl) return;
+
+      if (index === -1) {
+        /* Overall view */
+        var pct = Number.isFinite(overallScore) ? Math.round(overallScore) : 0;
+        domainEl.textContent = 'Overall';
+        var gap = 80 - pct;
+        copyEl.textContent = pct > 0
+          ? pct + '% overall readiness. ' + (gap <= 0
+              ? 'You\'re at the passing threshold — keep the momentum up.'
+              : gap + ' pts separate you from the 80% pass mark. Focus on your weakest area.')
+          : 'Complete the diagnostic to calculate your overall readiness score.';
+      } else {
+        var d = domainScores[index] || domainScores[0];
+        var sn = Number(d && d.score);
+        var score = Number.isFinite(sn) ? Math.round(sn) : 0;
+        domainEl.textContent = (d.domain || 'Domain').replace(' Ability', '');
+        copyEl.textContent = score + '% readiness. ' + domainAdvice(d.domain, score);
+      }
+
+      if (pillsEl) {
+        pillsEl.querySelectorAll('.home-domain-pill').forEach(function (btn) {
+          var di = Number(btn.getAttribute('data-domain-index'));
+          btn.classList.toggle('active', di === index);
+        });
+      }
+    }
+
+    /* ─── Chart.js: compact interactive radar profile ─── */
+    var domainChart = null;
+    function buildDomainChart(rawScores, reduceMotion, overallScore) {
+      var wrap    = document.getElementById('home-domain-chart-wrap');
+      var pillsEl = document.getElementById('home-domain-pills');
+      if (!wrap) return;
+
+      if (!rawScores || !rawScores.length) {
+        if (domainChart) { domainChart.destroy(); domainChart = null; }
+        wrap.innerHTML = '<p class="home-chart-empty">Your domain profile appears here after the diagnostic.</p>';
+        if (pillsEl) pillsEl.innerHTML = '';
+        return;
+      }
+
+      /* Merge API scores with canonical 4 domains so all 4 always appear in the chart */
+      var scoreMap = {};
+      rawScores.forEach(function (d) { if (d.domain) scoreMap[d.domain] = d; });
+      var domainScores = CANONICAL_DOMAINS.map(function (name) {
+        return scoreMap[name] || { domain: name, score: 0 };
+      });
+      /* Append any extra domains returned by the API (e.g. Clerical) */
+      rawScores.forEach(function (d) {
+        if (d.domain && CANONICAL_DOMAINS.indexOf(d.domain) === -1) domainScores.push(d);
+      });
+
+      var canvas = document.getElementById('home-domain-chart');
+      if (!canvas) {
+        wrap.innerHTML = '<canvas id="home-domain-chart" aria-label="Domain score radar chart"></canvas>';
+        canvas = document.getElementById('home-domain-chart');
+      }
+      if (!canvas) return;
+
+      var isDark    = document.documentElement.getAttribute('data-theme') === 'dark';
+      var labels    = domainScores.map(function (d) {
+        return DOMAIN_SHORT[d.domain] || (d.domain || '').replace(' Ability', '');
+      });
+      var scores    = domainScores.map(function (d) {
+        var n = Number(d && d.score);
+        return Number.isFinite(n) ? Math.round(n) : 0;
+      });
+      var colors    = domainScores.map(function (d) { return DOMAIN_COLORS[d.domain] || '#60a5fa'; });
+
+      var gridColor  = isDark ? 'rgba(255,255,255,0.10)' : 'rgba(30,64,175,0.12)';
+      var tickColor  = isDark ? '#7A93B5' : '#3A5274';
+      var tooltipBg  = isDark ? '#1F2E47' : '#0F172A';
+
+      var weakestIndex = scores.reduce(function (minI, s, i) {
+        return s < scores[minI] ? i : minI;
+      }, 0);
+
+      if (domainChart) { domainChart.destroy(); domainChart = null; }
+      try {
+        domainChart = new Chart(canvas, {
+          type: 'radar',
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: 'Your score',
+                data: scores,
+                backgroundColor: isDark ? 'rgba(96,165,250,0.18)' : 'rgba(37,99,235,0.14)',
+                borderColor: isDark ? '#60a5fa' : '#2563eb',
+                pointBackgroundColor: colors,
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 1.5,
+                pointRadius: 5,
+                pointHoverRadius: 7,
+                borderWidth: 2,
+                fill: true,
+              },
+              {
+                label: 'Pass target',
+                data: labels.map(function () { return 80; }),
+                backgroundColor: 'rgba(245,166,35,0.06)',
+                borderColor: '#F5A623',
+                borderDash: [5, 4],
+                pointRadius: 0,
+                borderWidth: 1.5,
+                fill: false,
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: { duration: reduceMotion ? 0 : 550, easing: 'easeOutQuart' },
+            layout: { padding: 6 },
+            elements: { line: { tension: 0.08 } },
+            onHover: function (event, elements) {
+              if (event && event.native && event.native.target)
+                event.native.target.style.cursor = elements && elements.length ? 'pointer' : 'default';
+            },
+            onClick: function (_, elements) {
+              if (elements && elements.length)
+                updateDomainInsight(domainScores, elements[0].index, overallScore);
+            },
+            scales: {
+              r: {
+                min: 0, max: 100,
+                angleLines: { color: gridColor },
+                grid: { color: gridColor, circular: false },
+                pointLabels: { color: tickColor, font: { size: 10, weight: '700', family: "'Inter',sans-serif" } },
+                ticks: { color: tickColor, backdropColor: 'transparent', showLabelBackdrop: false, stepSize: 20, font: { size: 9 } }
+              }
+            },
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: tooltipBg,
+                titleColor: '#fff',
+                bodyColor: 'rgba(255,255,255,0.8)',
+                padding: 10, cornerRadius: 6,
+                callbacks: {
+                  title: function (items) {
+                    var i = items[0].dataIndex;
+                    return (domainScores[i].domain || '').replace(' Ability', '');
+                  },
+                  label: function (ctx) {
+                    if (ctx.datasetIndex === 1) return ' Pass target: 80%';
+                    var s = (ctx.parsed && typeof ctx.parsed.r === 'number') ? ctx.parsed.r : Number(ctx.raw);
+                    var gap = 80 - s;
+                    return ' ' + s + '% — ' + (gap <= 0 ? 'passing ✓' : gap + ' pts to 80%');
+                  }
+                }
+              }
+            }
+          }
+        });
+      } catch (e) {
+        console.error('Home radar chart:', e);
+        wrap.innerHTML = '<p class="home-chart-empty">Chart could not be drawn. Try refreshing the page.</p>';
+        if (pillsEl) pillsEl.innerHTML = '';
+        return;
+      }
+
+      /* Build pills: Overall first, then one per domain */
+      if (pillsEl) {
+        var overallPct = Number.isFinite(overallScore) ? Math.round(overallScore) : 0;
+        var overallBtn = '<button type="button" class="home-domain-pill home-domain-pill--overall" data-domain-index="-1">' +
+          '<span>Overall</span><strong>' + overallPct + '%</strong></button>';
+
+        var domainBtns = domainScores.map(function (d, i) {
+          var sn = Number(d && d.score);
+          var sc = Number.isFinite(sn) ? Math.round(sn) : 0;
+          return '<button type="button" class="home-domain-pill" data-domain-index="' + i + '">' +
+            '<span>' + esc(DOMAIN_SHORT[d.domain] || (d.domain || 'Domain').replace(' Ability', '')) + '</span>' +
+            '<strong>' + sc + '%</strong></button>';
+        }).join('');
+
+        pillsEl.innerHTML = overallBtn + domainBtns;
+
+        pillsEl.querySelectorAll('.home-domain-pill').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var di = Number(btn.getAttribute('data-domain-index'));
+            updateDomainInsight(domainScores, di, overallScore);
+          });
+        });
+      }
+
+      /* Default: highlight weakest domain */
+      updateDomainInsight(domainScores, weakestIndex, overallScore);
+    }
+
+    /* ─── Main init ─── */
+    async function initHomeDashboard() {
+      var errEl = document.getElementById('home-load-error');
+      if (errEl) errEl.hidden = true;
+
+      appendBroadcast();
+
+      var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      var d;
+      try {
+        var r = await fetch('/reviewee/api/dashboard');
+        if (!r.ok) throw new Error('bad');
+        d = await r.json();
+      } catch (_) {
+        if (errEl) errEl.hidden = false;
+        return;
+      }
+
+      /* Greeting */
+      var eyeEl  = document.getElementById('home-greeting-eyebrow');
+      var nameEl = document.getElementById('home-greeting-name');
+      if (d.user) {
+        var h = new Date().getHours();
+        if (eyeEl)  eyeEl.textContent  = h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
+        if (nameEl) nameEl.textContent = d.user.firstName + ' ' + d.user.lastName;
+      }
+
+      /* Pretest callout + primary CTA */
+      var banner = document.getElementById('pretest-banner');
+      var btnEl = document.getElementById('btn-continue');
+      if (!d.pretestComplete) {
+        if (banner) banner.removeAttribute('hidden');
+        if (btnEl) { btnEl.textContent = 'Take Diagnostic'; btnEl.href = '/reviewee/diagnostic'; }
+      } else {
+        if (banner) banner.setAttribute('hidden', '');
+        if (btnEl) { btnEl.textContent = 'Continue Studying'; btnEl.href = '/reviewee/review'; }
+      }
+
+      /* Score + readiness badge */
+      var scoreNumEl  = document.getElementById('home-score-num');
+      var scoreBadge  = document.getElementById('home-score-badge');
+      var gapNoteEl   = document.getElementById('home-gap-note');
+      var pct = d.readinessScore || 0;
+
+      if (d.pretestComplete) {
+        if (scoreNumEl) {
+          if (reduceMotion) {
+            scoreNumEl.textContent = String(pct);
+          } else {
+            var cur = 0;
+            var step = function () {
+              cur = Math.min(cur + Math.ceil((pct - cur) / 8 + 1), pct);
+              scoreNumEl.textContent = String(cur);
+              if (cur < pct) requestAnimationFrame(step);
+            };
+            requestAnimationFrame(step);
+          }
+        }
+        if (scoreBadge) {
+          scoreBadge.removeAttribute('hidden');
+          var gap = 80 - pct;
+          if (gap <= 0) {
+            scoreBadge.textContent = 'Passing';
+            scoreBadge.className = 'home-score-badge home-score-badge--pass';
+          } else {
+            scoreBadge.textContent = gap + ' pts to pass';
+            scoreBadge.className = 'home-score-badge home-score-badge--gap';
+          }
+          if (gapNoteEl) {
+            gapNoteEl.textContent = gap <= 0
+              ? 'You\'ve reached the passing threshold.'
+              : 'You need ' + gap + ' more points to reach the 80% pass mark.';
+          }
+        }
+      }
+
+      /* Domain chart */
+      var rawDomain = (d.diagnostic && Array.isArray(d.diagnostic.domainScores)) ? d.diagnostic.domainScores : [];
+      var hasDomainScores = rawDomain.some(function (x) { return Number(x && x.score) > 0; });
+      var domainScores = rawDomain.length && (d.pretestComplete || hasDomainScores) ? rawDomain : null;
+      buildDomainChart(domainScores, reduceMotion, d.readinessScore || 0);
+
+      /* Stat tiles */
+      var sesEl  = document.getElementById('home-session-count');
+      var strEl  = document.getElementById('home-streak');
+      var daysEl = document.getElementById('home-days-left');
+      var dateEl = document.getElementById('home-exam-date-label');
+
+      var qEl   = document.getElementById('home-questions-count');
+
+      if (sesEl) sesEl.textContent = String(d.sessionCount    || 0);
+      if (strEl) strEl.textContent = String(d.streak          || 0);
+      if (qEl)   qEl.textContent   = String(d.totalQuestions  || 0);
+
+      if (d.examDate) {
+        var exam = new Date(d.examDate);
+        var days = Math.max(0, Math.ceil((exam - new Date()) / 86400000));
+        if (daysEl) {
+          daysEl.textContent = String(days);
+          daysEl.classList.toggle('home-stat-value--urgent', days <= 14);
+        }
+        if (dateEl) {
+          dateEl.textContent = exam.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
+          dateEl.removeAttribute('hidden');
+        }
+      } else if (daysEl) {
+        daysEl.textContent = '—';
+        daysEl.classList.remove('home-stat-value--urgent');
+        if (dateEl) {
+          dateEl.textContent = '';
+          dateEl.setAttribute('hidden', '');
+        }
+      }
+
+      /* Recommendations */
+      var listEl = document.getElementById('home-rec-list');
+      var subEl  = document.getElementById('home-rec-sub');
+      var mats   = d.recommendedMaterials || [];
+
+      if (listEl && mats.length) {
+        if (subEl && d.weakDomains && d.weakDomains.length)
+          subEl.textContent = 'Focused on: ' + d.weakDomains.slice(0, 2).join(', ');
+
+        var ICON = { 'Drill Set': 'fitness_center', 'Practice Exam': 'assignment', 'Video': 'play_circle', 'Reference': 'article', 'Manual': 'book' };
+        listEl.innerHTML = mats.map(function (m) {
+          var dom  = (m.domain || '').replace(' Ability', '');
+          var type = m.type || 'Material';
+          var icon = ICON[m.type] || 'description';
+          var dur  = m.estMinutes ? '<span class="home-rec-dur">' + esc(m.estMinutes) + '\u202fmin</span>' : '';
+          return '<div class="home-rec-item">' +
+            '<span class="material-symbols-outlined home-rec-icon" aria-hidden="true">' + esc(icon) + '</span>' +
+            '<div class="home-rec-info">' +
+            '<span class="home-rec-name">' + esc(m.title || 'Untitled') + '</span>' +
+            '<span class="home-rec-tags">' +
+            '<span class="q-domain-badge ' + esc(domClass(m.domain)) + '">' + esc(dom) + '</span>' +
+            '<span class="home-rec-type">' + esc(type) + '</span>' + dur +
+            '</span></div>' +
+            '<a href="/reviewee/materials" class="home-rec-open">Open</a></div>';
+        }).join('');
+      } else if (listEl && d.pretestComplete) {
+        listEl.innerHTML = '<div class="home-rec-empty"><span class="material-symbols-outlined" aria-hidden="true">search_off</span><p>No materials found. Browse the library.</p></div>';
+      }
+    }
+
+    initHomeDashboard();
+    var retryBtn = document.getElementById('home-retry-btn');
+    if (retryBtn) retryBtn.addEventListener('click', initHomeDashboard);
+
+  })();
+  </script>
+</body>
+</html>

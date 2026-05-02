@@ -1,0 +1,386 @@
+/* == Header Entrance ================================================== */
+@keyframes headerSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-22px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+
+/* == Site Header ======================================================= */
+#header-placeholder {
+  display: contents;
+}
+
+
+.header-outer {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: 0;
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--border-default);
+  transform-origin: top center;
+  transition:
+    padding 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    background 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.45s ease;
+}
+
+.header-outer.scrolled {
+  padding: 0.65rem 1.5rem;
+  background: transparent;
+  border-bottom: none; /* Removed the extra line */
+}
+
+.site-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2rem;
+  height: 64px;
+  max-width: 1200px;
+  margin: 0 auto;
+  border-radius: 0;
+  background: transparent;
+  transition:
+    height 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    padding 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    border-radius 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    background 0.3s ease,
+    box-shadow 0.4s ease,
+    border 0.3s ease;
+  animation: headerSlideDown 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.header-outer.scrolled .site-header {
+  max-width: 1040px;
+  height: 50px;
+  padding: 0 1.25rem;
+  background: var(--card-bg);
+  border-radius: 12px;
+  border: 1px solid var(--border-default);
+  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.12), 0 2px 8px rgba(15, 23, 42, 0.08);
+}
+
+/* Remove all pseudo-element decoration */
+.site-header::before,
+.site-header::after {
+  display: none;
+}
+
+[data-theme="dark"] .header-outer {
+  background: var(--card-bg);
+  border-bottom-color: var(--border-default);
+}
+
+[data-theme="dark"] .header-outer.scrolled {
+  background: transparent;
+  border-bottom: none; /* Fixed the extra line in dark mode */
+}
+
+[data-theme="dark"] .header-outer.scrolled .site-header {
+  background: var(--card-bg);
+  border-color: var(--border-default);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+}
+
+.brand-group {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.brand-group img {
+  height: 26px;
+  transition: opacity 0.2s;
+}
+
+/* ACCESS logo switches to high-contrast inverted version in dark mode */
+[data-theme="dark"] .logo-access {
+  filter: invert(1);
+  opacity: 0.9;
+}
+
+.brand-separator {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  user-select: none;
+  opacity: 0.45;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  margin: 0 0.15rem;
+}
+
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.nav-link {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--text-subdued);
+  padding: 0.45rem 0.9rem;
+  border-radius: 8px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: 0.015em;
+}
+
+.nav-link:hover {
+  color: var(--text-main);
+  background: var(--bg-base);
+  transform: translateY(-1px);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.theme-toggle-btn {
+  background: transparent;
+  border: 1.5px solid var(--border-default);
+  cursor: pointer;
+  color: var(--text-subdued);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  transition: color 0.18s, background 0.18s, border-color 0.18s;
+  flex-shrink: 0;
+}
+
+.theme-toggle-btn:hover {
+  color: var(--fs-blue);
+  background: var(--bg-base);
+  border-color: var(--fs-blue);
+}
+
+/* Theme icon visibility â€” default (light mode: show moon) */
+.theme-toggle-btn .icon-sun {
+  display: none;
+}
+
+.theme-toggle-btn .icon-moon {
+  display: flex;
+}
+
+/* Dark mode: show sun */
+[data-theme="dark"] .theme-toggle-btn .icon-sun {
+  display: flex;
+}
+
+[data-theme="dark"] .theme-toggle-btn .icon-moon {
+  display: none;
+}
+
+.header-login {
+  display: inline-flex;
+  align-items: center;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-subdued);
+  padding: 0.48rem 1.1rem;
+  border-radius: 99px;
+  border: 1.5px solid var(--border-default);
+  text-decoration: none;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+
+.header-login:hover {
+  color: var(--text-main);
+  border-color: var(--fs-blue);
+  background: rgba(27, 79, 138, 0.07);
+}
+
+.header-cta {
+  background: var(--fs-gold); /* Reintroduced Yellow */
+  color: #000;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 700;
+  padding: 0.5rem 1.2rem;
+  border-radius: 99px;
+  text-decoration: none;
+  letter-spacing: 0.01em;
+  box-shadow: 0 2px 12px rgba(245, 166, 35, 0.30);
+  transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+
+.header-cta:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 18px rgba(245, 166, 35, 0.42);
+}
+
+/* == Site Footer ======================================================= */
+.site-footer {
+  border-top: 1px solid var(--border-default);
+  margin-top: auto;
+  z-index: 99;
+  position: relative;
+  overflow: hidden;
+  background: var(--card-bg);
+}
+
+/* Fading grid lines — visible at bottom, fade to nothing at top */
+.footer-grid-lines {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(128, 128, 128, 0.10) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(128, 128, 128, 0.10) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: linear-gradient(to top, black 0%, black 30%, transparent 90%);
+  mask-image: linear-gradient(to top, black 0%, black 30%, transparent 90%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+[data-theme="dark"] .footer-grid-lines {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+}
+
+.footer-inner {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  gap: 2.5rem;
+  padding: 3rem 2.5rem 2rem;
+  max-width: 1080px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.footer-logos {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.footer-logos img {
+  height: 22px;
+}
+
+/* ACCESS logo stays white and blue in dark mode */
+[data-theme="dark"] .footer-logos img[alt="ACCESS logo"] {
+  filter: invert(1);
+}
+
+.footer-tagline {
+  font-size: 0.875rem;
+  color: var(--text-subdued);
+  line-height: 1.6;
+  margin-bottom: 1rem;
+  max-width: 240px;
+}
+
+.footer-copy {
+  font-size: 0.78rem;
+  color: var(--text-subdued);
+  opacity: 0.6;
+}
+
+.footer-links-col,
+.footer-resources-col,
+.footer-contact-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.footer-col-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-subdued);
+  opacity: 0.6;
+  margin-bottom: 0.75rem;
+}
+
+.footer-link {
+  font-size: 0.875rem;
+  color: var(--text-subdued);
+  text-decoration: none;
+  line-height: 2;
+  transition: color 0.2s;
+}
+
+.footer-link:hover {
+  color: var(--fs-blue);
+}
+
+.footer-email-link {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  line-height: 1.6;
+}
+
+.footer-email-link:hover {
+  color: var(--fs-blue);
+}
+
+.footer-contact-note {
+  font-size: 0.78rem;
+  color: var(--text-subdued);
+  opacity: 0.55;
+  line-height: 1.5;
+  margin-top: 0.35rem;
+}
+
+/* Footer cursor spotlight — same treatment as glass cards */
+.site-footer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(800px circle at var(--mouse-x, -999px) var(--mouse-y, -999px),
+      rgba(27, 79, 138, 0.07),
+      transparent 45%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.footer-bottom {
+  border-top: 1px solid var(--border-subdued);
+  padding: 0.875rem 2.5rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--text-subdued);
+  opacity: 0.45;
+  position: relative;
+  z-index: 1;
+}
+
+/* Ambient glow removed as part of AI-slop removal and motion accessibility. */
+
+/* == Responsive ======================================================== */
+@media (max-width: 768px) {
+  .header-nav {
+    display: none;
+  }
+
+  .footer-inner {
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    padding: 2rem 1.5rem 1.5rem;
+  }
+}

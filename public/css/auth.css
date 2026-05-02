@@ -1,0 +1,723 @@
+.auth-main {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  z-index: 1;
+  position: relative;
+  min-height: 100vh;
+}
+
+.auth-column {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+.greeting-area {
+  margin-bottom: 2rem;
+  text-align: left;
+}
+
+.brand-logos {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.brand-logos img {
+  height: 32px;
+}
+
+.brand-logos .brand-x {
+  font-weight: 300;
+  color: var(--text-subdued);
+  font-size: 1.25rem;
+  opacity: 0.7;
+}
+
+.greeting {
+  font-family: inherit;
+  font-size: 2.2rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+}
+
+.greeting .name-highlight {
+  background: var(--brand-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.greeting-sub {
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-subdued);
+  margin-top: 0.5rem;
+}
+
+/* Logo link in auth pages — navigates to landing but shows no visual effects */
+.auth-logo-link {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  outline: none;
+  border: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.auth-logo-link:hover,
+.auth-logo-link:focus,
+.auth-logo-link:active {
+  text-decoration: none;
+  outline: none;
+  box-shadow: none;
+  opacity: 1;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Input Field Wrapper ────────────────────────────────────────────────
+   padding: 2px = the visible border ring thickness.
+   ::before (silver) and ::after (gradient) fill the full box but are
+   only visible through that 2px gap because .input-inner (z-index:1)
+   covers the interior.
+──────────────────────────────────────────────────────────────────────── */
+.input-field {
+  position: relative;
+  overflow: hidden;   /* clips pseudo-elements while they translate off-screen;
+                         parent border-radius provides the rounded clip boundary */
+  padding: 2px;
+  border-radius: 12px;
+  background: var(--border-default);
+  margin-bottom: 1.25rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  transition: box-shadow 0.3s ease;
+}
+
+/* ── Layer 1: Silver flash (::before) ───────────────────────────────────
+   Reveals FIRST, no delay.
+   Gradient: transparent at top-left → silver at bottom-right.
+   clip-path starts at bottom-right corner and expands to top-left,
+   so the silver colour (at bottom-right, position 100%) appears first
+   as the leading edge.
+   Light mode: dark-tinted — visible against pale #d1d5db resting border.
+   Dark mode:  bright-tinted — visible against dark #2A2A2A border.
+──────────────────────────────────────────────────────────────────────── */
+.input-field::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  /* silver-dense end (100%) sits at BR — that's the first part to slide
+     into view as translate(100%,100%) → translate(0,0) sweeps BR → TL */
+  background: linear-gradient(
+    135deg,
+    transparent          30%,
+    var(--silver-start)  55%,
+    var(--silver-peak)   75%,
+    var(--silver-peak)  100%
+  );
+  /* transform is GPU-composited: rasterised ONCE, composited as a texture
+     each frame — no per-frame re-paint, no gradient pixelation */
+  transform: translate(100%, 100%);
+  transition: transform 0.42s cubic-bezier(0.3, 0.9, 0.35, 1);
+  will-change: transform;
+}
+.input-field:focus-within::before,
+.input-field.has-active-menu::before {
+  transform: translate(0, 0);
+}
+
+/* ── Layer 2: Gradient border (::after) ─────────────────────────────────
+   Reveals SECOND — 300ms behind the silver, same sweep direction.
+   Gradient direction is 315deg (opposite of ::before's 135deg):
+     0% = bottom-right (pink, first revealed)
+     100% = top-left   (yellow, last revealed — vivid golden arrival at TL)
+   Reversing the gradient ensures the brightest brand color (yellow)
+   is the last thing seen, making the TL endpoint clearly perceptible.
+
+   Asymmetric delay:
+     focus (blur→focus): transition defined in :focus-within::after
+                         — 0.3s delay so silver shows for 300ms first.
+     blur  (focus→blur): transition defined in .input-field::after
+                         — no delay, retracts cleanly.
+──────────────────────────────────────────────────────────────────────── */
+.input-field::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  /* 315deg: blue at BR (enters first) → light blue at TL (vivid arrival point).
+     slide direction matches gradient direction — light blue is last seen = TL endpoint */
+  background: var(--fs-blue);
+  transform: translate(100%, 100%);
+  /* Asymmetric delay via CSS spec: transition in the END state applies.
+     Default state (blur): no delay → instant retract.
+     :focus-within state (focus): 0.3s delay → silver shows for 300ms first. */
+  transition: transform 0.38s cubic-bezier(0.3, 0.9, 0.35, 1);
+  will-change: transform;
+}
+.input-field:focus-within::after,
+.input-field.has-active-menu::after {
+  transform: translate(0, 0);
+  transition: transform 0.38s cubic-bezier(0.3, 0.9, 0.35, 1) 0.3s;
+}
+
+.input-field:focus-within,
+.input-field.has-active-menu {
+  /* light: tight 2px ring (rgba 55%) + soft haze — ring carries colour where
+     a 2px border alone is invisible against a white background.
+     dark:  1px ring + deeper haze — vars defined per-theme in base.css */
+  box-shadow: var(--focus-glow);
+}
+
+/* Input inner sits above both pseudo-elements — covers the center,
+   leaving only the 2px ring where ::before / ::after are visible. */
+.input-inner {
+  background: var(--input-bg);
+  border-radius: 10.5px;
+  padding: 14px 16px;
+  display: flex;
+  position: relative;
+  z-index: 1;
+}
+
+.input-stack {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 28px;
+}
+
+.input-icon {
+  width: 22px;
+  height: 22px;
+  fill: var(--text-subdued);
+  margin-right: 12px;
+  flex-shrink: 0;
+  transition: fill 0.3s ease;
+}
+
+.input-field:focus-within .input-icon,
+.input-field.has-active-menu .input-icon {
+  fill: url(#fs-gradient);
+}
+
+.input-inner input {
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 0.95rem;
+  outline: none;
+  width: 100%;
+  padding: 0;
+  line-height: inherit;
+}
+
+.input-inner input::placeholder {
+  color: var(--text-subdued);
+  opacity: 0.8;
+}
+
+/* Eye Toggle Icon for Passwords */
+.eye-toggle {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-subdued);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  margin-left: 8px;
+}
+
+.eye-toggle svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+  transition: fill 0.2s ease, transform 0.1s;
+}
+
+.eye-toggle:hover svg {
+  fill: var(--text-main);
+}
+.eye-toggle:active svg {
+  transform: scale(0.9);
+}
+
+.auth-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.forgot-link {
+  font-size: 0.85rem;
+  color: var(--text-subdued);
+  transition: color 0.2s;
+  text-decoration: none;
+}
+
+.forgot-link:hover {
+  color: var(--text-main);
+}
+
+.submit-btn {
+  height: 48px;
+  border-radius: 9999px;
+  background-color: var(--fs-button-bg);
+  color: var(--fs-button-text);
+  /* pre-size the border as transparent so it doesn't shift layout on hover */
+  border: 1.5px solid transparent;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.3s ease;
+  margin-top: 0.5rem;
+}
+
+.submit-btn:hover { 
+  background-color: var(--fs-gold); 
+  color: #0D1B35;
+  border-color: var(--submit-hover-border);
+  box-shadow: 0 4px 15px rgba(245, 166, 35, 0.4);
+  transform: translateY(-1px);
+}
+.submit-btn:active { transform: translateY(1px); }
+
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: var(--text-subdued);
+  font-size: 0.85rem;
+  margin: 1.75rem 0;
+  font-weight: 500;
+}
+
+.divider::before, .divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--border-subdued);
+}
+
+.divider::before { margin-right: 1em; }
+.divider::after { margin-left: 1em; }
+
+.google-btn {
+  font-family: inherit;
+  background: #FFFFFF;
+  color: var(--text-main);
+  border: 1px solid var(--border-default);
+  border-radius: 99px;
+  padding: 0.85rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  transition: all 0.25s ease;
+}
+
+/* ── Light blue glass hover — both themes ──────────────────────────
+   Semi-transparent cool-blue gradient + backdrop-blur creates a frosted
+   glass feel. Box-shadow adds an ambient blue glow + an inner highlight
+   seam at the top edge for extra depth.
+──────────────────────────────────────────────────────────────────── */
+.google-btn:hover {
+  background: #FFFFFF;
+  border-color: #FFD700;
+  color: var(--text-main);
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2);
+  transform: translateY(-1px);
+}
+
+.google-btn:active {
+  transform: translateY(1px);
+}
+
+.google-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.auth-footer-text {
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-subdued);
+  margin-top: 2rem;
+}
+
+.auth-footer-text a {
+  color: var(--text-main);
+  font-weight: 500;
+  transition: opacity 0.2s;
+}
+
+.auth-footer-text a:hover {
+  opacity: 0.8;
+}
+
+/* Terms / consent line below password fields */
+.terms-text {
+  font-size: 0.82rem;
+  color: var(--text-subdued);
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.terms-text a {
+  color: var(--text-main);
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: opacity 0.2s;
+}
+
+.terms-text a:hover {
+  opacity: 0.7;
+}
+
+/* Standalone Theme Toggle */
+.auth-theme-toggle {
+  position: absolute;
+  top: 1.5rem;
+  right: 2rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border-default);
+  color: var(--text-main);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  transition: all 0.2s;
+}
+.auth-theme-toggle:hover {
+  background: var(--input-bg);
+}
+.auth-theme-toggle svg {
+  width: 20px;
+  height: 20px;
+}
+[data-theme='dark'] .auth-theme-toggle .moon-icon { display: none; }
+:root:not([data-theme='dark']) .auth-theme-toggle .sun-icon { display: none; }
+
+/* ── OTP Verification ────────────────────────────────────────────────── */
+.auth-hint {
+  font-size: 0.93rem;
+  color: var(--text-subdued);
+  line-height: 1.6;
+  margin-bottom: 0.25rem;
+}
+.auth-hint strong {
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+.otp-group {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin: 1.75rem 0 0.5rem;
+}
+
+.otp-box {
+  width: 52px;
+  height: 60px;
+  border: 1.5px solid var(--border-default);
+  border-radius: 12px;
+  background: var(--input-bg);
+  color: var(--text-main);
+  font-family: 'Google Sans', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  text-align: center;
+  outline: none;
+  caret-color: transparent;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.otp-box:focus {
+  border-color: transparent;
+  box-shadow: 0 0 0 2px var(--fs-blue), 0 4px 14px rgba(27, 79, 138, 0.18);
+}
+
+.otp-box.filled {
+  border-color: transparent;
+  box-shadow: 0 0 0 1.5px var(--fs-blue-light);
+}
+
+/* ── Resend row + countdown ──────────────────────────────────────────── */
+.resend-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.resend-label {
+  font-size: 0.875rem;
+  color: var(--text-subdued);
+}
+
+.resend-action {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.875rem;
+}
+
+.resend-btn {
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 600;
+  color: var(--fs-blue);
+  cursor: pointer;
+  padding: 0;
+  transition: opacity 0.15s;
+}
+.resend-btn:disabled {
+  color: var(--text-subdued);
+  cursor: default;
+  opacity: 0.55;
+}
+.resend-btn:not(:disabled):hover { opacity: 0.7; }
+
+.countdown {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--text-subdued);
+}
+
+/* ── Back / change-email navigation link ─────────────────────────────── */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.875rem;
+  color: var(--text-subdued);
+  text-decoration: none;
+  margin-top: 1.25rem;
+  align-self: center;
+  transition: color 0.2s;
+}
+.back-link:hover { color: var(--text-main); }
+.back-link svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+/* Allow <button> elements to use .back-link */
+button.back-link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+}
+
+/* ── Gradient text utility ───────────────────────────────────────────── */
+.gradient-text {
+  background: var(--brand-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
+
+/* ── Small icon ring for OTP pages ───────────────────────────────────── */
+.auth-icon-ring {
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--fs-blue-light) 0%, var(--fs-blue) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  box-shadow: 0 6px 22px rgba(27, 79, 138, 0.30);
+  flex-shrink: 0;
+}
+.auth-icon-ring svg {
+  width: 28px;
+  height: 28px;
+  fill: #ffffff;
+}
+
+/* ── Email badge pill in step-2 header ───────────────────────────────── */
+.otp-email-badge {
+  display: inline-block;
+  background: var(--input-bg);
+  border: 1.5px solid var(--border-default);
+  border-radius: 999px;
+  padding: 5px 16px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-top: 0.5rem;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+
+/* ── Centered modifier for step-2 content ────────────────────────────── */
+.fp-centered {
+  text-align: center;
+}
+.fp-centered.greeting-area .greeting {
+  justify-content: center;
+}
+
+/* ── Forgot-password two-step panels ─────────────────────────────────── */
+.fp-step { display: none; }
+.fp-step.active {
+  display: flex;
+  flex-direction: column;
+  animation: stepFadeIn 0.28s ease forwards;
+}
+@keyframes stepFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Step 2 is always centered */
+#fp-step-2.active {
+  align-items: center;
+}
+#fp-step-2 .auth-form {
+  width: 100%;
+}
+#fp-step-2 .greeting-area {
+  text-align: center;
+  width: 100%;
+}
+#fp-step-2 .greeting {
+  justify-content: center;
+}
+
+/* ── Email-verified success screen ──────────────────────────────────── */
+.success-icon-ring {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #14B8A6 0%, #0D9488 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  box-shadow: 0 8px 28px rgba(13, 148, 136, 0.30);
+}
+.success-icon-ring svg {
+  width: 36px;
+  height: 36px;
+  fill: #ffffff;
+}
+.success-heading {
+  font-family: 'Google Sans', sans-serif;
+  font-size: 1.7rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--text-main);
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+.success-sub {
+  font-size: 0.95rem;
+  color: var(--text-subdued);
+  text-align: center;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+/* ── Invalid-credentials error banner ───────────────────────────────── */
+.auth-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  background: rgba(220, 38, 38, 0.07);
+  border: 1px solid rgba(220, 38, 38, 0.28);
+  border-radius: 12px;
+  padding: 0.8rem 1rem;
+  margin-bottom: 1.25rem;
+  animation: errorShake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes errorShake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-6px); }
+  40%       { transform: translateX(6px); }
+  60%       { transform: translateX(-4px); }
+  80%       { transform: translateX(4px); }
+}
+
+.auth-error-icon {
+  font-size: 19px;
+  color: #DC2626;
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.auth-error-text {
+  flex: 1;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #DC2626;
+  line-height: 1.4;
+}
+
+.auth-error-close {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #DC2626;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.65;
+  transition: opacity 0.15s;
+  padding: 0;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.auth-error-close:hover { opacity: 1; }

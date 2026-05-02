@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Detail | Hauers Admin</title>
+  <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <script src="/js/theme-toggle.js"></script>
+</head>
+<body data-role="admin">
+
+  <div id="navbar-placeholder"><%- include('../partials/navbar') %></div>
+
+  <div class="app-shell sidebar-collapsed">
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div id="sidebar-placeholder"><%- include('../partials/admin-sidebar') %></div>
+
+    <main class="page-content">
+
+      <!-- ── Back link ── -->
+      <a href="/admin/reviewees" class="qd-back-link">
+        <span class="material-symbols-outlined" style="font-size:18px">arrow_back</span>
+        Back to Reviewees
+      </a>
+
+      <!-- ── Hero card ── -->
+      <div class="dash-card" style="margin-bottom:1.25rem">
+
+        <div class="ud-hero">
+          <div class="ud-avatar" id="ud-avatar">?</div>
+          <div>
+            <div class="ud-name"  id="ud-full-name">Loading…</div>
+            <div class="ud-email" id="ud-email"></div>
+            <div class="ud-chips" id="ud-chips"></div>
+          </div>
+        </div>
+
+        <div class="ud-field-grid">
+          <div class="ud-field">
+            <span class="ud-field-label">Joined</span>
+            <span class="ud-field-value" id="ud-joined">—</span>
+          </div>
+          <div class="ud-field">
+            <span class="ud-field-label">Last Active</span>
+            <span class="ud-field-value" id="ud-last-active">—</span>
+          </div>
+          <div class="ud-field">
+            <span class="ud-field-label">Exam Level</span>
+            <span class="ud-field-value" id="ud-level">—</span>
+          </div>
+          <div class="ud-field">
+            <span class="ud-field-label">Study Streak</span>
+            <span class="ud-field-value" id="ud-streak">—</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── Profile Form Responses ── -->
+      <div class="dash-grid" style="grid-template-columns: 1fr;">
+        <div class="dash-card">
+          <span class="card-label">Profile Form Responses</span>
+          <p class="card-sub">Self-reported demographic and preparatory information. To protect privacy, individual readiness scores are not shown.</p>
+          
+          <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem;">
+            <!-- Scaffolded responses -->
+            <div style="padding-bottom: 1rem; border-bottom: 1px solid var(--border-subdued);">
+              <span style="font-size: 0.8rem; color: var(--text-subdued); font-weight: 600; text-transform: uppercase;">1. What is your primary mode of preparation?</span>
+              <p style="margin-top: 0.25rem; color: var(--text-main); font-size: 0.95rem;">Self-study with online resources</p>
+            </div>
+            <div style="padding-bottom: 1rem; border-bottom: 1px solid var(--border-subdued);">
+              <span style="font-size: 0.8rem; color: var(--text-subdued); font-weight: 600; text-transform: uppercase;">2. Which domain do you feel least confident about?</span>
+              <p style="margin-top: 0.25rem; color: var(--text-main); font-size: 0.95rem;">Numerical Ability</p>
+            </div>
+            <div style="padding-bottom: 1rem; border-bottom: 1px solid var(--border-subdued);">
+              <span style="font-size: 0.8rem; color: var(--text-subdued); font-weight: 600; text-transform: uppercase;">3. How many hours a week do you plan to study?</span>
+              <p style="margin-top: 0.25rem; color: var(--text-main); font-size: 0.95rem;">10-15 hours</p>
+            </div>
+            <div style="padding-bottom: 1rem; border-bottom: 1px solid var(--border-subdued);">
+              <span style="font-size: 0.8rem; color: var(--text-subdued); font-weight: 600; text-transform: uppercase;">4. Any additional context or feedback?</span>
+              <p style="margin-top: 0.25rem; color: var(--text-main); font-size: 0.95rem; font-style: italic;">"I really need more practice sets for math."</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="/js/admin-shell.js"></script>
+  <script>
+  (async () => {
+
+    /* ── Get user ID from URL ────────────────────────────── */
+    const userId = parseInt(window.location.pathname.split('/').pop(), 10);
+    if (!userId) return;
+
+    /* ── Fetch user ──────────────────────────────────────── */
+    let user;
+    try {
+      const r = await fetch('/admin/api/users/' + userId);
+      if (!r.ok) {
+        document.getElementById('ud-full-name').textContent = 'User not found';
+        return;
+      }
+      user = await r.json();
+    } catch (_) { return; }
+
+    /* ── Helpers ─────────────────────────────────────────── */
+    function fmtDate(d) {
+      return d ? new Date(d).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '—';
+    }
+
+    /* ── Populate hero ───────────────────────────────────── */
+    const initials = (user.firstName[0] + user.lastName[0]).toUpperCase();
+
+    const avatarEl = document.getElementById('ud-avatar');
+    if (avatarEl) avatarEl.textContent = initials;
+
+    const nameEl = document.getElementById('ud-full-name');
+    if (nameEl) nameEl.textContent = user.firstName + ' ' + user.lastName;
+
+    const emailEl = document.getElementById('ud-email');
+    if (emailEl) emailEl.textContent = user.email;
+
+    const chipsEl = document.getElementById('ud-chips');
+    if (chipsEl) {
+      const levelChip  = `<span class="q-domain-badge general">${user.examLevel || 'No level'}</span>`;
+      const statusChip = user.isVerified
+        ? `<span class="status-badge status-badge--verified">Verified</span>`
+        : `<span class="status-badge status-badge--pending">Pending Verification</span>`;
+      chipsEl.innerHTML = levelChip + statusChip;
+    }
+
+    /* ── Profile fields ──────────────────────────────────── */
+    const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+    setVal('ud-joined',      fmtDate(user.joinedAt));
+    setVal('ud-last-active', fmtDate(user.lastActive));
+    setVal('ud-level',       user.examLevel || '—');
+    setVal('ud-streak',      user.streak ? user.streak + (user.streak === 1 ? ' day' : ' days') : '0 days');
+
+
+
+  })();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diagnostic Assessment | Hauers</title>
+  <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <script src="/js/theme-toggle.js"></script>
+</head>
+<body data-role="reviewee">
+
+  <div id="navbar-placeholder"><%- include('../partials/navbar') %></div>
+
+  <div class="app-shell sidebar-collapsed">
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div id="sidebar-placeholder"><%- include('../partials/sidebar') %></div>
+    <main class="page-content">
+
+      <!-- ══════════════════════════════════════════════════
+           PANEL 1 — INTRO
+      ══════════════════════════════════════════════════ -->
+      <div id="diag-intro">
+        <header class="page-header" style="justify-content:center;text-align:center;flex-direction:column;align-items:center;gap:0.35rem">
+          <h1 class="page-title">Diagnostic Assessment</h1>
+          <p class="page-subtitle">Identify your strengths and weak areas before you begin studying.</p>
+        </header>
+
+        <div class="diag-intro-wrap">
+
+          <!-- Icon -->
+          <div class="diag-intro-icon">
+            <span class="material-symbols-outlined" style="font-size:42px">fact_check</span>
+          </div>
+
+          <!-- Meta pills -->
+          <div class="diag-meta-pills">
+            <span class="diag-meta-pill">
+              <span class="material-symbols-outlined" style="font-size:16px">schedule</span>
+              45 Minutes
+            </span>
+            <span class="diag-meta-pill">
+              <span class="material-symbols-outlined" style="font-size:16px">description</span>
+              15 Questions
+            </span>
+            <span class="diag-meta-pill">
+              <span class="material-symbols-outlined" style="font-size:16px">public</span>
+              3 Domains
+            </span>
+          </div>
+
+          <!-- Domain list -->
+          <div class="diag-domain-list">
+            <div class="diag-domain-row">
+              <span class="diag-domain-name">
+                <span class="q-domain-badge verbal" style="margin-right:0.6rem">Verbal</span>
+                Verbal Ability
+              </span>
+              <span class="diag-domain-count">5 questions</span>
+            </div>
+            <div class="diag-domain-row">
+              <span class="diag-domain-name">
+                <span class="q-domain-badge numerical" style="margin-right:0.6rem">Numerical</span>
+                Numerical Ability
+              </span>
+              <span class="diag-domain-count">5 questions</span>
+            </div>
+            <div class="diag-domain-row">
+              <span class="diag-domain-name">
+                <span class="q-domain-badge clerical" style="margin-right:0.6rem">Clerical</span>
+                Clerical Ability
+              </span>
+              <span class="diag-domain-count">5 questions</span>
+            </div>
+          </div>
+
+          <!-- Instructions -->
+          <div class="diag-instructions">
+            <p>Before you begin:</p>
+            <ul>
+              <li>You can flag questions to revisit before submitting.</li>
+              <li>The timer starts as soon as you press Begin.</li>
+              <li>You can navigate freely between questions.</li>
+              <li>Your results will be saved to track your progress over time.</li>
+            </ul>
+          </div>
+
+          <button class="cta-pill" id="btn-start" style="font-size:1rem;padding:0.85rem 2.5rem">
+            Begin Assessment
+          </button>
+
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════
+           PANEL 2 — EXAM
+      ══════════════════════════════════════════════════ -->
+      <div id="diag-exam" hidden>
+
+        <!-- Header row -->
+        <div class="diag-exam-header">
+          <span class="diag-q-counter" id="q-counter">Question 1 of 15</span>
+          <div class="diag-timer-wrap">
+            <span class="material-symbols-outlined" style="font-size:16px">schedule</span>
+            <span class="diag-timer" id="diag-timer">45:00</span>
+          </div>
+          <button class="cta-pill" id="btn-open-confirm" style="padding:0.45rem 1.15rem;font-size:0.82rem">
+            Submit
+          </button>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="diag-progress-bar">
+          <div class="diag-progress-fill" id="diag-progress-fill" style="width:0%"></div>
+        </div>
+
+        <!-- Question card -->
+        <div class="diag-question-card">
+          <div class="q-meta">
+            <span class="q-domain-badge" id="q-domain-badge">Domain</span>
+            <span class="q-difficulty" id="q-difficulty">Easy</span>
+            <button class="q-flag-btn" id="btn-flag" title="Flag for review">
+              <span class="material-symbols-outlined" style="font-size:16px">flag</span>
+              <span id="flag-label">Flag</span>
+            </button>
+          </div>
+          <p class="q-text" id="q-text">Loading question…</p>
+          <div class="q-choices" id="q-choices"></div>
+        </div>
+
+        <!-- Nav grid -->
+        <div class="q-nav-legend">
+          <div class="q-nav-legend-item">
+            <div class="q-legend-dot" style="background:var(--fs-orange);border-radius:3px"></div>
+            Answered
+          </div>
+          <div class="q-nav-legend-item">
+            <div class="q-legend-dot" style="background:rgba(255,214,51,0.18);border:1.5px solid var(--fs-yellow);border-radius:3px"></div>
+            Flagged
+          </div>
+          <div class="q-nav-legend-item">
+            <div class="q-legend-dot" style="background:transparent;border:1.5px solid var(--border-subdued);border-radius:3px"></div>
+            Unanswered
+          </div>
+        </div>
+        <div class="q-nav-grid" id="q-nav-grid"></div>
+
+        <!-- Prev / Next controls -->
+        <div class="q-controls">
+          <button class="q-btn" id="btn-prev" style="display:flex;align-items:center;gap:0.3rem">
+            <span class="material-symbols-outlined" style="font-size:18px">chevron_left</span>
+            Previous
+          </button>
+          <button class="q-btn" id="btn-next" style="display:flex;align-items:center;gap:0.3rem">
+            Next
+            <span class="material-symbols-outlined" style="font-size:18px">chevron_right</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- ══════════════════════════════════════════════════
+           OVERLAY — SUBMIT CONFIRMATION
+      ══════════════════════════════════════════════════ -->
+      <div class="diag-confirm-overlay" id="diag-confirm-overlay" hidden>
+        <div class="diag-confirm-card">
+          <h3>Ready to submit?</h3>
+          <p>Review your progress below. You can still go back and change your answers.</p>
+
+          <div class="diag-summary-grid">
+            <div class="diag-summary-tile">
+              <strong id="conf-answered" style="color:#4ade80">0</strong>
+              <span>Answered</span>
+            </div>
+            <div class="diag-summary-tile">
+              <strong id="conf-flagged" style="color:var(--fs-yellow)">0</strong>
+              <span>Flagged</span>
+            </div>
+            <div class="diag-summary-tile">
+              <strong id="conf-unanswered" style="color:var(--fs-pink)">0</strong>
+              <span>Unanswered</span>
+            </div>
+          </div>
+
+          <div class="confirm-btns">
+            <button class="q-btn" id="btn-continue" style="flex:1;justify-content:center">Continue Reviewing</button>
+            <button class="cta-pill" id="btn-submit-now" style="flex:1;justify-content:center">Submit Now</button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="/js/app-shell.js"></script>
+  <script>
+  (async function () {
+    /* ── State ── */
+    let questions  = [];
+    let current    = 0;
+    const answers  = {};   // { id: choiceText }
+    const flagged  = new Set();
+    let totalSecs  = 45 * 60;
+    let timerInterval = null;
+
+    /* ── Fetch questions ── */
+    try {
+      const r = await fetch('/reviewee/api/diagnostic');
+      if (!r.ok) throw new Error('Failed to load');
+      const data = await r.json();
+      questions  = data.questions || [];
+      totalSecs  = data.duration  || 45 * 60;
+    } catch (e) {
+      console.error('Diagnostic load error:', e);
+    }
+
+    /* ── DOM refs ── */
+    const introEl      = document.getElementById('diag-intro');
+    const examEl       = document.getElementById('diag-exam');
+    const overlayEl    = document.getElementById('diag-confirm-overlay');
+    const timerEl      = document.getElementById('diag-timer');
+    const counterEl    = document.getElementById('q-counter');
+    const progressEl   = document.getElementById('diag-progress-fill');
+    const domainBadge  = document.getElementById('q-domain-badge');
+    const difficultyEl = document.getElementById('q-difficulty');
+    const flagBtn      = document.getElementById('btn-flag');
+    const flagLabel    = document.getElementById('flag-label');
+    const qText        = document.getElementById('q-text');
+    const qChoices     = document.getElementById('q-choices');
+    const navGrid      = document.getElementById('q-nav-grid');
+
+    /* ── Helpers ── */
+    function domainSlug(domain) {
+      if (!domain) return '';
+      const d = domain.toLowerCase();
+      if (d.includes('verbal'))    return 'verbal';
+      if (d.includes('numerical')) return 'numerical';
+      if (d.includes('clerical'))  return 'clerical';
+      return 'general';
+    }
+
+    function formatTime(secs) {
+      const m = String(Math.floor(secs / 60)).padStart(2, '0');
+      const s = String(secs % 60).padStart(2, '0');
+      return m + ':' + s;
+    }
+
+    function startTimer() {
+      timerEl.textContent = formatTime(totalSecs);
+      timerInterval = setInterval(() => {
+        totalSecs--;
+        timerEl.textContent = formatTime(totalSecs);
+        if (totalSecs <= 60)       timerEl.className = 'diag-timer danger';
+        else if (totalSecs <= 300) timerEl.className = 'diag-timer warning';
+        if (totalSecs <= 0) { clearInterval(timerInterval); submitDiagnostic(); }
+      }, 1000);
+    }
+
+    /* ── Render question ── */
+    function renderQuestion() {
+      if (!questions.length) return;
+      const q = questions[current];
+
+      counterEl.textContent = 'Question ' + (current + 1) + ' of ' + questions.length;
+      progressEl.style.width = ((current + 1) / questions.length * 100) + '%';
+
+      // Domain badge
+      const slug = domainSlug(q.domain);
+      domainBadge.textContent  = q.domain || '';
+      domainBadge.className    = 'q-domain-badge ' + slug;
+
+      // Difficulty badge
+      difficultyEl.textContent = q.difficulty || 'Easy';
+      difficultyEl.className   = 'q-difficulty' + (q.difficulty === 'Hard' ? ' hard' : '');
+
+      // Flag button
+      const isFlagged = flagged.has(q.id);
+      flagBtn.className  = 'q-flag-btn' + (isFlagged ? ' flagged' : '');
+      flagLabel.textContent = isFlagged ? 'Flagged' : 'Flag';
+
+      // Question text
+      qText.textContent = q.question;
+
+      // Choices
+      const letters = ['A', 'B', 'C', 'D'];
+      qChoices.innerHTML = (q.choices || []).map((c, i) =>
+        `<button class="q-choice-btn${answers[q.id] === c ? ' selected' : ''}" data-choice="${c}">
+           <span class="q-choice-letter">${letters[i]}</span>${c}
+         </button>`
+      ).join('');
+
+      qChoices.querySelectorAll('.q-choice-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          answers[q.id] = btn.dataset.choice;
+          renderQuestion();
+          updateNavGrid();
+        });
+      });
+
+      // Prev/Next buttons
+      document.getElementById('btn-prev').disabled = current === 0;
+      document.getElementById('btn-next').disabled = current === questions.length - 1;
+
+      updateNavGrid();
+    }
+
+    /* ── Nav grid ── */
+    function updateNavGrid() {
+      navGrid.innerHTML = questions.map((q, i) => {
+        let cls = 'q-nav-dot';
+        if (answers[q.id])   cls += ' answered';
+        if (flagged.has(q.id)) cls += ' flagged';
+        if (i === current)   cls += ' current';
+        return `<button class="${cls}" data-idx="${i}">${i + 1}</button>`;
+      }).join('');
+      navGrid.querySelectorAll('.q-nav-dot').forEach(btn => {
+        btn.addEventListener('click', () => { current = +btn.dataset.idx; renderQuestion(); });
+      });
+    }
+
+    /* ── Open confirm overlay ── */
+    function openConfirm() {
+      const answered   = Object.keys(answers).length;
+      const flaggedCnt = flagged.size;
+      const unanswered = questions.length - answered;
+
+      document.getElementById('conf-answered').textContent   = answered;
+      document.getElementById('conf-flagged').textContent    = flaggedCnt;
+      document.getElementById('conf-unanswered').textContent = unanswered;
+
+      overlayEl.hidden = false;
+    }
+
+    /* ── Submit diagnostic ── */
+    async function submitDiagnostic() {
+      clearInterval(timerInterval);
+      overlayEl.hidden = true;
+
+      // Build answers payload: { id: choice, ... }
+      const payload = {};
+      questions.forEach(q => {
+        if (answers[q.id] !== undefined) payload[q.id] = answers[q.id];
+      });
+
+      try {
+        const r = await fetch('/reviewee/api/diagnostic/submit', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ answers: payload }),
+        });
+        if (!r.ok) throw new Error('Submit failed');
+        const result = await r.json();
+        sessionStorage.setItem('diagResult', JSON.stringify(result));
+        window.location.href = '/reviewee/diagnostic-result';
+      } catch (e) {
+        console.error('Submit error:', e);
+        alert('Something went wrong while submitting. Please try again.');
+      }
+    }
+
+    /* ── Event listeners ── */
+    document.getElementById('btn-start').addEventListener('click', () => {
+      if (!questions.length) { alert('Could not load questions. Please refresh.'); return; }
+      introEl.hidden = true;
+      examEl.hidden  = false;
+      renderQuestion();
+      startTimer();
+    });
+
+    document.getElementById('btn-prev').addEventListener('click', () => {
+      if (current > 0) { current--; renderQuestion(); }
+    });
+
+    document.getElementById('btn-next').addEventListener('click', () => {
+      if (current < questions.length - 1) { current++; renderQuestion(); }
+    });
+
+    flagBtn.addEventListener('click', () => {
+      const qId = questions[current].id;
+      flagged.has(qId) ? flagged.delete(qId) : flagged.add(qId);
+      renderQuestion();
+    });
+
+    document.getElementById('btn-open-confirm').addEventListener('click', openConfirm);
+    document.getElementById('btn-continue').addEventListener('click', () => { overlayEl.hidden = true; });
+    document.getElementById('btn-submit-now').addEventListener('click', submitDiagnostic);
+  })();
+  </script>
+</body>
+</html>

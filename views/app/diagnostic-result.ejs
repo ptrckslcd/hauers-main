@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diagnostic Results | Hauers</title>
+  <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <script src="/js/theme-toggle.js"></script>
+</head>
+<body data-role="reviewee">
+  <!-- SVG gradient defs for score ring -->
+  <svg width="0" height="0" style="position:absolute">
+    <defs>
+      <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%"   stop-color="#FFD633"/>
+        <stop offset="50%"  stop-color="#FF9933"/>
+        <stop offset="100%" stop-color="#FF3366"/>
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <div id="navbar-placeholder"><%- include('../partials/navbar') %></div>
+
+  <div class="app-shell sidebar-collapsed">
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div id="sidebar-placeholder"><%- include('../partials/sidebar') %></div>
+    <main class="page-content">
+
+      <!-- ── Page header ── -->
+      <header class="page-header">
+        <div>
+          <h1 class="page-title">Diagnostic Results</h1>
+          <p class="page-subtitle">
+            <span class="badge" id="result-grade-pill">—</span>
+            &nbsp; CSE 2026 Assessment
+          </p>
+        </div>
+        <a href="/reviewee/diagnostic" class="cta-pill">
+          <span class="material-symbols-outlined" style="font-size:18px;margin-right:0.4rem">refresh</span>
+          Retake Diagnostic
+        </a>
+      </header>
+
+      <!-- ── Row 1: Score ring · Grade · Quick stats ── -->
+      <div class="dash-grid">
+
+        <!-- Score ring -->
+        <div class="dash-card" style="align-items:center">
+          <span class="card-label">Overall Score</span>
+          <div class="result-score-ring-wrap">
+            <svg viewBox="0 0 160 160" class="ring-svg">
+              <circle cx="80" cy="80" r="62" class="ring-track-lg"/>
+              <circle cx="80" cy="80" r="62" class="ring-prog-lg" id="result-ring-prog"/>
+            </svg>
+            <div class="ring-center">
+              <div class="ring-value-row">
+                <span class="ring-pct" id="result-score" style="font-size:2.6rem">—</span>
+                <span class="ring-unit">%</span>
+              </div>
+              <span class="ring-note" id="result-correct">— / 15 correct</span>
+            </div>
+          </div>
+          <p class="card-footnote" style="text-align:center" id="result-date">Just completed</p>
+        </div>
+
+        <!-- Performance grade -->
+        <div class="dash-card">
+          <span class="card-label">Performance Grade</span>
+          <span class="grade-badge needs-work" id="grade-badge" style="margin:0.35rem 0">—</span>
+          <p class="grade-desc" id="grade-desc">Calculating your performance…</p>
+          <div class="score-gap-bar-wrap" style="margin-top:auto">
+            <div class="score-gap-bar">
+              <div class="score-gap-fill" id="grade-scale-fill" style="width:0%"></div>
+              <div class="score-gap-marker"></div>
+            </div>
+            <div class="score-gap-labels">
+              <span>0</span><span>Pass: 80%</span><span>100</span>
+            </div>
+          </div>
+          <p class="card-footnote" id="grade-footnote">—</p>
+        </div>
+
+        <!-- Quick stats -->
+        <div class="dash-card">
+          <span class="card-label">Quick Stats</span>
+          <div class="result-stats-list">
+            <div class="result-stat-row">
+              <span>Total Questions</span>
+              <strong id="stat-total">15</strong>
+            </div>
+            <div class="result-stat-row">
+              <span>Correct Answers</span>
+              <strong id="stat-correct" style="color:#4ade80">—</strong>
+            </div>
+            <div class="result-stat-row">
+              <span>Incorrect Answers</span>
+              <strong id="stat-incorrect" style="color:var(--fs-pink)">—</strong>
+            </div>
+            <div class="result-stat-row">
+              <span>Strongest Domain</span>
+              <strong id="stat-strongest">—</strong>
+            </div>
+            <div class="result-stat-row">
+              <span>Weakest Domain</span>
+              <strong id="stat-weakest" style="color:var(--fs-pink)">—</strong>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── Domain results (3-col grid) ── -->
+      <div class="domain-result-grid" id="domain-result-grid"></div>
+
+      <!-- ── Row 3: Recommendations · Next steps ── -->
+      <div class="dash-grid dash-grid--2col">
+
+        <!-- Recommendations -->
+        <div class="dash-card">
+          <span class="card-label">Weak Areas</span>
+          <div class="weak-tags" id="result-weak-tags" style="margin-bottom:0.85rem">
+            <span class="weak-tag">—</span>
+          </div>
+          <span class="card-label">Recommended Focus</span>
+          <div class="focus-block" style="margin-top:0.35rem">
+            <p class="focus-text" id="result-recommendation">Loading recommendations…</p>
+          </div>
+          <div class="result-tips" id="result-tips"></div>
+        </div>
+
+        <!-- Next steps -->
+        <div class="dash-card">
+          <span class="card-label">Next Steps</span>
+          <div class="quick-actions">
+            <a href="/reviewee/study-plan" class="qa-btn">
+              <span class="qa-icon" style="background:rgba(45,212,191,0.1);color:#2dd4bf">
+                <span class="material-symbols-outlined">event_note</span>
+              </span>
+              <span class="qa-label">View Personalised Study Plan</span>
+              <span class="material-symbols-outlined qa-arrow">chevron_right</span>
+            </a>
+            <a href="/reviewee/quiz" class="qa-btn">
+              <span class="qa-icon" style="background:rgba(255,153,51,0.1);color:var(--fs-orange)">
+                <span class="material-symbols-outlined">quiz</span>
+              </span>
+              <span class="qa-label">Practice Weak Domains</span>
+              <span class="material-symbols-outlined qa-arrow">chevron_right</span>
+            </a>
+            <a href="/reviewee/materials" class="qa-btn">
+              <span class="qa-icon" style="background:rgba(129,140,248,0.1);color:#818cf8">
+                <span class="material-symbols-outlined">import_contacts</span>
+              </span>
+              <span class="qa-label">Review Study Materials</span>
+              <span class="material-symbols-outlined qa-arrow">chevron_right</span>
+            </a>
+            <a href="/reviewee/diagnostic" class="qa-btn">
+              <span class="qa-icon" style="background:rgba(167,139,250,0.1);color:#a78bfa">
+                <span class="material-symbols-outlined">refresh</span>
+              </span>
+              <span class="qa-label">Retake Diagnostic</span>
+              <span class="material-symbols-outlined qa-arrow">chevron_right</span>
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- CTA Banner -->
+      <div class="dash-cta">
+        <div class="dash-cta-text">
+          <h3>Ready to start your structured review?</h3>
+          <p>Head to your dashboard to view your study plan, track progress, and practice the domains where you need focus. Consistent effort is the fastest path back to passing.</p>
+        </div>
+        <a href="/reviewee/dashboard" class="cta-pill">Go to Dashboard</a>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="/js/app-shell.js"></script>
+  <script>
+  (async function () {
+    let result = null;
+
+    // 1) Try sessionStorage (set right after submitting the diagnostic)
+    const stored = sessionStorage.getItem('diagResult');
+    if (stored) {
+      try { result = JSON.parse(stored); } catch (_) {}
+    }
+
+    // 2) Fallback: dashboard API mock diagnostic data
+    if (!result) {
+      try {
+        const r = await fetch('/reviewee/api/dashboard');
+        if (r.ok) {
+          const data = await r.json();
+          if (data.diagnostic) {
+            const s = data.diagnostic.latestScore || 0;
+            result = {
+              overallScore: s,
+              correct:      Math.round(s / 100 * 15),
+              total:        15,
+              domainScores: (data.diagnostic.domainScores || []).map(d => ({
+                domain:  d.domain,
+                score:   d.score,
+                correct: Math.round(d.score / 100 * 5),
+                total:   5,
+              })),
+              weakDomains: data.weakDomains || [],
+              grade: s >= 90 ? 'Excellent'
+                   : s >= 80 ? 'Above Average'
+                   : s >= 70 ? 'Average'
+                   : 'Needs Improvement',
+            };
+          }
+        }
+      } catch (_) {}
+    }
+
+    if (!result) return;
+
+    const score = result.overallScore || 0;
+    const set = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+
+    // Score ring (r=62, circumference ≈ 389.56)
+    const circ = 2 * Math.PI * 62;
+    const prog = document.getElementById('result-ring-prog');
+    if (prog) {
+      prog.style.strokeDasharray  = circ;
+      prog.style.strokeDashoffset = circ;
+      setTimeout(() => {
+        prog.style.transition       = 'stroke-dashoffset 1.4s cubic-bezier(0.4,0,0.2,1)';
+        prog.style.strokeDashoffset = circ * (1 - score / 100);
+      }, 200);
+    }
+
+    set('result-score',   score);
+    set('result-correct', (result.correct || 0) + ' / ' + (result.total || 15) + ' correct');
+
+    // Grade badge
+    const gradeEl = document.getElementById('grade-badge');
+    const gradeMap = {
+      'Excellent':         { cls: 'excellent',  label: 'Excellent' },
+      'Above Average':     { cls: 'above-avg',  label: 'Above Average' },
+      'Average':           { cls: 'average',    label: 'Average' },
+      'Needs Improvement': { cls: 'needs-work', label: 'Needs Improvement' },
+    };
+    const gm = gradeMap[result.grade] || gradeMap['Needs Improvement'];
+    if (gradeEl) { gradeEl.textContent = gm.label; gradeEl.className = 'grade-badge ' + gm.cls; }
+
+    const pilEl = document.getElementById('result-grade-pill');
+    if (pilEl) { pilEl.textContent = gm.label; }
+
+    const gradeDescs = {
+      'Excellent':         'Outstanding! You are well above the CSE passing threshold.',
+      'Above Average':     'Great work! You have met the passing score requirement.',
+      'Average':           'You are close to passing. Consistent practice will close the gap.',
+      'Needs Improvement': 'Keep going — targeted practice will bring you up to passing score.',
+    };
+    set('grade-desc', gradeDescs[result.grade] || '');
+
+    // Grade scale bar (pass line at 80%)
+    const scaleEl = document.getElementById('grade-scale-fill');
+    if (scaleEl) setTimeout(() => { scaleEl.style.width = score + '%'; }, 350);
+
+    const gap = 80 - score;
+    set('grade-footnote', gap > 0
+      ? gap + ' pts below the passing score of 80%'
+      : 'Passing score reached \uD83C\uDF89');
+
+    // Quick stats
+    set('stat-correct',   result.correct || 0);
+    set('stat-incorrect', (result.total || 15) - (result.correct || 0));
+    if (result.domainScores && result.domainScores.length) {
+      const sorted = [...result.domainScores].sort((a, b) => b.score - a.score);
+      set('stat-strongest', sorted[0].domain.replace(' Ability', ''));
+      set('stat-weakest',   sorted[sorted.length - 1].domain.replace(' Ability', ''));
+    }
+
+    // Domain result cards
+    const domainGrid = document.getElementById('domain-result-grid');
+    const slugMap = {
+      'Verbal Ability':    'verbal',
+      'Numerical Ability': 'numerical',
+      'Clerical Ability':  'clerical',
+    };
+    if (domainGrid && result.domainScores) {
+      domainGrid.innerHTML = result.domainScores.map(d => {
+        const slug       = slugMap[d.domain] || 'general';
+        const scoreClass = d.score >= 80 ? 'good' : d.score >= 60 ? 'warn' : 'poor';
+        const tier       = d.score >= 80 ? 'Proficient' : d.score >= 60 ? 'Developing' : 'Needs Work';
+        const warnCls    = d.score < 70  ? ' warn' : '';
+        return `
+          <div class="domain-result-card">
+            <div class="q-meta" style="margin-bottom:0.2rem">
+              <span class="q-domain-badge ${slug}">${d.domain}</span>
+              <span class="q-difficulty">${tier}</span>
+            </div>
+            <span class="domain-score-big ${scoreClass}">${d.score}<span style="font-size:1rem;font-weight:500;color:var(--text-subdued)">%</span></span>
+            <span class="domain-correct-ratio">${d.correct} of ${d.total} questions correct</span>
+            <div class="msc-bar-track">
+              <div class="msc-bar-fill${warnCls}" data-w="${d.score}" style="width:0%"></div>
+            </div>
+          </div>`;
+      }).join('');
+      setTimeout(() => {
+        domainGrid.querySelectorAll('.msc-bar-fill').forEach(b => {
+          b.style.width = b.dataset.w + '%';
+        });
+      }, 400);
+    }
+
+    // Weak tags
+    const weakTagsEl = document.getElementById('result-weak-tags');
+    if (weakTagsEl) {
+      const weak = (result.weakDomains && result.weakDomains.length)
+        ? result.weakDomains
+        : (result.domainScores || []).filter(d => d.score < 70).map(d => d.domain);
+      weakTagsEl.innerHTML = weak.length
+        ? weak.map(d => `<span class="weak-tag">${d}</span>`).join('')
+        : '<span style="font-size:0.82rem;color:var(--text-subdued)">No weak areas — great job!</span>';
+    }
+
+    // Recommendation
+    const recEl = document.getElementById('result-recommendation');
+    if (recEl) {
+      const weak = (result.weakDomains && result.weakDomains.length)
+        ? result.weakDomains
+        : (result.domainScores || []).filter(d => d.score < 70).map(d => d.domain);
+      recEl.textContent = weak.length
+        ? 'Focus on ' + weak.join(' and ') + ' to close the gap to passing score.'
+        : 'Excellent performance! Maintain your edge with daily practice.';
+    }
+
+    // Per-domain tips for weak areas
+    const domainTips = {
+      'Verbal Ability':    'Practice reading comprehension, vocabulary drills, and grammar exercises daily.',
+      'Numerical Ability': 'Drill fractions, percentages, ratios, and basic algebra problems regularly.',
+      'Clerical Ability':  'Practice alphabetical filing, proofreading, and clerical data verification.',
+    };
+  const tipsEl = document.getElementById('result-tips');
+    if (tipsEl && result.domainScores) {
+      const weakDoms = result.domainScores.filter(d => d.score < 80);
+      tipsEl.innerHTML = weakDoms.map(d =>
+        `<div class="result-tip">
+           <div class="result-tip-icon">
+             <span class="material-symbols-outlined" style="font-size:14px;font-weight:bold">check</span>
+           </div>
+           <span>${domainTips[d.domain] || 'Review study materials for this domain.'}</span>
+         </div>`
+      ).join('');
+    }
+  })();
+  </script>
+</body>
+</html>

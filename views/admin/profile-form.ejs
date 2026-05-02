@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile Form | Admin | Hauers</title>
+  <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <script src="/js/theme-toggle.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+</head>
+<body data-role="admin">
+
+  <div id="navbar-placeholder"><%- include('../partials/navbar') %></div>
+
+  <div class="app-shell sidebar-collapsed">
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div id="sidebar-placeholder"><%- include('../partials/admin-sidebar') %></div>
+
+    <main class="page-content home-page">
+
+      <header class="page-header">
+        <div>
+          <h1 class="page-title">Profile Form</h1>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="home-btn home-btn--ghost">
+            <span class="material-symbols-outlined" style="margin-right: 0.5rem; font-size: 18px;">download</span>
+            Export Responses
+          </button>
+          <button class="home-btn home-btn--primary">Publish Changes</button>
+        </div>
+      </header>
+
+      <!-- ── Builder Section ── -->
+      <h2 style="font-size: 1.25rem; margin-bottom: 1rem; color: var(--text-main);">Edit Form</h2>
+      <div class="dash-grid dash-grid--split21" style="margin-bottom: 3rem;">
+        <!-- Form Builder Canvas -->
+        <div class="dash-card" style="min-height: 500px;">
+          <span class="card-label">Form Canvas</span>
+          <p class="card-sub" style="margin-bottom: 2rem;">Drag and reorder fields here. Think Google Forms interface.</p>
+          <div style="padding: 2rem; border: 2px dashed var(--border-default); border-radius: 8px; text-align: center; color: var(--text-subdued);">
+            <span class="material-symbols-outlined" style="font-size: 48px; opacity: 0.5;">drag_indicator</span>
+            <p style="margin-top: 1rem;">Form fields will be displayed here.</p>
+            <p style="font-size: 0.8rem; margin-top: 0.5rem;">(e.g., Multiple Choice, Dropdown, Rating Scale, Date Picker, Text)</p>
+          </div>
+        </div>
+
+        <!-- Field Settings / Tools -->
+        <div class="dash-card">
+          <span class="card-label">Field Settings</span>
+          <p class="card-sub">Select a field to edit its properties.</p>
+          
+          <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+            <button class="home-btn home-btn--ghost" style="width: 100%; justify-content: flex-start;">
+              <span class="material-symbols-outlined" style="margin-right: 0.5rem;">add_circle</span>
+              Add New Question
+            </button>
+            
+            <hr style="border: none; border-top: 1px solid var(--border-subdued); margin: 0.5rem 0;">
+            
+            <div>
+              <label class="card-label" style="font-size: 0.8rem;">Field Type</label>
+              <select class="msc-select" style="width: 100%; margin-top: 0.5rem; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border-default); background: var(--card-bg); color: var(--text-main);">
+                <option>Short Text</option>
+                <option>Multiple Choice</option>
+                <option>Dropdown</option>
+                <option>Rating Scale</option>
+                <option>Date Picker</option>
+              </select>
+            </div>
+            
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+              <input type="checkbox">
+              <span style="font-size: 0.9rem; color: var(--text-main);">Required Field</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Responses Section ── -->
+      <h2 style="font-size: 1.25rem; margin-bottom: 1rem; color: var(--text-main);">Form Responses</h2>
+      <div class="dash-grid dash-grid--split21">
+        <!-- Main Charts -->
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+          
+          <div class="dash-card">
+            <span class="card-label">Exam Level Distribution</span>
+            <p class="card-sub">Pie chart of selected target examination levels.</p>
+            <div style="height: 250px; margin-top: 1.5rem; display: flex; align-items: center; justify-content: center; border: 1px dashed var(--border-subdued); border-radius: 8px;">
+              <span style="color: var(--text-muted);">[ Pie Chart Placeholder ]</span>
+            </div>
+          </div>
+
+          <div class="dash-card">
+            <span class="card-label">Self-Rated Domain Difficulty</span>
+            <p class="card-sub">Bar chart showing which domains reviewees feel least confident about before pretest.</p>
+            <div style="height: 300px; margin-top: 1.5rem; display: flex; align-items: center; justify-content: center; border: 1px dashed var(--border-subdued); border-radius: 8px;">
+              <span style="color: var(--text-muted);">[ Bar Chart Placeholder ]</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Meta / Text Responses -->
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+          
+          <div class="dash-card">
+            <span class="card-label">Submission Stats</span>
+            <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+              <div style="display: flex; justify-content: space-between; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-subdued);">
+                <span style="color: var(--text-subdued);">Total Responses</span>
+                <strong style="color: var(--text-main);">142</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-subdued);">
+                <span style="color: var(--text-subdued);">Completion Rate</span>
+                <strong style="color: var(--text-main);">100%</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-subdued);">
+                <span style="color: var(--text-subdued);">Latest Response</span>
+                <strong style="color: var(--text-main);">Today, 10:45 AM</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="dash-card">
+            <span class="card-label">Recent Text Feedback</span>
+            <p class="card-sub">Latest qualitative answers.</p>
+            <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.75rem;">
+              <div style="padding: 0.75rem; background: var(--bg-base); border-radius: 6px; font-size: 0.85rem; color: var(--text-main);">
+                "I struggle most with the Philippine Constitution articles."
+              </div>
+              <div style="padding: 0.75rem; background: var(--bg-base); border-radius: 6px; font-size: 0.85rem; color: var(--text-main);">
+                "Need more examples on numerical reasoning."
+              </div>
+              <a href="#" style="font-size: 0.8rem; color: var(--fs-blue); margin-top: 0.5rem;">View all text responses →</a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="/js/admin-shell.js"></script>
+</body>
+</html>

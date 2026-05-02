@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reviewees | Hauers Admin</title>
+  <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <script src="/js/theme-toggle.js"></script>
+</head>
+<body data-role="admin">
+
+  <div id="navbar-placeholder"><%- include('../partials/navbar') %></div>
+
+  <div class="app-shell sidebar-collapsed">
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div id="sidebar-placeholder"><%- include('../partials/admin-sidebar') %></div>
+
+    <main class="page-content home-page">
+
+      <!-- ── Header ── -->
+      <header class="home-header">
+        <div class="home-greet-block">
+          <h1 class="home-greet-name" style="font-size: 1.6rem;">Reviewees</h1>
+        </div>
+      </header>
+
+      <!-- ── Main grid ── -->
+      <div class="home-main-grid">
+
+        <!-- ── Quick Stats ── -->
+        <div class="home-stats-row">
+
+          <div class="dash-card home-stat-card">
+            <div class="home-stat-ico-wrap home-stat-ico-wrap--blue" aria-hidden="true">
+              <span class="material-symbols-outlined">group</span>
+            </div>
+            <div class="home-stat-copy">
+              <span class="home-stat-value" id="kpi-total">—</span>
+              <span class="home-stat-label">Total registered</span>
+            </div>
+          </div>
+
+          <div class="dash-card home-stat-card">
+            <div class="home-stat-ico-wrap home-stat-ico-wrap--green" aria-hidden="true">
+              <span class="material-symbols-outlined">verified</span>
+            </div>
+            <div class="home-stat-copy">
+              <span class="home-stat-value" id="kpi-verified">—</span>
+              <span class="home-stat-label">Verified</span>
+            </div>
+          </div>
+
+          <div class="dash-card home-stat-card">
+            <div class="home-stat-ico-wrap home-stat-ico-wrap--amber" aria-hidden="true">
+              <span class="material-symbols-outlined">workspace_premium</span>
+            </div>
+            <div class="home-stat-copy">
+              <span class="home-stat-value" id="kpi-professional">—</span>
+              <span class="home-stat-label">Professional</span>
+            </div>
+          </div>
+
+          <div class="dash-card home-stat-card">
+            <div class="home-stat-ico-wrap home-stat-ico-wrap--fire" aria-hidden="true">
+              <span class="material-symbols-outlined">school</span>
+            </div>
+            <div class="home-stat-copy">
+              <span class="home-stat-value" id="kpi-subpro">—</span>
+              <span class="home-stat-label">Sub-professional</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ── Toolbar (Search + Dropdowns) ── -->
+        <div class="dash-card" style="padding: 0.85rem 1.25rem;">
+          <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+
+            <!-- Search -->
+            <div style="position: relative; flex: 1; min-width: 240px;">
+              <span class="material-symbols-outlined" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 20px; color: var(--text-muted); pointer-events: none;">search</span>
+              <input
+                type="search"
+                id="user-search"
+                placeholder="Search reviewees by name or email…"
+                class="nav-search-input"
+                style="width: 100%; padding-left: 40px; height: 40px; font-size: 0.88rem; border-radius: 10px;"
+                autocomplete="off"
+              />
+            </div>
+
+            <!-- Batch Dropdown -->
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span class="home-stat-label">Batch</span>
+              <select id="filter-batch" class="msc-select" style="height: 40px; border-radius: 10px; padding: 0 1rem; min-width: 130px;">
+                <option value="all">All Batches</option>
+                <option value="2026-latest">Batch 2026</option>
+                <option value="2025">Batch 2025</option>
+              </select>
+            </div>
+
+            <!-- Level Dropdown -->
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span class="home-stat-label">Level</span>
+              <select id="filter-level" class="msc-select" style="height: 40px; border-radius: 10px; padding: 0 1rem; min-width: 140px;">
+                <option value="all">All Levels</option>
+                <option value="Professional">Professional</option>
+                <option value="Sub-professional">Sub-professional</option>
+              </select>
+            </div>
+
+            <!-- Status Dropdown -->
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span class="home-stat-label">Status</span>
+              <select id="filter-status" class="msc-select" style="height: 40px; border-radius: 10px; padding: 0 1rem; min-width: 120px;">
+                <option value="all">All Status</option>
+                <option value="verified">Verified</option>
+                <option value="pending">Pending</option>
+              </select>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ── Users Table ── -->
+        <div class="admin-table-wrap">
+          <div style="overflow-x: auto;">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Reviewee</th>
+                  <th>Exam Level</th>
+                  <th>Pretest</th>
+                  <th>Joined</th>
+                  <th>Last Active</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="users-tbody">
+                <tr><td colspan="7" style="text-align:center;padding:3rem;color:var(--text-subdued)">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+
+  <script src="/js/admin-shell.js"></script>
+  <script>
+  (async () => {
+
+    /* ── Fetch users ── */
+    let allUsers = [];
+    try {
+      const r = await fetch('/admin/api/users');
+      if (!r.ok) return;
+      const data = await r.json();
+      allUsers = data.users || [];
+    } catch (_) { return; }
+
+    /* ── KPI tiles ── */
+    const setKpi = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+    setKpi('kpi-total',        allUsers.length);
+    setKpi('kpi-verified',     allUsers.filter(u => u.isVerified).length);
+    setKpi('kpi-professional', allUsers.filter(u => u.examLevel === 'Professional').length);
+    setKpi('kpi-subpro',       allUsers.filter(u => u.examLevel === 'Sub-professional').length);
+
+    /* ── Helpers ── */
+    function initials(u)  { return (u.firstName[0] + u.lastName[0]).toUpperCase(); }
+    function fmtDate(d)   { return d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'; }
+
+    function relativeTime(d) {
+      if (!d) return 'Never';
+      const diff = Math.floor((new Date() - new Date(d)) / (1000 * 60 * 60 * 24));
+      if (diff === 0) return 'Today';
+      if (diff === 1) return 'Yesterday';
+      if (diff < 7) return diff + 'd ago';
+      return fmtDate(d);
+    }
+
+    /* ── Render ── */
+    const tbody    = document.getElementById('users-tbody');
+    function renderUsers(users) {
+
+      if (!users.length) {
+        tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="empty-state-icon">🔍</div><p>No reviewees match your filters.</p></div></td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = users.map(u => {
+        const badge = u.isVerified
+          ? `<span class="status-badge status-badge--verified">Verified</span>`
+          : `<span class="status-badge status-badge--pending">Pending</span>`;
+
+        const pretestBadge = u.readinessScore != null
+          ? `<span class="status-badge status-badge--verified">Done</span>`
+          : `<span class="status-badge status-badge--pending">Pending</span>`;
+
+        return `
+          <tr onclick="location.href='/admin/reviewees/${u.id}'" style="cursor:pointer">
+            <td>
+              <div class="tbl-name-cell">
+                <span class="tbl-avatar">${initials(u)}</span>
+                <div>
+                  <span class="tbl-name">${u.firstName} ${u.lastName}</span>
+                  <span class="tbl-email">${u.email}</span>
+                </div>
+              </div>
+            </td>
+            <td><span style="font-size: 0.82rem;">${u.examLevel || '—'}</span></td>
+            <td>${pretestBadge}</td>
+            <td style="font-size:0.82rem; color:var(--text-main)">${fmtDate(u.joined_at || new Date())}</td>
+            <td style="font-size:0.82rem; color:var(--text-subdued)">${relativeTime(u.lastActive)}</td>
+            <td>${badge}</td>
+            <td><a class="tbl-view-btn" href="/admin/reviewees/${u.id}" onclick="event.stopPropagation()">View →</a></td>
+          </tr>`;
+      }).join('');
+    }
+
+    /* ── Filter state ── */
+    let activeBatch  = 'all';
+    let activeLevel  = 'all';
+    let activeStatus = 'all';
+    let searchQuery  = '';
+
+    function applyFilters() {
+      return allUsers.filter(u => {
+        const byBatch  = activeBatch === 'all' || (u.batch === activeBatch);
+        const byLevel  = activeLevel  === 'all' || u.examLevel  === activeLevel;
+        const byStatus = activeStatus === 'all'
+          || (activeStatus === 'verified' && u.isVerified)
+          || (activeStatus === 'pending'  && !u.isVerified);
+
+        const q        = searchQuery.trim().toLowerCase();
+        const bySearch = !q
+          || `${u.firstName} ${u.lastName}`.toLowerCase().includes(q)
+          || u.email.toLowerCase().includes(q);
+        return byBatch && byLevel && byStatus && bySearch;
+      });
+    }
+
+    /* ── Initial render ── */
+    renderUsers(allUsers);
+
+    /* ── Dropdown Filters ── */
+    const batchSelect  = document.getElementById('filter-batch');
+    const levelSelect  = document.getElementById('filter-level');
+    const statusSelect = document.getElementById('filter-status');
+
+    if (batchSelect) {
+      batchSelect.addEventListener('change', () => {
+        activeBatch = batchSelect.value;
+        renderUsers(applyFilters());
+      });
+    }
+
+    if (levelSelect) {
+      levelSelect.addEventListener('change', () => {
+        activeLevel = levelSelect.value;
+        renderUsers(applyFilters());
+      });
+    }
+
+    if (statusSelect) {
+      statusSelect.addEventListener('change', () => {
+        activeStatus = statusSelect.value;
+        renderUsers(applyFilters());
+      });
+    }
+
+    /* ── Search input ── */
+    const searchEl = document.getElementById('user-search');
+    if (searchEl) {
+      let debounce;
+      searchEl.addEventListener('input', () => {
+        clearTimeout(debounce);
+        debounce = setTimeout(() => {
+          searchQuery = searchEl.value;
+          renderUsers(applyFilters());
+        }, 220);
+      });
+    }
+
+  })();
+  </script>
+
+</body>
+</html>

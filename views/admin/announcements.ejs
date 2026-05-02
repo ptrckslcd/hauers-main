@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Announcements | Hauers Admin</title>
+  <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <script src="/js/theme-toggle.js"></script>
+</head>
+<body data-role="admin">
+
+  <div id="navbar-placeholder"><%- include('../partials/navbar') %></div>
+
+  <div class="app-shell sidebar-collapsed">
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div id="sidebar-placeholder"><%- include('../partials/admin-sidebar') %></div>
+
+    <main class="page-content">
+
+      <!-- ── Page header ── -->
+      <header class="page-header">
+        <div>
+          <h1 class="page-title">Announcements</h1>
+
+        </div>
+        <button class="cta-pill" id="an-add-btn" type="button">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:0.45rem;flex-shrink:0">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          New Announcement
+        </button>
+      </header>
+
+      <div class="dash-grid dash-grid--split21">
+        
+        <!-- Live Announcements -->
+        <div class="dash-card">
+          <span class="card-label">Active Broadcasts</span>
+          <div id="an-list" style="margin-top:1rem; display:flex; flex-direction:column; gap:1rem">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- Stats/Tips -->
+        <div class="dash-card">
+          <span class="card-label">Broadcast Guidelines</span>
+          <p class="card-sub" style="margin-top:0.5rem">Announcements appear at the top of the reviewee dashboard.</p>
+          <ul style="font-size:0.82rem; color:var(--text-subdued); margin-top:1rem; display:flex; flex-direction:column; gap:0.5rem; padding-left:1rem">
+            <li>Keep titles short and punchy.</li>
+            <li>Use "Urgent" for exam date resets or system maintenance.</li>
+            <li>Action links should start with <code>/reviewee/</code> or <code>https://</code>.</li>
+          </ul>
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       NEW ANNOUNCEMENT MODAL
+  ══════════════════════════════════════════════════════ -->
+  <div class="ep-overlay" id="an-overlay" hidden>
+    <div class="ep-modal" style="max-width:500px;width:100%">
+      <div class="ep-modal-header">
+        <h3 class="ep-modal-title">Broadcast Announcement</h3>
+        <button class="ep-close" id="an-close" type="button">×</button>
+      </div>
+      <form id="an-form" class="ep-form">
+        <div class="ep-field">
+          <label class="ep-label">Announcement Title <span style="color:var(--fs-pink)">*</span></label>
+          <input type="text" id="an-title" class="ep-input" placeholder="e.g. Schedule Update for April Exam" required>
+        </div>
+        
+        <div class="ep-field">
+          <label class="ep-label">Message Content <span style="color:var(--fs-pink)">*</span></label>
+          <textarea id="an-content" class="ep-input" rows="3" placeholder="Write your message here..." required></textarea>
+        </div>
+
+        <div class="ep-form-row">
+          <div class="ep-field">
+            <label class="ep-label">Action Link (Optional)</label>
+            <input type="text" id="an-link" class="ep-input" placeholder="e.g. /reviewee/study-plan">
+          </div>
+          <div class="ep-field">
+            <label class="ep-label">Priority</label>
+            <select id="an-priority" class="ep-input ep-select">
+              <option value="normal">Normal Information</option>
+              <option value="urgent">Urgent Alert</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="ep-form-actions">
+          <button type="button" class="ep-btn-cancel" id="an-cancel">Cancel</button>
+          <button type="submit" class="cta-pill" id="an-submit">Post to Dashboard</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/js/admin-shell.js"></script>
+  <script>
+    (async () => {
+      // Mock storage for simulation
+      const STORAGE_KEY = 'hauers_broadcasts';
+      let broadcasts = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[{"id":1,"title":"Civil Service Exam Update","content":"Please check the updated pointers for the Numerical Ability domain in your study plan.","link":"/reviewee/study-plan","priority":"normal","at":"2026-03-15T10:00:00Z"}]');
+
+      const listEl = document.getElementById('an-list');
+      const overlay = document.getElementById('an-overlay');
+      const form = document.getElementById('an-form');
+
+      function saveAndRender() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(broadcasts));
+        render();
+      }
+
+      function render() {
+        if (!broadcasts.length) {
+          listEl.innerHTML = '<div style="text-align:center; padding:2rem; color:var(--text-subdued); font-size:0.85rem">No active announcements.</div>';
+          return;
+        }
+        listEl.innerHTML = broadcasts.map(b => `
+          <div class="dash-card" style="padding:1rem; border-color:${b.priority === 'urgent' ? 'rgba(239,68,68,0.3)' : 'var(--border-subdued)'}">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.5rem">
+              <span class="status-badge ${b.priority === 'urgent' ? 'status-badge--pending' : 'status-badge--verified'}" style="font-size:0.65rem">
+                ${b.priority.toUpperCase()}
+              </span>
+              <button onclick="deleteBroadcast(${b.id})" style="background:none; border:none; color:var(--text-subdued); cursor:pointer">
+                <span class="material-symbols-outlined" style="font-size:16px">delete</span>
+              </button>
+            </div>
+            <div style="font-weight:700; font-size:0.9rem; color:var(--text-main); margin-bottom:0.25rem">${b.title}</div>
+            <div style="font-size:0.82rem; color:var(--text-subdued); line-height:1.4">${b.content}</div>
+            ${b.link ? `<div style="margin-top:0.75rem; font-size:0.75rem; font-weight:600; color:var(--fs-orange)">Link: ${b.link}</div>` : ''}
+          </div>
+        `).join('');
+      }
+
+      window.deleteBroadcast = (id) => {
+        broadcasts = broadcasts.filter(b => b.id !== id);
+        saveAndRender();
+      };
+
+      document.getElementById('an-add-btn').onclick = () => overlay.hidden = false;
+      document.getElementById('an-close').onclick = () => overlay.hidden = true;
+      document.getElementById('an-cancel').onclick = () => overlay.hidden = true;
+
+      form.onsubmit = e => {
+        e.preventDefault();
+        const newB = {
+          id: Date.now(),
+          title: document.getElementById('an-title').value,
+          content: document.getElementById('an-content').value,
+          link: document.getElementById('an-link').value,
+          priority: document.getElementById('an-priority').value,
+          at: new Date().toISOString()
+        };
+        broadcasts.unshift(newB);
+        saveAndRender();
+        overlay.hidden = true;
+        form.reset();
+      };
+
+      render();
+    })();
+  </script>
+</body>
+</html>

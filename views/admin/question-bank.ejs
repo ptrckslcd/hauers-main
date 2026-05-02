@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Question Bank | Hauers Admin</title>
+  <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <script src="/js/theme-toggle.js"></script>
+</head>
+<body data-role="admin">
+
+  <div id="navbar-placeholder"><%- include('../partials/navbar') %></div>
+
+  <div class="app-shell sidebar-collapsed">
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div id="sidebar-placeholder"><%- include('../partials/admin-sidebar') %></div>
+
+    <main class="page-content">
+
+      <!-- ── Page header ── -->
+      <header class="page-header">
+        <div>
+          <h1 class="page-title">Question Bank</h1>
+
+        </div>
+        <button class="cta-pill" id="qb-add-btn" type="button">
+          <span class="material-symbols-outlined" style="font-size:18px;margin-right:0.45rem">add_circle</span>
+          Add Question
+        </button>
+      </header>
+
+      <!-- ── Stats row ── -->
+      <div class="dash-grid dash-grid--4col">
+
+        <div class="dash-card admin-kpi-card">
+          <div class="admin-kpi-header">
+            <span class="card-label">Total Questions</span>
+            <span class="admin-kpi-icon admin-kpi-icon--blue">
+              <span class="material-symbols-outlined">library_books</span>
+            </span>
+          </div>
+          <div class="admin-kpi-val" id="qb-total">—</div>
+          <p class="card-sub">in the library</p>
+        </div>
+
+        <div class="dash-card admin-kpi-card">
+          <div class="admin-kpi-header">
+            <span class="card-label">Verbal Ability</span>
+            <span class="admin-kpi-icon" style="background:rgba(129,140,248,0.12);color:#818cf8">
+              <span class="material-symbols-outlined">translate</span>
+            </span>
+          </div>
+          <div class="admin-kpi-val" id="qb-verbal">—</div>
+          <p class="card-sub">questions</p>
+        </div>
+
+        <div class="dash-card admin-kpi-card">
+          <div class="admin-kpi-header">
+            <span class="card-label">Numerical Ability</span>
+            <span class="admin-kpi-icon admin-kpi-icon--orange">
+              <span class="material-symbols-outlined">calculate</span>
+            </span>
+          </div>
+          <div class="admin-kpi-val" id="qb-numerical">—</div>
+          <p class="card-sub">questions</p>
+        </div>
+
+        <div class="dash-card admin-kpi-card">
+          <div class="admin-kpi-header">
+            <span class="card-label">Clerical Ability</span>
+            <span class="admin-kpi-icon admin-kpi-icon--green">
+              <span class="material-symbols-outlined">inventory_2</span>
+            </span>
+          </div>
+          <div class="admin-kpi-val" id="qb-clerical">—</div>
+          <p class="card-sub">questions</p>
+        </div>
+
+      </div>
+
+      <!-- ── Search bar ── -->
+      <div id="qb-search"></div>
+
+      <!-- ── Filter chips + sort ── -->
+      <div class="rm-filter-bar" id="qb-filters">
+        <div class="rm-filter-row">
+          <span class="rm-filter-label">Domain</span>
+          <button class="rm-filter-chip active" data-filter="domain" data-val="all">All</button>
+          <button class="rm-filter-chip" data-filter="domain" data-val="Verbal Ability">Verbal</button>
+          <button class="rm-filter-chip" data-filter="domain" data-val="Numerical Ability">Numerical</button>
+          <button class="rm-filter-chip" data-filter="domain" data-val="Clerical Ability">Clerical</button>
+        </div>
+        <div class="rm-filter-row">
+          <span class="rm-filter-label">Difficulty</span>
+          <button class="rm-filter-chip active" data-filter="difficulty" data-val="all">All</button>
+          <button class="rm-filter-chip" data-filter="difficulty" data-val="Easy">Easy</button>
+          <button class="rm-filter-chip" data-filter="difficulty" data-val="Medium">Medium</button>
+          <button class="rm-filter-chip" data-filter="difficulty" data-val="Hard">Hard</button>
+        </div>
+      </div>
+
+      <!-- ── Sort bar + result count ── -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.6rem;flex-wrap:wrap;gap:0.5rem">
+        <p class="sw-result-msg" id="qb-result-msg" style="margin:0"></p>
+        <div style="display:flex;align-items:center;gap:0.5rem">
+          <span style="font-size:0.75rem;color:var(--text-subdued)">Sort by</span>
+          <select id="qb-sort"
+            style="font-size:0.8rem;padding:0.3rem 0.65rem;border-radius:8px;border:1px solid var(--border-subdued);background:var(--card-bg);color:var(--text-main);cursor:pointer">
+            <option value="id">Default (ID)</option>
+            <option value="domain">Domain</option>
+            <option value="difficulty">Difficulty</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- ── Question list ── -->
+      <div class="qb-list" id="qb-list"></div>
+
+    </main>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       Add Question Modal
+  ══════════════════════════════════════════════════════ -->
+  <div class="ep-overlay" id="aq-overlay" hidden>
+    <div class="ep-modal" style="max-width:580px;width:100%">
+      <div class="ep-modal-header">
+        <h3 class="ep-modal-title">Add New Question</h3>
+        <button class="ep-close" id="aq-close" type="button" aria-label="Close">×</button>
+      </div>
+      <div class="st-alert" id="aq-alert" style="margin-bottom:0"></div>
+      <form id="aq-form" class="ep-form" novalidate>
+
+        <!-- Question text -->
+        <div class="ep-field">
+          <label class="ep-label" for="aq-question">Question Text <span style="color:var(--accent-primary)">*</span></label>
+          <textarea id="aq-question" class="ep-input" rows="3"
+            placeholder="Type the question here…"
+            style="resize:vertical;min-height:72px"></textarea>
+        </div>
+
+        <!-- Domain + Difficulty -->
+        <div class="ep-form-row">
+          <div class="ep-field">
+            <label class="ep-label" for="aq-domain">Domain <span style="color:var(--accent-primary)">*</span></label>
+            <select id="aq-domain" class="ep-input ep-select">
+              <option value="Verbal Ability">Verbal Ability</option>
+              <option value="Numerical Ability">Numerical Ability</option>
+              <option value="Clerical Ability">Clerical Ability</option>
+            </select>
+          </div>
+          <div class="ep-field">
+            <label class="ep-label" for="aq-difficulty">Difficulty <span style="color:var(--accent-primary)">*</span></label>
+            <select id="aq-difficulty" class="ep-input ep-select">
+              <option value="Easy">Easy</option>
+              <option value="Medium">Medium</option>
+              <option value="Hard">Hard</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Choices A – D -->
+        <p class="ep-label" style="margin-bottom:0.45rem">Choices <span style="color:var(--accent-primary)">*</span></p>
+        <div style="display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1rem">
+          <div style="display:flex;align-items:center;gap:0.55rem">
+            <span style="font-weight:700;font-size:0.8rem;color:var(--text-subdued);width:18px;text-align:center">A</span>
+            <input id="aq-choice-a" class="ep-input" type="text" placeholder="Choice A" style="flex:1">
+          </div>
+          <div style="display:flex;align-items:center;gap:0.55rem">
+            <span style="font-weight:700;font-size:0.8rem;color:var(--text-subdued);width:18px;text-align:center">B</span>
+            <input id="aq-choice-b" class="ep-input" type="text" placeholder="Choice B" style="flex:1">
+          </div>
+          <div style="display:flex;align-items:center;gap:0.55rem">
+            <span style="font-weight:700;font-size:0.8rem;color:var(--text-subdued);width:18px;text-align:center">C</span>
+            <input id="aq-choice-c" class="ep-input" type="text" placeholder="Choice C" style="flex:1">
+          </div>
+          <div style="display:flex;align-items:center;gap:0.55rem">
+            <span style="font-weight:700;font-size:0.8rem;color:var(--text-subdued);width:18px;text-align:center">D</span>
+            <input id="aq-choice-d" class="ep-input" type="text" placeholder="Choice D" style="flex:1">
+          </div>
+        </div>
+
+        <!-- Correct answer -->
+        <div class="ep-field">
+          <label class="ep-label" for="aq-answer">Correct Answer <span style="color:var(--accent-primary)">*</span></label>
+          <select id="aq-answer" class="ep-input ep-select">
+            <option value="">— Select the correct choice —</option>
+            <option value="a">A — (fill choice A first)</option>
+            <option value="b">B — (fill choice B first)</option>
+            <option value="c">C — (fill choice C first)</option>
+            <option value="d">D — (fill choice D first)</option>
+          </select>
+        </div>
+
+        <div class="ep-form-actions">
+          <button type="button" class="ep-btn-cancel" id="aq-cancel">Cancel</button>
+          <button type="submit" class="cta-pill" id="aq-submit">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:0.35rem">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Add Question
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/js/search-widget.js"></script>
+  <script src="/js/admin-shell.js"></script>
+  <script>
+  (async () => {
+
+    /* ── Fetch all questions ─────────────────────────────── */
+    let data;
+    try {
+      const r = await fetch('/admin/api/questions');
+      if (!r.ok) return;
+      data = await r.json();
+    } catch (_) { return; }
+
+    const allQuestions = data.questions || [];
+
+    /* ── KPI tiles ───────────────────────────────────────── */
+    function updateKpis() {
+      const setKpi = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+      setKpi('qb-total',    allQuestions.length);
+      setKpi('qb-verbal',   allQuestions.filter(q => q.domain === 'Verbal Ability').length);
+      setKpi('qb-numerical',allQuestions.filter(q => q.domain === 'Numerical Ability').length);
+      setKpi('qb-clerical', allQuestions.filter(q => q.domain === 'Clerical Ability').length);
+    }
+    updateKpis();
+
+    /* ── Domain helper ───────────────────────────────────── */
+    function domainClass(d) {
+      if (d === 'Verbal Ability')    return 'verbal';
+      if (d === 'Numerical Ability') return 'numerical';
+      if (d === 'Clerical Ability')  return 'clerical';
+      return 'general';
+    }
+
+    /* ── Sort helper ─────────────────────────────────────── */
+    const diffOrder = { 'Easy': 0, 'Medium': 1, 'Hard': 2 };
+    function sortQuestions(qs) {
+      const mode = document.getElementById('qb-sort')?.value || 'id';
+      if (mode === 'domain')      return [...qs].sort((a, b) => a.domain.localeCompare(b.domain) || a.id - b.id);
+      if (mode === 'difficulty')  return [...qs].sort((a, b) => diffOrder[a.difficulty] - diffOrder[b.difficulty] || a.id - b.id);
+      return [...qs].sort((a, b) => a.id - b.id);
+    }
+
+    /* ── Render questions ────────────────────────────────── */
+    const list      = document.getElementById('qb-list');
+    const resultMsg = document.getElementById('qb-result-msg');
+
+    function renderQuestions(qs) {
+      if (!list) return;
+      const sorted = sortQuestions(qs);
+      if (!sorted.length) {
+        list.innerHTML = '<div class="rm-no-results"><span class="rm-no-icon">🔍</span>No questions match your search.</div>';
+        if (resultMsg) resultMsg.textContent = '';
+        return;
+      }
+      list.innerHTML = sorted.map(q => {
+        const diffCls = q.difficulty === 'Hard' ? ' hard' : (q.difficulty === 'Easy' ? ' easy' : '');
+        const dc = domainClass(q.domain);
+        return (
+          `<a class="qb-row" href="/admin/question-bank/${q.id}">` +
+          `<div class="qb-row-accent qb-row-accent--${dc}"></div>` +
+          `<div class="qb-row-body">` +
+          `  <div class="qb-meta">` +
+          `    <span class="qb-num">#${q.id}</span>` +
+          `    <span class="q-domain-badge ${dc}">${q.domain.replace(' Ability', '')}</span>` +
+          `    <span class="q-difficulty${diffCls}">${q.difficulty}</span>` +
+          `  </div>` +
+          `  <p class="qb-text">${q.question}</p>` +
+          `  <div class="qb-choices-preview">` +
+          q.choices.map((c, i) => {
+            const letter = ['A','B','C','D'][i];
+            const isCorrect = c === q.answer;
+            return `<span class="qb-choice-chip${isCorrect ? ' correct' : ''}">${letter}. ${c}${isCorrect ? ' ✓' : ''}</span>`;
+          }).join('') +
+          `  </div>` +
+          `</div>` +
+          `<div class="qb-row-actions">` +
+          `  <span class="qb-btn-view">View →</span>` +
+          `</div>` +
+          `</a>`
+        );
+      }).join('');
+      if (resultMsg) {
+        resultMsg.textContent = qs.length < allQuestions.length
+          ? 'Showing ' + qs.length + ' of ' + allQuestions.length + ' questions'
+          : allQuestions.length + ' question' + (allQuestions.length !== 1 ? 's' : '') + ' total';
+      }
+    }
+
+    /* ── Active filter state ─────────────────────────────── */
+    let activeDomain = 'all';
+    let activeDiff   = 'all';
+    function applyFilters(qs) {
+      return qs.filter(q => {
+        const dm = activeDomain === 'all' || q.domain     === activeDomain;
+        const df = activeDiff   === 'all' || q.difficulty === activeDiff;
+        return dm && df;
+      });
+    }
+
+    /* ── Initial render ──────────────────────────────────── */
+    renderQuestions(allQuestions);
+
+    /* ── Search widget ───────────────────────────────────── */
+    const sw = new SearchWidget({
+      containerId:   'qb-search',
+      placeholder:   'Search questions by text, keyword or domain…',
+      apiUrl:        '/admin/api/search',
+      defaultParams: { scope: 'questions' },
+      onResults: results => renderQuestions(results),
+      onClear:   ()      => renderQuestions(applyFilters(allQuestions)),
+    });
+    sw.mount();
+
+    /* ── Filter chips ────────────────────────────────────── */
+    document.querySelectorAll('#qb-filters .rm-filter-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const filterKey = chip.dataset.filter;
+        const val       = chip.dataset.val;
+        document.querySelectorAll('#qb-filters .rm-filter-chip[data-filter="' + filterKey + '"]')
+          .forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        if (filterKey === 'domain')     activeDomain = val;
+        if (filterKey === 'difficulty') activeDiff   = val;
+        if (sw.getValue()) {
+          sw.setParams({ domain: activeDomain, difficulty: activeDiff });
+        } else {
+          renderQuestions(applyFilters(allQuestions));
+        }
+      });
+    });
+
+    /* ── Sort dropdown ───────────────────────────────────── */
+    const sortEl = document.getElementById('qb-sort');
+    if (sortEl) {
+      sortEl.addEventListener('change', () => {
+        if (!sw.getValue()) renderQuestions(applyFilters(allQuestions));
+      });
+    }
+
+    /* ══════════════════════════════════════════════════════
+       Add Question Modal
+    ══════════════════════════════════════════════════════ */
+    const overlay   = document.getElementById('aq-overlay');
+    const closeBtn  = document.getElementById('aq-close');
+    const cancelBtn = document.getElementById('aq-cancel');
+    const form      = document.getElementById('aq-form');
+    const alertBox  = document.getElementById('aq-alert');
+    const addBtn    = document.getElementById('qb-add-btn');
+
+    function openModal() {
+      form.reset();
+      alertBox.textContent = '';
+      alertBox.className   = 'st-alert';
+      overlay.hidden = false;
+      document.getElementById('aq-question').focus();
+      updateAnswerDropdown();
+    }
+    function closeModal() { overlay.hidden = true; }
+
+    if (addBtn)    addBtn.addEventListener('click', openModal);
+    if (closeBtn)  closeBtn.addEventListener('click', closeModal);
+    if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+    overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !overlay.hidden) closeModal(); });
+
+    /* ── Dynamically update the "Correct Answer" dropdown ── */
+    const choiceIds  = ['aq-choice-a','aq-choice-b','aq-choice-c','aq-choice-d'];
+    const answerSel  = document.getElementById('aq-answer');
+    const letters    = ['A','B','C','D'];
+
+    function updateAnswerDropdown() {
+      const prevVal = answerSel.value;
+      while (answerSel.options.length > 1) answerSel.remove(1);
+      choiceIds.forEach((cid, i) => {
+        const text = document.getElementById(cid)?.value?.trim() || '';
+        const opt  = document.createElement('option');
+        opt.value  = letters[i].toLowerCase();
+        opt.textContent = text ? `${letters[i]}. ${text}` : `${letters[i]} — (fill choice ${letters[i]} first)`;
+        opt.disabled = !text;
+        answerSel.appendChild(opt);
+      });
+      if (prevVal) answerSel.value = prevVal;
+    }
+    choiceIds.forEach(cid => {
+      document.getElementById(cid)?.addEventListener('input', updateAnswerDropdown);
+    });
+
+    /* ── Show alert inside modal ─────────────────────────── */
+    function showModalAlert(msg, type) {
+      alertBox.textContent = msg;
+      alertBox.className   = 'st-alert ' + (type === 'error' ? 'st-alert--error' : 'st-alert--success');
+      alertBox.style.marginBottom = '0.75rem';
+    }
+
+    /* ── Toast notification ──────────────────────────────── */
+    function showToast(msg, isError) {
+      const t = document.createElement('div');
+      t.className = 'ep-toast';
+      t.textContent = msg;
+      if (isError) t.style.borderLeftColor = '#f87171';
+      document.body.appendChild(t);
+      requestAnimationFrame(() => t.classList.add('show'));
+      setTimeout(() => {
+        t.classList.remove('show');
+        setTimeout(() => t.remove(), 330);
+      }, 3000);
+    }
+
+    /* ── Form submit ─────────────────────────────────────── */
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      alertBox.textContent = '';
+      alertBox.className   = 'st-alert';
+
+      const question   = document.getElementById('aq-question').value.trim();
+      const domain     = document.getElementById('aq-domain').value;
+      const difficulty = document.getElementById('aq-difficulty').value;
+      const choiceVals = choiceIds.map(cid => document.getElementById(cid)?.value?.trim() || '');
+      const answerIdx  = letters.indexOf((answerSel.value || '').toUpperCase());
+
+      if (!question)               return showModalAlert('Question text is required.', 'error');
+      if (choiceVals.some(c => !c)) return showModalAlert('All four choices must be filled in.', 'error');
+      if (answerIdx === -1)         return showModalAlert('Please select the correct answer.', 'error');
+
+      const chosenAnswer = choiceVals[answerIdx];
+
+      const submitBtn = document.getElementById('aq-submit');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Saving…';
+
+      try {
+        const res = await fetch('/admin/api/questions', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ question, domain, difficulty, choices: choiceVals, answer: chosenAnswer }),
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Failed to add question.');
+
+        /* ── Update local data + re-render ────────────────── */
+        allQuestions.push(json.question);
+        updateKpis();
+        renderQuestions(applyFilters(allQuestions));
+        closeModal();
+        showToast('Question #' + json.question.id + ' added successfully!');
+
+      } catch (err) {
+        showModalAlert(err.message, 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:0.35rem"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Question';
+      }
+    });
+
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,247 @@
+const express = require('express');
+const path = require('path');
+const fs = require('fs');
+const requireAuth = require('../middleware/requireAuth');
+const dashboardData = require('../data/mock-reviewee-dashboard');
+const diagnosticData = require('../data/mock-diagnostic-results');
+const db = require('../config/db');
+const progressData   = require('../data/mock-progress');
+const materialsData  = require('../data/mock-review-materials');
+const users = require('../data/mock-users');const questions      = require('../data/mock-questions');
+const router = express.Router();
+
+/* ── API: dashboard data ─────────────────────────────────── */
+router.get('/api/dashboard', requireAuth, (req, res) => {
+  const user = req.session.user;
+  res.json({
+    user: {
+      firstName: user.firstName,
+      lastName:  user.lastName,
+      email:     user.email,
+      examLevel: user.examLevel || 'Professional',
+    },
+    ...dashboardData,
+    diagnostic: diagnosticData,
+  });
+});
+
+/* ── API: lightweight user info (all pages navbar) ─────── */
+router.get('/api/user', requireAuth, (req, res) => {
+  const u = req.session.user;
+  res.json({
+    firstName: u.firstName,
+    lastName:  u.lastName,
+    email:     u.email,
+    examLevel: u.examLevel || 'Professional',
+  });
+});
+
+/* ── API: full profile data ─────────────────────────────── */
+router.get('/api/profile', requireAuth, (req, res) => {
+  const u = req.session.user;
+  res.json({
+    user: {
+      firstName: u.firstName,
+      lastName:  u.lastName,
+      email:     u.email,
+      examLevel: u.examLevel || 'Professional',
+    },
+    ...dashboardData,
+    diagnostic: diagnosticData,
+  });
+});
+
+/* ── API: update profile ────────────────────────────────── */
+router.post('/api/profile/update', requireAuth, (req, res) => {
+  const { firstName, lastName, email, examLevel } = req.body || {};
+
+  if (!firstName || !firstName.trim() || !lastName || !lastName.trim() || !email || !email.trim()) {
+    return res.status(400).json({ error: 'First name, last name, and email are required.' });
+  }
+
+  // Basic email format check
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+    return res.status(400).json({ error: 'Please enter a valid email address.' });
+  }
+
+  // Update session
+  req.session.user.firstName = firstName.trim();
+  req.session.user.lastName  = lastName.trim();
+  req.session.user.email     = email.trim();
+  if (examLevel) req.session.user.examLevel = examLevel;
+
+  // Mutate the in-memory mock array (require cache is live)
+  const idx = users.findIndex(u => u.id === req.session.user.id);
+  if (idx !== -1) {
+    users[idx].firstName = firstName.trim();
+    users[idx].lastName  = lastName.trim();
+    users[idx].email     = email.trim();
+    if (examLevel) users[idx].examLevel = examLevel;
+  }
+
+  // Persist to disk so the change survives a server restart
+  const filePath = path.join(__dirname, '../data/mock-users.js');
+  fs.writeFile(filePath, `module.exports = ${JSON.stringify(users, null, 2)};
+`, () => {});
+
+  res.json({
+    success: true,
+    user: {
+      firstName: req.session.user.firstName,
+      lastName:  req.session.user.lastName,
+      email:     req.session.user.email,
+      examLevel: req.session.user.examLevel || 'Professional',
+    },
+  });
+});
+
+/* ── API: quiz questions with answers (practice mode) ─────────── */
+router.get('/api/quiz', requireAuth, (req, res) => {
+  res.json({ questions });
+});
+/* ── API: study plan ─────────────────────────────────────────────────── */
+const studyPlanData = require('../data/mock-study-plan');
+router.get('/api/study-plan', requireAuth, (req, res) => {
+  res.json(studyPlanData);
+});
+router.get('/dashboard', requireAuth, (req, res) => {
+  res.render('reviewee-dashboard');
+});
+
+router.get('/onboarding', requireAuth, (req, res) => {
+  res.render('reviewee-onboarding');
+});
+
+router.get('/learner-profile', requireAuth, (req, res) => {
+  res.render('learner-profile');
+});
+
+router.get('/diagnostic', requireAuth, (req, res) => {
+  res.render('diagnostic');
+});
+
+router.get('/diagnostic-result', requireAuth, (req, res) => {
+  res.render('diagnostic-result');
+});
+
+router.get('/quiz', requireAuth, (req, res) => {
+  res.render('quiz');
+});
+
+router.get('/study-plan', requireAuth, (req, res) => {
+  res.render('study-plan');
+});
+
+router.get('/api/progress', requireAuth, (req, res) => {
+  res.json(progressData);
+});
+
+router.get('/progress', requireAuth, (req, res) => {
+  res.render('progress');
+});
+
+router.get('/api/materials', requireAuth, (req, res) => {
+  res.json(materialsData);
+});
+
+/* ── API: search ─────────────────────────────────────────── */
+// GET /reviewee/api/search?q=term&scope=materials&domain=all&type=all
+router.get('/api/search', requireAuth, (req, res) => {
+  const { q = '', scope = 'materials', domain = 'all', type = 'all' } = req.query;
+  const query = q.toLowerCase().trim();
+
+  if (scope === 'materials') {
+    let results = materialsData.materials;
+    if (query) {
+      results = results.filter(m =>
+        m.title.toLowerCase().includes(query)  ||
+        m.desc.toLowerCase().includes(query)   ||
+        m.domain.toLowerCase().includes(query) ||
+        m.type.toLowerCase().includes(query)
+      );
+    }
+    if (domain !== 'all') results = results.filter(m => m.domain === domain);
+    if (type   !== 'all') results = results.filter(m => m.type   === type);
+    return res.json({ results, total: results.length, query });
+  }
+
+  res.status(400).json({ error: 'Unknown scope' });
+});
+
+router.get('/materials', requireAuth, (req, res) => {
+  res.render('review-materials');
+});
+
+router.get('/settings', requireAuth, (req, res) => {
+  res.render('account-settings');
+});
+
+/* ── API: change password ───────────────────────────────── */
+router.post('/api/settings/password', requireAuth, (req, res) => {
+  const { currentPassword, newPassword, confirmPassword } = req.body || {};
+
+  if (!currentPassword || !newPassword || !confirmPassword) {
+    return res.status(400).json({ error: 'All fields are required.' });
+  }
+  if (newPassword.length < 6) {
+    return res.status(400).json({ error: 'New password must be at least 6 characters.' });
+  }
+  if (newPassword !== confirmPassword) {
+    return res.status(400).json({ error: 'New passwords do not match.' });
+  }
+
+  const idx = users.findIndex(u => u.id === req.session.user.id);
+  if (idx === -1 || users[idx].password !== currentPassword) {
+    return res.status(400).json({ error: 'Current password is incorrect.' });
+  }
+
+  users[idx].password = newPassword;
+
+  const filePath = path.join(__dirname, '../data/mock-users.js');
+  fs.writeFile(filePath, `module.exports = ${JSON.stringify(users, null, 2)};
+`, () => {});
+
+  res.json({ success: true });
+});
+
+/* ── API: diagnostic questions (answers stripped) ────────── */
+router.get('/api/diagnostic', requireAuth, (req, res) => {
+  const sanitized = questions.map(({ answer, ...rest }) => rest);
+  res.json({ questions: sanitized, duration: 45 * 60 });
+});
+
+/* ── API: submit diagnostic and compute results ────────── */
+router.post('/api/diagnostic/submit', requireAuth, (req, res) => {
+  const { answers } = req.body || {};
+  if (!answers || typeof answers !== 'object') {
+    return res.status(400).json({ error: 'answers required' });
+  }
+
+  const domainMap = {};
+  let totalCorrect = 0;
+
+  questions.forEach(q => {
+    const correct = answers[q.id] === q.answer;
+    if (correct) totalCorrect++;
+    if (!domainMap[q.domain]) domainMap[q.domain] = { total: 0, correct: 0 };
+    domainMap[q.domain].total++;
+    if (correct) domainMap[q.domain].correct++;
+  });
+
+  const overallScore = Math.round((totalCorrect / questions.length) * 100);
+  const domainScores = Object.entries(domainMap).map(([domain, { total, correct }]) => ({
+    domain, score: Math.round((correct / total) * 100), correct, total,
+  }));
+  const weakDomains = domainScores
+    .filter(d => d.score < 70)
+    .sort((a, b) => a.score - b.score)
+    .map(d => d.domain);
+  const grade =
+    overallScore >= 90 ? 'Excellent' :
+    overallScore >= 80 ? 'Above Average' :
+    overallScore >= 70 ? 'Average' : 'Needs Improvement';
+
+  res.json({ overallScore, correct: totalCorrect, total: questions.length, domainScores, weakDomains, grade });
+});
+
+module.exports = router;

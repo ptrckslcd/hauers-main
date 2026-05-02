@@ -1,0 +1,219 @@
+/* ============================================================
+   HAUERS — BASE DESIGN TOKENS
+   Professional institutional palette. No glassmorphism.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap');
+
+:root {
+  /* Surfaces */
+  --bg-base: #E4EBF4; /* Deeper for contrast against white cards */
+  --card-bg: #FFFFFF;
+  --input-bg: #F8FAFC;
+
+  /* Borders — clearly visible in any lighting */
+  --border-default: #B0C4DF; /* Darker border for definition */
+  --border-strong: #8AA7C9;
+  --border-subdued: rgba(37, 99, 235, 0.12);
+
+  /* Text — slightly deeper for better contrast */
+  --text-main: #0F172A;
+  --text-subdued: #3A5274;
+  --text-muted: #6482A6;
+
+  /* Brand */
+  --fs-blue: #2563EB;
+  --fs-blue-dark: #1E40AF;
+  --fs-blue-light: #60A5FA;
+  --fs-gold: #F5A623;
+  --fs-gold-dark: #D48C1A;
+  --fs-orange: #EA580C;
+  --marker-pass-line: #B45309;
+
+  /* Brand gradient — used only for text/icon accents, NOT surfaces */
+  --brand-gradient: linear-gradient(135deg, #2563EB, #1E40AF);
+
+  /* Buttons */
+  --fs-button-bg: #2563EB;
+  --fs-button-hover: #1E40AF;
+  --fs-button-text: #ffffff;
+  --submit-hover-border: #2563EB;
+
+  /* Spacing Scale — Architectural Grid (4px base) */
+  --space-2xs: 0.25rem; /* 4px */
+  --space-xs:  0.5rem;  /* 8px */
+  --space-sm:  1rem;    /* 16px */
+  --space-md:  1.5rem;  /* 24px */
+  --space-lg:  2.5rem;  /* 40px */
+  --space-xl:  4rem;    /* 64px */
+  --space-2xl: 6.5rem;  /* 104px */
+
+  /* Typography Scale */
+  --font-heading: 'Plus Jakarta Sans', sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  
+  /* Font Sizes */
+  --text-hero: 4.7rem;      /* 75.2px - Hero title */
+  --text-section: 2.45rem;  /* 39.2px - Section titles */
+  --text-cta: 2.35rem;      /* 37.6px - CTA titles */
+  --text-feature: 1.18rem;  /* 18.88px - Feature headings */
+  --text-lg: 1.12rem;       /* 17.92px - Body large */
+  --text-base: 1rem;        /* 16px - Body default */
+  --text-sm: 0.875rem;      /* 14px - Body small */
+  --text-eyebrow: 0.72rem;  /* 11.52px - Eyebrows/labels */
+  
+  /* Font Weights */
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --weight-extrabold: 800;
+  
+  /* Line Heights */
+  --leading-tight: 1.1;
+  --leading-snug: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.65;
+  --leading-loose: 1.7;
+  
+  /* Letter Spacing */
+  --tracking-normal: 0;
+  --tracking-wide: 0.08em;
+  --tracking-wider: 0.12em;
+
+  /* Google button */
+  --google-btn-bg: #ffffff;
+  --google-btn-color: #0F172A;
+  --google-btn-border: #D8E3F0;
+
+  /* Shadows — distinct and professional */
+  --card-shadow: 0 2px 8px rgba(15, 23, 42, 0.12), 0 8px 24px rgba(15, 23, 42, 0.08);
+  --card-shadow-hover: 0 10px 30px rgba(15, 23, 42, 0.16), 0 3px 10px rgba(15, 23, 42, 0.10);
+  --shadow-blue: 0 6px 24px rgba(37, 99, 235, 0.22);
+
+  /* Silver edge (auth) */
+  --silver-start: rgba(160, 185, 240, 0.45);
+  --silver-peak: rgba(225, 238, 255, 0.92);
+
+  /* Focus ring */
+  --focus-glow: 0 0 0 3px rgba(37, 99, 235, 0.2), 0 2px 8px rgba(15, 23, 42, 0.06);
+
+  /* Legacy compat aliases */
+  --glass-bg: var(--card-bg);
+}
+
+[data-theme='dark'] {
+  --bg-base: #0B1120;
+  --card-bg: #111827;
+  --input-bg: #1A2538;
+  --border-default: #1F2E47;
+  --border-strong: #2D4065;
+  --border-subdued: rgba(255, 255, 255, 0.06);
+  --text-main: #E8EDF8;
+  --text-subdued: #7A93B5;
+  --text-muted: #4B6183;
+
+  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.2);
+  --card-shadow-hover: 0 4px 20px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-blue: 0 4px 24px rgba(37, 99, 235, 0.25);
+
+  --fs-button-bg: #3B82F6;
+  --fs-button-hover: #2563EB;
+  --fs-button-text: #ffffff;
+  --submit-hover-border: transparent;
+
+  --google-btn-bg: #1A2538;
+  --google-btn-color: #E8EDF8;
+  --google-btn-border: rgba(255, 255, 255, 0.10);
+
+  --silver-start: rgba(200, 220, 255, 0.50);
+  --silver-peak: rgba(232, 245, 255, 0.96);
+
+  --focus-glow: 0 0 0 3px rgba(59, 130, 246, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
+
+  --glass-bg: var(--card-bg);
+
+  --fs-orange: #FB923C;
+  --marker-pass-line: #FBBF24;
+}
+
+/* == Reset ============================================================== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+html {
+  overflow-x: hidden;
+  scroll-padding-top: 4rem;
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--bg-base);
+  color: var(--text-main);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  display: flex;
+  flex-direction: column;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Smooth theme transitions */
+body,
+.auth-column,
+.input-inner,
+input,
+.input-field,
+button,
+a {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* == Responsive Typography ============================================== */
+/* Tablet (720px - 1060px) */
+@media (max-width: 1060px) and (min-width: 720px) {
+  :root {
+    --text-hero: 3.65rem;
+  }
+}
+
+/* Mobile (< 720px) */
+@media (max-width: 719px) {
+  :root {
+    --text-hero: 2.65rem;
+    --text-section: 2rem;
+    --text-cta: 1.85rem;
+  }
+}

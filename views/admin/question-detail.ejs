@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Question Detail | Hauers Admin</title>
+  <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <script src="/js/theme-toggle.js"></script>
+</head>
+<body data-role="admin">
+
+  <div id="navbar-placeholder"><%- include('../partials/navbar') %></div>
+
+  <div class="app-shell sidebar-collapsed">
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div id="sidebar-placeholder"><%- include('../partials/admin-sidebar') %></div>
+
+    <main class="page-content">
+
+      <!-- ── Back link ── -->
+      <a href="/admin/question-bank" class="qd-back-link">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        Back to Question Bank
+      </a>
+
+      <!-- ── Question card ── -->
+      <div class="dash-card" id="qd-card" style="display:none">
+
+        <!-- Card header: meta + action buttons -->
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:0.6rem">
+          <div class="qb-meta" id="qd-meta"></div>
+          <div style="display:flex;gap:0.5rem;flex-shrink:0">
+            <button class="qd-action-btn qd-action-btn--edit" id="qd-edit-btn" type="button">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+              Edit
+            </button>
+            <button class="qd-action-btn qd-action-btn--delete" id="qd-delete-btn" type="button">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                <path d="M10 11v6"/><path d="M14 11v6"/>
+                <path d="M9 6V4h6v2"/>
+              </svg>
+              Delete
+            </button>
+          </div>
+        </div>
+
+        <!-- Question text -->
+        <p class="qd-question" id="qd-question">—</p>
+
+        <!-- Choices -->
+        <div class="qd-choices" id="qd-choices"></div>
+
+        <!-- Correct answer footer -->
+        <div style="padding-top:0.75rem;border-top:1px solid var(--border-subdued);font-size:0.82rem;color:var(--text-subdued)" id="qd-correct-footer"></div>
+
+      </div>
+
+      <!-- ── Loading / not-found state ── -->
+      <div id="qd-empty" class="dash-card" style="text-align:center;padding:3rem 2rem">
+        <div style="font-size:2.2rem;margin-bottom:0.75rem">⏳</div>
+        <p style="color:var(--text-subdued)">Loading question…</p>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════
+       Edit Question Modal
+  ══════════════════════════════════════════════════ -->
+  <div class="ep-overlay" id="eq-overlay" hidden>
+    <div class="ep-modal" style="max-width:580px;width:100%">
+      <div class="ep-modal-header">
+        <h3 class="ep-modal-title">Edit Question</h3>
+        <button class="ep-close" id="eq-close" type="button" aria-label="Close">×</button>
+      </div>
+      <div class="st-alert" id="eq-alert" style="margin-bottom:0"></div>
+      <form id="eq-form" class="ep-form" novalidate>
+
+        <div class="ep-field">
+          <label class="ep-label" for="eq-question">Question Text <span style="color:var(--accent-primary)">*</span></label>
+          <textarea id="eq-question" class="ep-input" rows="3" style="resize:vertical;min-height:72px"></textarea>
+        </div>
+
+        <div class="ep-form-row">
+          <div class="ep-field">
+            <label class="ep-label" for="eq-domain">Domain <span style="color:var(--accent-primary)">*</span></label>
+            <select id="eq-domain" class="ep-input ep-select">
+              <option value="Verbal Ability">Verbal Ability</option>
+              <option value="Numerical Ability">Numerical Ability</option>
+              <option value="Clerical Ability">Clerical Ability</option>
+            </select>
+          </div>
+          <div class="ep-field">
+            <label class="ep-label" for="eq-difficulty">Difficulty <span style="color:var(--accent-primary)">*</span></label>
+            <select id="eq-difficulty" class="ep-input ep-select">
+              <option value="Easy">Easy</option>
+              <option value="Medium">Medium</option>
+              <option value="Hard">Hard</option>
+            </select>
+          </div>
+        </div>
+
+        <p class="ep-label" style="margin-bottom:0.45rem">Choices <span style="color:var(--accent-primary)">*</span></p>
+        <div style="display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1rem">
+          <div style="display:flex;align-items:center;gap:0.55rem">
+            <span style="font-weight:700;font-size:0.8rem;color:var(--text-subdued);width:18px;text-align:center">A</span>
+            <input id="eq-choice-a" class="ep-input" type="text" style="flex:1">
+          </div>
+          <div style="display:flex;align-items:center;gap:0.55rem">
+            <span style="font-weight:700;font-size:0.8rem;color:var(--text-subdued);width:18px;text-align:center">B</span>
+            <input id="eq-choice-b" class="ep-input" type="text" style="flex:1">
+          </div>
+          <div style="display:flex;align-items:center;gap:0.55rem">
+            <span style="font-weight:700;font-size:0.8rem;color:var(--text-subdued);width:18px;text-align:center">C</span>
+            <input id="eq-choice-c" class="ep-input" type="text" style="flex:1">
+          </div>
+          <div style="display:flex;align-items:center;gap:0.55rem">
+            <span style="font-weight:700;font-size:0.8rem;color:var(--text-subdued);width:18px;text-align:center">D</span>
+            <input id="eq-choice-d" class="ep-input" type="text" style="flex:1">
+          </div>
+        </div>
+
+        <div class="ep-field">
+          <label class="ep-label" for="eq-answer">Correct Answer <span style="color:var(--accent-primary)">*</span></label>
+          <select id="eq-answer" class="ep-input ep-select">
+            <option value="">— Select the correct choice —</option>
+            <option value="a">A</option>
+            <option value="b">B</option>
+            <option value="c">C</option>
+            <option value="d">D</option>
+          </select>
+        </div>
+
+        <div class="ep-form-actions">
+          <button type="button" class="ep-btn-cancel" id="eq-cancel">Cancel</button>
+          <button type="submit" class="cta-pill" id="eq-submit">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════
+       Delete Confirmation Modal
+  ══════════════════════════════════════════════════ -->
+  <div class="ep-overlay" id="del-overlay" hidden>
+    <div class="ep-modal" style="max-width:420px;width:100%">
+      <div class="ep-modal-header">
+        <h3 class="ep-modal-title" style="color:#f87171">Delete Question</h3>
+        <button class="ep-close" id="del-close" type="button" aria-label="Close">×</button>
+      </div>
+      <p style="font-size:0.9rem;color:var(--text-subdued);margin-bottom:1.25rem">
+        Are you sure you want to permanently delete <strong id="del-qid" style="color:var(--text-main)">this question</strong>?
+        This action cannot be undone.
+      </p>
+      <div class="ep-form-actions">
+        <button type="button" class="ep-btn-cancel" id="del-cancel">Cancel</button>
+        <button type="button" id="del-confirm"
+          style="padding:0.55rem 1.1rem;border-radius:10px;border:none;cursor:pointer;font-weight:600;font-size:0.85rem;background:#ef4444;color:#fff">
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/admin-shell.js"></script>
+  <script>
+  (async () => {
+
+    /* ── Get question ID from URL ────────────────────────── */
+    const qid    = parseInt(window.location.pathname.split('/').pop(), 10);
+    const emptyEl = document.getElementById('qd-empty');
+
+    if (!qid) {
+      if (emptyEl) emptyEl.querySelector('p').textContent = 'Invalid question ID.';
+      return;
+    }
+
+    /* ── Fetch question ──────────────────────────────────── */
+    let question;
+    try {
+      const r = await fetch('/admin/api/questions');
+      if (!r.ok) throw new Error('fetch failed');
+      const data = await r.json();
+      question = (data.questions || []).find(q => q.id === qid);
+    } catch (_) {
+      if (emptyEl) emptyEl.querySelector('p').textContent = 'Failed to load question.';
+      return;
+    }
+
+    if (!question) {
+      if (emptyEl) {
+        emptyEl.querySelector('div').textContent = '🔍';
+        emptyEl.querySelector('p').textContent   = 'Question #' + qid + ' not found.';
+      }
+      return;
+    }
+
+    /* ── Hide loading, show card ─────────────────────────── */
+    if (emptyEl) emptyEl.style.display = 'none';
+    const card = document.getElementById('qd-card');
+    if (card) card.style.display = '';
+
+    /* ── Domain class helper ─────────────────────────────── */
+    function domainClass(d) {
+      if (d === 'Verbal Ability')    return 'verbal';
+      if (d === 'Numerical Ability') return 'numerical';
+      if (d === 'Clerical Ability')  return 'clerical';
+      return 'general';
+    }
+
+    /* ── Render card content ─────────────────────────────── */
+    function renderCard(q) {
+      const metaEl = document.getElementById('qd-meta');
+      if (metaEl) {
+        const diffStyle = q.difficulty === 'Hard' ? ' hard' : (q.difficulty === 'Easy' ? ' easy' : '');
+        metaEl.innerHTML =
+          `<span class="qb-num">#${q.id}</span>` +
+          `<span class="q-domain-badge ${domainClass(q.domain)}">${q.domain.replace(' Ability', '')}</span>` +
+          `<span class="q-difficulty${diffStyle}">${q.difficulty}</span>`;
+        document.title = 'Question #' + q.id + ' | Hauers Admin';
+      }
+
+      const qTextEl = document.getElementById('qd-question');
+      if (qTextEl) qTextEl.textContent = q.question;
+
+      const choicesEl = document.getElementById('qd-choices');
+      if (choicesEl) {
+        const letters = ['A', 'B', 'C', 'D'];
+        choicesEl.innerHTML = q.choices.map((choice, i) => {
+          const isCorrect = choice === q.answer;
+          return `
+            <div class="qd-choice${isCorrect ? ' correct' : ''}">
+              <span class="qd-choice-letter">${letters[i] || (i + 1)}</span>
+              <span>${choice}</span>
+              ${isCorrect ? `<span style="margin-left:auto;font-size:0.75rem;font-weight:700;color:#4ade80">Correct</span>` : ''}
+            </div>`;
+        }).join('');
+      }
+
+      const footerEl = document.getElementById('qd-correct-footer');
+      if (footerEl) footerEl.innerHTML = `<strong style="color:var(--text-main)">Correct answer:</strong> ${q.answer}`;
+    }
+
+    renderCard(question);
+
+    /* ══════════════════════════════════════════════════════
+       Toast
+    ══════════════════════════════════════════════════════ */
+    function showToast(msg, isError) {
+      const t = document.createElement('div');
+      t.className = 'ep-toast';
+      t.textContent = msg;
+      if (isError) t.style.borderLeftColor = '#f87171';
+      document.body.appendChild(t);
+      requestAnimationFrame(() => t.classList.add('show'));
+      setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 330); }, 3000);
+    }
+
+    /* ══════════════════════════════════════════════════════
+       Edit Modal
+    ══════════════════════════════════════════════════════ */
+    const eqOverlay  = document.getElementById('eq-overlay');
+    const eqForm     = document.getElementById('eq-form');
+    const eqAlert    = document.getElementById('eq-alert');
+    const eqClose    = document.getElementById('eq-close');
+    const eqCancel   = document.getElementById('eq-cancel');
+    const eqChoiceIds = ['eq-choice-a','eq-choice-b','eq-choice-c','eq-choice-d'];
+    const eqAnswerSel = document.getElementById('eq-answer');
+    const letters = ['A','B','C','D'];
+
+    function updateEqAnswerDropdown() {
+      const prevVal = eqAnswerSel.value;
+      while (eqAnswerSel.options.length > 1) eqAnswerSel.remove(1);
+      eqChoiceIds.forEach((cid, i) => {
+        const text = document.getElementById(cid)?.value?.trim() || '';
+        const opt  = document.createElement('option');
+        opt.value  = letters[i].toLowerCase();
+        opt.textContent = text ? `${letters[i]}. ${text}` : `${letters[i]} — (fill choice ${letters[i]} first)`;
+        opt.disabled = !text;
+        eqAnswerSel.appendChild(opt);
+      });
+      if (prevVal) eqAnswerSel.value = prevVal;
+    }
+    eqChoiceIds.forEach(cid => document.getElementById(cid)?.addEventListener('input', updateEqAnswerDropdown));
+
+    function openEditModal(q) {
+      eqAlert.textContent = '';
+      eqAlert.className = 'st-alert';
+      document.getElementById('eq-question').value  = q.question;
+      document.getElementById('eq-domain').value    = q.domain;
+      document.getElementById('eq-difficulty').value = q.difficulty;
+      eqChoiceIds.forEach((cid, i) => {
+        document.getElementById(cid).value = q.choices[i] || '';
+      });
+      updateEqAnswerDropdown();
+      // Select the correct answer in the dropdown
+      const correctIdx = q.choices.indexOf(q.answer);
+      if (correctIdx >= 0) eqAnswerSel.value = letters[correctIdx].toLowerCase();
+      eqOverlay.hidden = false;
+      document.getElementById('eq-question').focus();
+    }
+    function closeEditModal() { eqOverlay.hidden = true; }
+
+    document.getElementById('qd-edit-btn').addEventListener('click', () => openEditModal(question));
+    eqClose.addEventListener('click', closeEditModal);
+    eqCancel.addEventListener('click', closeEditModal);
+    eqOverlay.addEventListener('click', e => { if (e.target === eqOverlay) closeEditModal(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !eqOverlay.hidden) closeEditModal(); });
+
+    eqForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      eqAlert.textContent = '';
+      eqAlert.className = 'st-alert';
+
+      const qText      = document.getElementById('eq-question').value.trim();
+      const domain     = document.getElementById('eq-domain').value;
+      const difficulty = document.getElementById('eq-difficulty').value;
+      const choiceVals = eqChoiceIds.map(cid => document.getElementById(cid)?.value?.trim() || '');
+      const answerIdx  = letters.indexOf((eqAnswerSel.value || '').toUpperCase());
+
+      if (!qText)                return showAlert(eqAlert, 'Question text is required.', 'error');
+      if (choiceVals.some(c=>!c)) return showAlert(eqAlert, 'All four choices must be filled in.', 'error');
+      if (answerIdx === -1)      return showAlert(eqAlert, 'Please select the correct answer.', 'error');
+
+      const submit = document.getElementById('eq-submit');
+      submit.disabled = true;
+      submit.textContent = 'Saving…';
+
+      try {
+        const res = await fetch('/admin/api/questions/' + question.id, {
+          method:  'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ question: qText, domain, difficulty, choices: choiceVals, answer: choiceVals[answerIdx] }),
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Update failed.');
+
+        Object.assign(question, json.question);
+        renderCard(question);
+        closeEditModal();
+        showToast('Question #' + question.id + ' updated successfully!');
+      } catch (err) {
+        showAlert(eqAlert, err.message, 'error');
+      } finally {
+        submit.disabled = false;
+        submit.textContent = 'Save Changes';
+      }
+    });
+
+    /* ══════════════════════════════════════════════════════
+       Delete Modal
+    ══════════════════════════════════════════════════════ */
+    const delOverlay = document.getElementById('del-overlay');
+    const delClose   = document.getElementById('del-close');
+    const delCancel  = document.getElementById('del-cancel');
+    const delConfirm = document.getElementById('del-confirm');
+
+    document.getElementById('qd-delete-btn').addEventListener('click', () => {
+      document.getElementById('del-qid').textContent = 'Question #' + question.id;
+      delOverlay.hidden = false;
+    });
+    delClose.addEventListener('click',  () => { delOverlay.hidden = true; });
+    delCancel.addEventListener('click', () => { delOverlay.hidden = true; });
+    delOverlay.addEventListener('click', e => { if (e.target === delOverlay) delOverlay.hidden = true; });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !delOverlay.hidden) delOverlay.hidden = true; });
+
+    delConfirm.addEventListener('click', async () => {
+      delConfirm.disabled = true;
+      delConfirm.textContent = 'Deleting…';
+      try {
+        const res = await fetch('/admin/api/questions/' + question.id, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Delete failed.');
+        window.location.href = '/admin/question-bank';
+      } catch (err) {
+        delOverlay.hidden = true;
+        showToast('Failed to delete: ' + err.message, true);
+      } finally {
+        delConfirm.disabled = false;
+        delConfirm.textContent = 'Delete';
+      }
+    });
+
+    /* ── Shared alert helper ─────────────────────────────── */
+    function showAlert(el, msg, type) {
+      el.textContent = msg;
+      el.className = 'st-alert ' + (type === 'error' ? 'st-alert--error' : 'st-alert--success');
+      el.style.marginBottom = '0.75rem';
+    }
+
+  })();
+  </script>
+
+</body>
+</html>
+
+  <div id="navbar-placeholder"><%- include(\x27../partials/navbar') %></div>
+
+  <div class="app-shell sidebar-collapsed">
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div id="sidebar-placeholder"><%- include(\x27../partials/admin-sidebar') %></div>
+
+    <main class="page-content">
+
+      <!-- ── Back link ── -->
+      <a href="/admin/question-bank" class="qd-back-link">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        Back to Question Bank
+      </a>
+
+      <!-- ── Question card ── -->
+      <div class="dash-card" id="qd-card" style="display:none">
+
+        <!-- Meta chips -->
+        <div class="qb-meta" style="margin-bottom:0.6rem" id="qd-meta"></div>
+
+        <!-- Question text -->
+        <p class="qd-question" id="qd-question">—</p>
+
+        <!-- Choices -->
+        <div class="qd-choices" id="qd-choices"></div>
+
+        <!-- Correct answer footer -->
+        <div style="padding-top:0.75rem;border-top:1px solid var(--border-subdued);font-size:0.82rem;color:var(--text-subdued)" id="qd-correct-footer"></div>
+
+      </div>
+
+      <!-- ── Loading / not-found state ── -->
+      <div id="qd-empty" class="dash-card" style="text-align:center;padding:3rem 2rem">
+        <div style="font-size:2.2rem;margin-bottom:0.75rem">⏳</div>
+        <p style="color:var(--text-subdued)">Loading question…</p>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="/js/admin-shell.js"></script>
+  <script>
+  (async () => {
+
+    /* ── Get question ID from URL ────────────────────────── */
+    const qid = parseInt(window.location.pathname.split('/').pop(), 10);
+    const emptyEl = document.getElementById('qd-empty');
+
+    if (!qid) {
+      if (emptyEl) emptyEl.querySelector('p').textContent = 'Invalid question ID.';
+      return;
+    }
+
+    /* ── Fetch all questions and find the one we need ────── */
+    let question;
+    try {
+      const r = await fetch('/admin/api/questions');
+      if (!r.ok) throw new Error('fetch failed');
+      const data = await r.json();
+      question = (data.questions || []).find(q => q.id === qid);
+    } catch (_) {
+      if (emptyEl) emptyEl.querySelector('p').textContent = 'Failed to load question.';
+      return;
+    }
+
+    if (!question) {
+      if (emptyEl) {
+        emptyEl.querySelector('div').textContent = '🔍';
+        emptyEl.querySelector('p').textContent   = 'Question #' + qid + ' not found.';
+      }
+      return;
+    }
+
+    /* ── Hide loading, show card ─────────────────────────── */
+    if (emptyEl) emptyEl.style.display = 'none';
+    const card = document.getElementById('qd-card');
+    if (card) card.style.display = '';
+
+    /* ── Domain class helper ─────────────────────────────── */
+    function domainClass(d) {
+      if (d === 'Verbal Ability')    return 'verbal';
+      if (d === 'Numerical Ability') return 'numerical';
+      if (d === 'Clerical Ability')  return 'clerical';
+      return 'general';
+    }
+
+    /* ── Meta chips ──────────────────────────────────────── */
+    const metaEl = document.getElementById('qd-meta');
+    if (metaEl) {
+      const diffStyle = question.difficulty === 'Hard' ? ' hard' : '';
+      metaEl.innerHTML =
+        `<span class="qb-num">#${question.id}</span>` +
+        `<span class="q-domain-badge ${domainClass(question.domain)}">${question.domain.replace(' Ability', '')}</span>` +
+        `<span class="q-difficulty${diffStyle}">${question.difficulty}</span>`;
+      document.title = 'Question #' + question.id + ' | Hauers Admin';
+    }
+
+    /* ── Question text ───────────────────────────────────── */
+    const qTextEl = document.getElementById('qd-question');
+    if (qTextEl) qTextEl.textContent = question.question;
+
+    /* ── Choices ─────────────────────────────────────────── */
+    const choicesEl = document.getElementById('qd-choices');
+    if (choicesEl) {
+      const letters = ['A', 'B', 'C', 'D'];
+      choicesEl.innerHTML = question.choices.map((choice, i) => {
+        const isCorrect = choice === question.answer;
+        return `
+          <div class="qd-choice${isCorrect ? ' correct' : ''}">
+            <span class="qd-choice-letter">${letters[i] || (i + 1)}</span>
+            <span>${choice}</span>
+            ${isCorrect ? `<span style="margin-left:auto;font-size:0.75rem;font-weight:700;color:#4ade80">Correct</span>` : ''}
+          </div>`;
+      }).join('');
+    }
+
+    /* ── Correct answer footer ───────────────────────────── */
+    const footerEl = document.getElementById('qd-correct-footer');
+    if (footerEl) {
+      footerEl.innerHTML = `<strong style="color:var(--text-main)">Correct answer:</strong> ${question.answer}`;
+    }
+
+  })();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Progress | Hauers</title>
+  <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <script src="/js/theme-toggle.js"></script>
+</head>
+<body data-role="reviewee">
+
+  <div id="navbar-placeholder"><%- include('../partials/navbar') %></div>
+
+  <div class="app-shell">
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div id="sidebar-placeholder"><%- include('../partials/sidebar') %></div>
+
+    <main class="page-content">
+
+      <!-- ── Page header ── -->
+      <header class="page-header">
+        <div>
+          <h1 class="page-title">Progress</h1>
+          <p class="page-subtitle">Domain trends, consistency, and exam readiness</p>
+        </div>
+        <div class="sp-header-chips">
+          <span class="sp-chip sp-chip--week" id="pg-level-chip">Professional</span>
+          <span class="sp-chip sp-chip--days" id="pg-days-chip">— days left</span>
+        </div>
+      </header>
+
+      <!-- ── Exam readiness callout (only if ≤14 days to exam) ── -->
+      <div class="pg-readiness-callout" id="pg-readiness-callout" hidden>
+        <span class="material-symbols-outlined pg-readiness-icon" id="pg-readiness-icon">emoji_events</span>
+        <div>
+          <p class="pg-readiness-title" id="pg-readiness-title">Exam is coming up</p>
+          <p class="pg-readiness-sub" id="pg-readiness-sub">You have fewer than 14 days left</p>
+        </div>
+      </div>
+
+      <!-- ── Row 1: Readiness ring + Consistency ── -->
+      <div class="dash-grid dash-grid--2col" style="margin-bottom:2rem">
+
+        <!-- Readiness ring -->
+        <div class="dash-card">
+          <span class="card-label">Overall Readiness</span>
+          <p class="card-sub">Your current exam readiness score</p>
+          <div class="dash-ring-wrap">
+            <svg class="ring-svg" viewBox="0 0 130 130">
+              <circle class="ring-track" cx="65" cy="65" r="54"/>
+              <circle class="ring-prog"  cx="65" cy="65" r="54" id="pg-ring-el"/>
+            </svg>
+            <div class="ring-center">
+              <div class="ring-value-row">
+                <span class="ring-pct" id="pg-ring-val">0</span>
+                <span class="ring-unit">%</span>
+              </div>
+              <span class="ring-note">Readiness</span>
+            </div>
+          </div>
+          <div id="pg-change-badge"></div>
+          <p class="card-footnote" id="pg-ring-footnote" style="margin-top:1rem;font-weight:600;color:var(--text-subdued)"></p>
+        </div>
+
+        <!-- Consistency -->
+        <div class="dash-card pg-consistency-card">
+          <span class="card-label">Study Consistency</span>
+          <p class="card-sub">How consistent have you been?</p>
+          <div class="pg-streak-display">
+            <span class="material-symbols-outlined pg-streak-flame" style="font-variation-settings:'FILL' 1">local_fire_department</span>
+            <span class="pg-streak-num" id="pg-streak-num">0</span>
+          </div>
+          <p class="pg-streak-label">day streak</p>
+          <div class="pg-consistency-row" id="pg-consistency-row">
+            <!-- 7 day dots -->
+          </div>
+          <p class="pg-consistency-caption" id="pg-consistency-caption">Keep going — consistency builds mastery.</p>
+        </div>
+
+      </div>
+
+      <!-- ── Strong vs Weak domains ── -->
+      <div class="dash-grid dash-grid--2col" style="margin-bottom:2rem" id="pg-strength-grid">
+
+        <div class="dash-card">
+          <span class="card-label" style="color:#4ade80">
+            <span class="material-symbols-outlined" style="font-size:15px;vertical-align:-2px;margin-right:3px">trending_up</span>
+            Strongest Domains
+          </span>
+          <div id="pg-strong-list" style="margin-top:0.75rem"></div>
+        </div>
+
+        <div class="dash-card">
+          <span class="card-label" style="color:var(--fs-pink)">
+            <span class="material-symbols-outlined" style="font-size:15px;vertical-align:-2px;margin-right:3px">priority_high</span>
+            Needs Most Work
+          </span>
+          <div id="pg-weak-list" style="margin-top:0.75rem"></div>
+        </div>
+
+      </div>
+
+      <!-- ── Domain line charts ── -->
+      <div class="dash-card" style="margin-bottom:2rem">
+        <span class="card-label">Domain Score Over Time</span>
+        <p class="card-sub">How your scores have changed after each session or diagnostic</p>
+        <div class="pg-domain-charts" id="pg-domain-charts" style="margin-top:1.25rem">
+          <div class="pg-charts-empty" id="pg-charts-empty">
+            <span class="material-symbols-outlined" style="font-size:2.5rem;color:var(--text-subdued)">bar_chart</span>
+            <p>Complete sessions to see your progress trends here.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Recent sessions ── -->
+      <div class="dash-card">
+        <span class="card-label">Recent Sessions</span>
+        <p class="card-sub">Your last 5 practice sessions</p>
+        <div id="pg-quiz-list" style="margin-top:0.75rem">
+          <p style="font-size:0.85rem;color:var(--text-subdued)">No sessions yet.</p>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="/js/app-shell.js"></script>
+  <script>
+  (async () => {
+
+    /* ── User info ── */
+    try {
+      const ur = await fetch('/reviewee/api/user');
+      if (ur.ok) {
+        const u = await ur.json();
+        const chipEl = document.getElementById('pg-level-chip');
+        if (chipEl && u.examLevel) chipEl.textContent = u.examLevel;
+      }
+    } catch (_) {}
+
+    /* ── Fetch progress ── */
+    let d;
+    try {
+      const r = await fetch('/reviewee/api/progress');
+      if (!r.ok) return;
+      d = await r.json();
+    } catch (_) { return; }
+
+    /* ── Days left chip ── */
+    const daysChip = document.getElementById('pg-days-chip');
+    if (d.examDate && daysChip) {
+      const days = Math.max(0, Math.ceil((new Date(d.examDate) - new Date()) / 86400000));
+      daysChip.textContent = `${days} days left`;
+
+      /* ── Exam readiness callout (≤14 days) ── */
+      if (days <= 14) {
+        const callout   = document.getElementById('pg-readiness-callout');
+        const titleEl   = document.getElementById('pg-readiness-title');
+        const subEl     = document.getElementById('pg-readiness-sub');
+        const iconEl    = document.getElementById('pg-readiness-icon');
+        const readScore = d.readinessScore || 0;
+        if (callout) callout.removeAttribute('hidden');
+        if (titleEl) titleEl.textContent = days === 0 ? 'Exam is today!' : `${days} day${days > 1 ? 's' : ''} until your exam`;
+        if (subEl) {
+          subEl.textContent = readScore >= 80
+            ? `You're at ${readScore}% — above passing. You're on track!`
+            : `You're at ${readScore}%. Passing is 80%. Focus on your weakest domains.`;
+        }
+        if (iconEl) iconEl.textContent = readScore >= 80 ? 'emoji_events' : 'warning';
+        if (callout) callout.style.borderColor = readScore >= 80 ? '#4ade80' : 'var(--fs-orange)';
+      }
+    } else if (daysChip) {
+      daysChip.textContent = '— days left';
+    }
+
+    /* ── Readiness ring ── */
+    const readPct = d.readinessScore ?? 0;
+    const circ    = 2 * Math.PI * 54;
+    const ringEl  = document.getElementById('pg-ring-el');
+    const valEl   = document.getElementById('pg-ring-val');
+    if (ringEl) {
+      ringEl.style.strokeDasharray  = `${circ} ${circ}`;
+      ringEl.style.strokeDashoffset = circ;
+      ringEl.getBoundingClientRect();
+      requestAnimationFrame(() => {
+        ringEl.style.transition = 'stroke-dashoffset 1.4s cubic-bezier(0.4,0,0.2,1)';
+        ringEl.style.strokeDashoffset = circ * (1 - readPct / 100);
+      });
+    }
+    if (valEl) {
+      let cur = 0;
+      const step = () => { cur = Math.min(cur + Math.ceil(readPct / 40), readPct); valEl.textContent = cur; if (cur < readPct) requestAnimationFrame(step); };
+      requestAnimationFrame(step);
+    }
+    const badgeEl  = document.getElementById('pg-change-badge');
+    const footEl   = document.getElementById('pg-ring-footnote');
+    if (badgeEl && d.readinessChange != null) {
+      const chg = d.readinessChange;
+      const dir = chg > 0 ? 'up' : chg < 0 ? 'down' : 'flat';
+      const ico = chg > 0 ? 'trending_up' : chg < 0 ? 'trending_down' : 'trending_flat';
+      badgeEl.innerHTML = `<span class="pg-change ${dir}"><span class="material-symbols-outlined" style="font-size:15px">${ico}</span> ${chg > 0 ? '+' : ''}${chg} pts this week</span>`;
+    }
+    if (footEl) {
+      const gap = Math.max(0, 80 - readPct);
+      footEl.textContent = gap > 0 ? `${gap} pts to passing score (80%)` : 'Passing score achieved!';
+    }
+
+    /* ── Consistency block ── */
+    const streakNum  = document.getElementById('pg-streak-num');
+    const conRow     = document.getElementById('pg-consistency-row');
+    const conCaption = document.getElementById('pg-consistency-caption');
+    const streak = d.streak || 0;
+    if (streakNum) streakNum.textContent = streak;
+    if (conRow) {
+      const days7 = Array.from({ length: 7 }, (_, i) => i < streak);
+      conRow.innerHTML = days7.map((active, i) => {
+        const dayLabels = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+        return `<div class="pg-cons-dot-wrap">
+          <div class="pg-cons-dot${active ? ' active' : ''}"></div>
+          <span class="pg-cons-label">${dayLabels[i]}</span>
+        </div>`;
+      }).join('');
+    }
+    if (conCaption) {
+      if (streak === 0)       conCaption.textContent = "Start today — your first session begins the streak.";
+      else if (streak < 3)    conCaption.textContent = `${streak} day${streak > 1 ? 's' : ''} in — keep going!`;
+      else if (streak < 7)    conCaption.textContent = `${streak}-day streak — you're building great habits.`;
+      else                    conCaption.textContent = `${streak}-day streak — outstanding commitment!`;
+    }
+
+    /* ── Strong vs Weak ── */
+    if (d.domainProgress && d.domainProgress.length) {
+      const sorted   = [...d.domainProgress].sort((a, b) => b.current - a.current);
+      const strongEl = document.getElementById('pg-strong-list');
+      const weakEl   = document.getElementById('pg-weak-list');
+
+      function domainListItem(dp) {
+        const warn = dp.current < 70;
+        const fillW = Math.min(100, Math.round((dp.current / dp.target) * 100));
+        return `<div class="pg-swdomain-row">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+            <span style="font-size:0.82rem;font-weight:600;color:var(--text-main)">${dp.domain}</span>
+            <span style="font-size:0.82rem;font-weight:700;color:${warn ? 'var(--fs-pink)' : '#4ade80'}">${dp.current}%</span>
+          </div>
+          <div class="sp-domain-track" style="height:5px">
+            <div class="sp-domain-fill${warn ? ' warn' : ''}" style="background:${dp.color || '#888'};width:${fillW}%;height:100%"></div>
+          </div>
+        </div>`;
+      }
+
+      if (strongEl) strongEl.innerHTML = sorted.slice(0, 2).map(domainListItem).join('') || '<p style="font-size:0.82rem;color:var(--text-subdued)">Take the diagnostic to see scores.</p>';
+      if (weakEl)   weakEl.innerHTML   = sorted.slice(-2).reverse().map(domainListItem).join('') || '<p style="font-size:0.82rem;color:var(--text-subdued)">Take the diagnostic to see scores.</p>';
+    }
+
+    /* ── Domain line charts (Chart.js) ── */
+    const dsh      = d.domainScoreHistory || {};
+    const chartsEl = document.getElementById('pg-domain-charts');
+    const emptyEl  = document.getElementById('pg-charts-empty');
+
+    const DOMAIN_COLORS = {
+      'Verbal Ability':      '#818cf8',
+      'Numerical Ability':   '#ff9933',
+      'Analytical Ability':  '#2dd4bf',
+      'Clerical Ability':    '#f472b6',
+      'General Information': '#60a5fa',
+    };
+
+    const domains = Object.keys(dsh).filter(k => dsh[k] && dsh[k].length > 0);
+    if (domains.length && chartsEl) {
+      if (emptyEl) emptyEl.style.display = 'none';
+      chartsEl.innerHTML = domains.map(d => `
+        <div class="pg-chart-card">
+          <p class="pg-chart-domain-label">${d}</p>
+          <div class="pg-chart-wrap">
+            <canvas id="chart-${d.replace(/\s+/g, '-')}"></canvas>
+          </div>
+        </div>`).join('');
+
+      const isDark = () => document.documentElement.dataset.theme === 'dark' || document.body.dataset.theme === 'dark';
+
+      domains.forEach(domain => {
+        const pts   = dsh[domain];
+        const color = DOMAIN_COLORS[domain] || '#888';
+        const labels = pts.map(p => p.t || '');
+        const values = pts.map(p => p.score);
+        const canvasId = `chart-${domain.replace(/\s+/g, '-')}`;
+        const canvas   = document.getElementById(canvasId);
+        if (!canvas) return;
+
+        new Chart(canvas, {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [{
+              data:            values,
+              borderColor:     color,
+              backgroundColor: color + '22',
+              borderWidth:     2,
+              pointRadius:     4,
+              pointHoverRadius: 6,
+              tension:         0.35,
+              fill:            true,
+            }],
+          },
+          options: {
+            responsive:          true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend:  { display: false },
+              tooltip: {
+                callbacks: {
+                  label: ctx => ` ${ctx.parsed.y}%`,
+                },
+              },
+            },
+            scales: {
+              x: {
+                grid:  { display: false },
+                ticks: { font: { size: 10 }, maxRotation: 0 },
+              },
+              y: {
+                min:  0,
+                max:  100,
+                grid: { color: isDark() ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)' },
+                ticks: {
+                  font: { size: 10 },
+                  callback: v => v + '%',
+                  stepSize: 25,
+                },
+              },
+            },
+          },
+        });
+      });
+    }
+
+    /* ── Recent sessions ── */
+    const sessions = d.quizHistory || [];
+    const sesEl    = document.getElementById('pg-quiz-list');
+    if (sesEl && sessions.length) {
+      sesEl.innerHTML = sessions.slice(0, 5).map(s => {
+        const start    = new Date(s.startedAt);
+        const dateStr  = start.toLocaleDateString('en-PH', { month: 'short', day: 'numeric' });
+        const scoreClass = s.score >= 80 ? 'good' : s.score >= 60 ? 'warn' : 'bad';
+        const domains  = (s.domains || []).map(dd => `<span class="review-hist-domain">${dd.replace(' Ability','')}</span>`).join('');
+        return `<div class="review-hist-row">
+          <div class="review-hist-left">
+            <span class="material-symbols-outlined review-hist-icon">quiz</span>
+            <div>
+              <p class="review-hist-date">${dateStr}</p>
+              <div class="review-hist-domains">${domains || '<span class="review-hist-domain">General</span>'}</div>
+            </div>
+          </div>
+          <div class="review-hist-right">
+            <span class="review-hist-meta">${s.questionCount || 0} questions</span>
+            <span class="review-hist-score ${scoreClass}">${s.score || 0}%</span>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+  })();
+  </script>
+</body>
+</html>

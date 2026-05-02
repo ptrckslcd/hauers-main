@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Review | Hauers</title>
+  <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <script src="/js/theme-toggle.js"></script>
+</head>
+<body data-role="reviewee">
+
+  <div id="navbar-placeholder"><%- include('../partials/navbar') %></div>
+
+  <div class="app-shell">
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div id="sidebar-placeholder"><%- include('../partials/sidebar') %></div>
+
+    <main class="page-content">
+
+      <!-- ── Gate view: pretest not complete ── -->
+      <div id="review-gate" hidden>
+        <div class="review-gate-wrap">
+          <span class="material-symbols-outlined review-gate-icon">assignment_late</span>
+          <h2 class="review-gate-title">Diagnostic required</h2>
+          <p class="review-gate-body">Before starting a practice session, complete the diagnostic assessment. It measures your current domain scores and enables the system to personalise your review plan.</p>
+          <a href="/reviewee/diagnostic" class="cta-pill review-gate-btn">
+            <span class="material-symbols-outlined" style="font-size:18px;margin-right:0.4rem">play_circle</span>
+            Start Diagnostic
+          </a>
+        </div>
+      </div>
+
+      <!-- ── Main review UI (visible after pretest) ── -->
+      <div id="review-main" hidden>
+
+        <!-- Page header -->
+        <header class="page-header">
+          <div>
+            <h1 class="page-title">Review</h1>
+            <p class="page-subtitle">Practice sessions and study history</p>
+          </div>
+        </header>
+
+        <!-- ── Start Session card ── -->
+        <section class="review-start-section">
+          <div class="dash-card review-start-card">
+            <div class="review-start-header">
+              <div>
+                <span class="card-label">Start a Session</span>
+                <p class="card-sub">Choose domains and mode, then begin practising</p>
+              </div>
+              <span class="material-symbols-outlined review-start-icon">school</span>
+            </div>
+
+            <!-- Domain selection -->
+            <div class="review-domain-select">
+              <p class="review-option-label">
+                <span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px">category</span>
+                Domain
+              </p>
+              <div class="review-chip-row" id="review-domain-chips">
+                <button class="review-chip active" data-domain="All">All Domains</button>
+                <button class="review-chip" data-domain="Verbal Ability">Verbal</button>
+                <button class="review-chip" data-domain="Numerical Ability">Numerical</button>
+                <button class="review-chip" data-domain="Analytical Ability">Analytical</button>
+                <button class="review-chip" data-domain="Clerical Ability">Clerical</button>
+                <button class="review-chip" data-domain="General Information">General Info</button>
+              </div>
+            </div>
+
+            <!-- Mode selection -->
+            <div class="review-mode-select">
+              <p class="review-option-label">
+                <span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px">tune</span>
+                Mode
+              </p>
+              <div class="review-mode-grid">
+                <button class="review-mode-card active" data-mode="practice" type="button">
+                  <span class="material-symbols-outlined review-mode-icon">psychology</span>
+                  <span class="review-mode-name">Practice</span>
+                  <span class="review-mode-desc">Instant feedback per question</span>
+                </button>
+                <button class="review-mode-card" data-mode="timed" type="button">
+                  <span class="material-symbols-outlined review-mode-icon">timer</span>
+                  <span class="review-mode-name">Timed</span>
+                  <span class="review-mode-desc">45-minute exam simulation</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="review-start-row">
+              <p class="review-start-note" id="review-start-note">All domains · Practice mode</p>
+              <a href="/reviewee/quiz" class="cta-pill" id="review-start-link">
+                <span class="material-symbols-outlined" style="font-size:17px;margin-right:0.35rem">play_arrow</span>
+                Start Session
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── Session history ── -->
+        <section class="review-history-section">
+          <div class="review-history-header">
+            <h2 class="review-history-title">Session History</h2>
+            <span class="review-history-count" id="review-session-count">0 sessions</span>
+          </div>
+          <div id="review-history-list">
+            <div class="review-empty-state">
+              <span class="material-symbols-outlined" style="font-size:2.5rem;color:var(--text-subdued)">history</span>
+              <p>No sessions yet. Start your first practice session above.</p>
+            </div>
+          </div>
+        </section>
+
+      </div><!-- /#review-main -->
+
+    </main>
+  </div>
+
+  <script src="/js/app-shell.js"></script>
+  <script>
+  (async () => {
+
+    /* ── Load dashboard to check pretestComplete ─────────── */
+    let d;
+    try {
+      const r = await fetch('/reviewee/api/dashboard');
+      if (r.ok) d = await r.json();
+    } catch (_) {}
+
+    const gateEl = document.getElementById('review-gate');
+    const mainEl = document.getElementById('review-main');
+
+    if (!d || !d.pretestComplete) {
+      if (gateEl) gateEl.removeAttribute('hidden');
+      return;
+    }
+    if (mainEl) mainEl.removeAttribute('hidden');
+
+    /* ── Domain chip selection ──────────────────────────── */
+    let selectedDomain = 'All';
+    let selectedMode   = 'practice';
+
+    function updateStartLink() {
+      const link = document.getElementById('review-start-link');
+      const note = document.getElementById('review-start-note');
+      if (!link) return;
+      const domainParam = selectedDomain === 'All' ? '' : `?domain=${encodeURIComponent(selectedDomain)}`;
+      link.href = `/reviewee/quiz${domainParam}`;
+      if (note) {
+        const domLabel = selectedDomain === 'All' ? 'All domains' : selectedDomain;
+        const modeLabel = selectedMode === 'timed' ? 'Timed mode' : 'Practice mode';
+        note.textContent = `${domLabel} · ${modeLabel}`;
+      }
+    }
+
+    document.getElementById('review-domain-chips').addEventListener('click', e => {
+      const chip = e.target.closest('.review-chip');
+      if (!chip) return;
+      document.querySelectorAll('.review-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      selectedDomain = chip.dataset.domain;
+      updateStartLink();
+    });
+
+    document.querySelectorAll('.review-mode-card').forEach(card => {
+      card.addEventListener('click', () => {
+        document.querySelectorAll('.review-mode-card').forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+        selectedMode = card.dataset.mode;
+        updateStartLink();
+      });
+    });
+
+    updateStartLink();
+
+    /* ── Load session history ───────────────────────────── */
+    let sessions = [];
+    try {
+      const r = await fetch('/reviewee/api/sessions');
+      if (r.ok) {
+        const data = await r.json();
+        sessions = data.sessions || [];
+      }
+    } catch (_) {}
+
+    const countEl = document.getElementById('review-session-count');
+    const listEl  = document.getElementById('review-history-list');
+    if (countEl) countEl.textContent = `${sessions.length} session${sessions.length !== 1 ? 's' : ''}`;
+
+    if (listEl && sessions.length) {
+      listEl.innerHTML = sessions.map((s, i) => {
+        const start = new Date(s.startedAt);
+        const end   = new Date(s.endedAt);
+        const mins  = Math.round((end - start) / 60000);
+        const dateStr = start.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
+        const timeStr = start.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' });
+        const domainsHtml = (s.domains || []).map(d =>
+          `<span class="review-hist-domain">${d.replace(' Ability', '')}</span>`
+        ).join('');
+        const scoreClass = s.score >= 80 ? 'good' : s.score >= 60 ? 'warn' : 'bad';
+        return `
+          <div class="review-hist-row">
+            <div class="review-hist-left">
+              <span class="material-symbols-outlined review-hist-icon">quiz</span>
+              <div>
+                <p class="review-hist-date">${dateStr} at ${timeStr}</p>
+                <div class="review-hist-domains">${domainsHtml || '<span class="review-hist-domain">General</span>'}</div>
+              </div>
+            </div>
+            <div class="review-hist-right">
+              <span class="review-hist-meta">${s.questionCount || 0} questions · ${mins < 1 ? '<1' : mins} min</span>
+              <span class="review-hist-score ${scoreClass}">${s.score || 0}%</span>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+  })();
+  </script>
+</body>
+</html>

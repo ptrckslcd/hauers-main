@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Home | Hauers</title>
+  <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <script src="/js/theme-toggle.js"></script>
+</head>
+<body data-role="admin">
+
+  <div id="navbar-placeholder"><%- include('../partials/navbar') %></div>
+
+  <div class="app-shell sidebar-collapsed">
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div id="sidebar-placeholder"><%- include('../partials/admin-sidebar') %></div>
+
+    <main class="page-content home-page">
+
+      <!-- ── Header ── -->
+      <header class="home-header">
+        <div class="home-greet-block">
+          <p class="home-greet-eyebrow" id="admin-greeting-eyebrow">Welcome back</p>
+          <h1 class="home-greet-name" id="admin-greeting-name">Admin</h1>
+        </div>
+        <div class="home-header-actions">
+          <a href="/admin/reviewees" class="home-btn home-btn--ghost">
+            <span class="material-symbols-outlined" aria-hidden="true">group</span>
+            Reviewees
+          </a>
+          <a href="/admin/reports" class="home-btn home-btn--primary">
+            <span class="material-symbols-outlined" aria-hidden="true">analytics</span>
+            View Reports
+          </a>
+        </div>
+      </header>
+
+      <!-- ── Main grid ── -->
+      <div class="home-main-grid">
+
+        <!-- ── Quick Stats ── -->
+        <div class="home-stats-row">
+
+          <div class="dash-card home-stat-card">
+            <div class="home-stat-ico-wrap home-stat-ico-wrap--blue" aria-hidden="true">
+              <span class="material-symbols-outlined">group</span>
+            </div>
+            <div class="home-stat-copy">
+              <span class="home-stat-value" id="stat-active-reviewees">—</span>
+              <span class="home-stat-label">Active Reviewees</span>
+            </div>
+          </div>
+
+          <div class="dash-card home-stat-card">
+            <div class="home-stat-ico-wrap home-stat-ico-wrap--green" aria-hidden="true">
+              <span class="material-symbols-outlined">assignment_turned_in</span>
+            </div>
+            <div class="home-stat-copy">
+              <span class="home-stat-value" id="stat-pretest-completion">—</span>
+              <span class="home-stat-label">Pretest completed</span>
+            </div>
+          </div>
+
+          <div class="dash-card home-stat-card">
+            <div class="home-stat-ico-wrap home-stat-ico-wrap--amber" aria-hidden="true">
+              <span class="material-symbols-outlined">speed</span>
+            </div>
+            <div class="home-stat-copy">
+              <span class="home-stat-value" id="stat-avg-rating">—</span>
+              <span class="home-stat-label">Avg. readiness score</span>
+            </div>
+          </div>
+
+          <div class="dash-card home-stat-card">
+            <div class="home-stat-ico-wrap home-stat-ico-wrap--fire" aria-hidden="true">
+              <span class="material-symbols-outlined">person_add</span>
+            </div>
+            <div class="home-stat-copy">
+              <span class="home-stat-value" id="stat-new-signups">—</span>
+              <span class="home-stat-label">New this week</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ── Row 2: Cohort Alerts & Quick Actions ── -->
+        <div class="dash-grid dash-grid--split21">
+
+          <!-- Alerts -->
+          <div class="dash-card">
+            <div class="home-recs-header" style="margin-bottom: 0;">
+              <div>
+                <h2 class="home-recs-title">Cohort Alerts</h2>
+                <p class="home-recs-sub">Flagged performance issues for the current batch</p>
+              </div>
+            </div>
+            <div id="alerts-container" style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.65rem;">
+
+              <div class="home-alert-item home-alert-item--critical">
+                <span class="material-symbols-outlined home-alert-icon">warning</span>
+                <div class="home-alert-body">
+                  <strong>Numerical Ability is critically low</strong>
+                  <p>Cohort averages 54% — 26 pts below the passing threshold.</p>
+                </div>
+              </div>
+
+              <div class="home-alert-item home-alert-item--warn">
+                <span class="material-symbols-outlined home-alert-icon">schedule</span>
+                <div class="home-alert-body">
+                  <strong>22 users stalled after pretest</strong>
+                  <p>They completed the diagnostic but haven't started a study plan within 7 days.</p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="dash-card">
+            <h2 class="home-recs-title" style="margin-bottom: 0.85rem;">Quick Actions</h2>
+            <div class="quick-actions">
+
+              <a href="/admin/question-bank" class="qa-btn">
+                <span class="qa-icon" style="background:rgba(167,139,250,0.12);color:#8b5cf6">
+                  <span class="material-symbols-outlined">add_circle</span>
+                </span>
+                <span class="qa-label">Add Question</span>
+                <span class="material-symbols-outlined qa-arrow">chevron_right</span>
+              </a>
+
+              <a href="/admin/reports" class="qa-btn">
+                <span class="qa-icon" style="background:rgba(96,165,250,0.12);color:#3b82f6">
+                  <span class="material-symbols-outlined">bar_chart</span>
+                </span>
+                <span class="qa-label">View Reports</span>
+                <span class="material-symbols-outlined qa-arrow">chevron_right</span>
+              </a>
+
+              <a href="/admin/profile-form" class="qa-btn">
+                <span class="qa-icon" style="background:rgba(255,153,51,0.12);color:var(--fs-orange)">
+                  <span class="material-symbols-outlined">edit_document</span>
+                </span>
+                <span class="qa-label">Profile Form</span>
+                <span class="material-symbols-outlined qa-arrow">chevron_right</span>
+              </a>
+
+              <a href="/admin/announcements" class="qa-btn">
+                <span class="qa-icon" style="background:rgba(239,68,68,0.08);color:#ef4444">
+                  <span class="material-symbols-outlined">campaign</span>
+                </span>
+                <span class="qa-label">Announcements</span>
+                <span class="material-symbols-outlined qa-arrow">chevron_right</span>
+              </a>
+
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/admin-shell.js"></script>
+  <script>
+    (async () => {
+      // Fetch user for greeting
+      try {
+        const r = await fetch('/admin/api/user');
+        if (r.ok) {
+          const user = await r.json();
+          const hour = new Date().getHours();
+          let tod = 'morning';
+          if (hour >= 12 && hour < 18) tod = 'afternoon';
+          else if (hour >= 18) tod = 'evening';
+          
+          document.getElementById('admin-greeting-eyebrow').textContent = `Good ${tod}`;
+          document.getElementById('admin-greeting-name').textContent = user.firstName;
+        }
+      } catch (err) {}
+    })();
+  </script>
+</body>
+</html>

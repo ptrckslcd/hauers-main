@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics | Hauers Admin</title>
+  <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <script src="/js/theme-toggle.js"></script>
+</head>
+<body data-role="admin">
+
+  <div id="navbar-placeholder"><%- include('../partials/navbar') %></div>
+
+  <div class="app-shell sidebar-collapsed">
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div id="sidebar-placeholder"><%- include('../partials/admin-sidebar') %></div>
+
+    <main class="page-content">
+
+      <!-- ── Page header ── -->
+      <header class="page-header">
+        <div>
+          <h1 class="page-title">Analytics</h1>
+
+        </div>
+      </header>
+
+      <!-- ── KPI tiles ── -->
+      <div class="dash-grid dash-grid--4col">
+
+        <div class="dash-card admin-kpi-card">
+          <div class="admin-kpi-header">
+            <span class="card-label">Total Users</span>
+            <span class="admin-kpi-icon admin-kpi-icon--blue">
+              <span class="material-symbols-outlined">group</span>
+            </span>
+          </div>
+          <div class="admin-kpi-val" id="an-total-users">—</div>
+          <span class="admin-kpi-delta admin-kpi-delta--up">
+            <span class="material-symbols-outlined" style="font-size:14px">trending_up</span>
+            ↑ 3 new this week
+          </span>
+          <p class="card-sub">registered learners</p>
+        </div>
+
+        <div class="dash-card admin-kpi-card">
+          <div class="admin-kpi-header">
+            <span class="card-label">Active Reviewees</span>
+            <span class="admin-kpi-icon admin-kpi-icon--green">
+              <span class="material-symbols-outlined">person_play</span>
+            </span>
+          </div>
+          <div class="admin-kpi-val" id="an-active">—</div>
+          <span class="admin-kpi-delta admin-kpi-delta--up">
+            <span class="material-symbols-outlined" style="font-size:14px">stat_up</span>
+            ↑ 5 vs last week
+          </span>
+          <p class="card-sub">active this week</p>
+        </div>
+
+        <div class="dash-card admin-kpi-card">
+          <div class="admin-kpi-header">
+            <span class="card-label">Avg Readiness</span>
+            <span class="admin-kpi-icon admin-kpi-icon--orange">
+              <span class="material-symbols-outlined">speed</span>
+            </span>
+          </div>
+          <div class="admin-kpi-val" id="an-readiness">—</div>
+          <span class="admin-kpi-delta admin-kpi-delta--up">
+            <span class="material-symbols-outlined" style="font-size:14px">trending_up</span>
+            ↑ 2pts vs last month
+          </span>
+          <p class="card-sub">platform average</p>
+        </div>
+
+        <div class="dash-card admin-kpi-card">
+          <div class="admin-kpi-header">
+            <span class="card-label">Pass Rate</span>
+            <span class="admin-kpi-icon admin-kpi-icon--pink">
+              <span class="material-symbols-outlined">check_circle</span>
+            </span>
+          </div>
+          <div class="admin-kpi-val" id="an-pass-rate">—</div>
+          <span class="admin-kpi-delta admin-kpi-delta--warn">
+            <span class="material-symbols-outlined" style="font-size:14px">trending_down</span>
+            ↓ 2pts vs last month
+          </span>
+          <p class="card-sub">mock exam passing</p>
+        </div>
+
+      </div>
+
+      <!-- ── Row 2: Domain bars + Radar chart ── -->
+      <div class="dash-grid dash-grid--split21">
+
+        <!-- Domain performance bars -->
+        <div class="dash-card">
+          <span class="card-label">Domain Performance</span>
+          <p class="card-sub">Platform average score per subject area</p>
+          <div id="an-domain-bars" style="margin-top:1rem"></div>
+        </div>
+
+        <!-- Radar chart -->
+        <div class="dash-card analytics-chart-card" style="display:flex;flex-direction:column">
+          <span class="card-label">Domain Radar</span>
+          <p class="card-sub">Comparative coverage across all domains</p>
+          <div class="analytics-chart-wrap" style="flex:1;min-height:240px">
+            <canvas id="radar-chart"></canvas>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── Row 3: Signup trend (full width) ── -->
+      <div class="dash-card analytics-chart-card" style="display:flex;flex-direction:column;margin-bottom:1.25rem">
+        <span class="card-label">New Signups — Last 6 Months</span>
+        <p class="card-sub">Growth in registered learners month over month</p>
+        <div class="analytics-chart-wrap" style="min-height:220px">
+          <canvas id="signups-chart"></canvas>
+        </div>
+      </div>
+
+      <!-- ── Row 4: Users by Exam Level ── -->
+      <div class="dash-grid dash-grid--split21">
+
+        <!-- Level bars -->
+        <div class="dash-card">
+          <span class="card-label">Users by Exam Level</span>
+          <p class="card-sub">Distribution of learners across exam tracks</p>
+          <div id="an-level-bars" style="margin-top:1rem"></div>
+        </div>
+
+        <!-- Level doughnut -->
+        <div class="dash-card analytics-chart-card" style="display:flex;flex-direction:column">
+          <span class="card-label">Level Breakdown</span>
+          <p class="card-sub">Share of each exam track</p>
+          <div class="analytics-chart-wrap" style="flex:1;min-height:200px">
+            <canvas id="level-doughnut"></canvas>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── Row 5: Focus areas + Pass rate + Activity feed ── -->
+      <div class="dash-grid">
+
+        <!-- Weakest domains -->
+        <div class="dash-card">
+          <span class="card-label">Focus Areas</span>
+          <p class="card-sub">Domains where learners score below 65%</p>
+          <div id="an-weak-domains" style="margin-top:1rem;display:flex;flex-wrap:wrap;gap:0.5rem;align-content:flex-start"></div>
+          <p id="an-weak-tip" style="font-size:0.78rem;color:var(--text-subdued);margin-top:auto;padding-top:0.85rem;border-top:1px solid var(--border-subdued)"></p>
+        </div>
+
+        <!-- Pass rate progress -->
+        <div class="dash-card">
+          <span class="card-label">Mock Exam Pass Rate</span>
+          <p class="card-sub">Share of users scoring &ge; 70% on mock exams</p>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0.75rem 0">
+            <div style="position:relative;display:inline-flex;align-items:center;justify-content:center">
+              <svg width="130" height="130" viewBox="0 0 100 100" style="transform:rotate(-90deg)">
+                <circle cx="50" cy="50" r="40" fill="none" stroke="var(--border-subdued)" stroke-width="9"/>
+                <circle id="an-pass-ring" cx="50" cy="50" r="40" fill="none"
+                  stroke="#FF9933" stroke-width="9" stroke-linecap="round"
+                  stroke-dasharray="251.33" stroke-dashoffset="251.33"
+                  style="transition:stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1)"/>
+              </svg>
+              <div style="position:absolute;text-align:center">
+                <div id="an-pass-ring-val" style="font-size:1.75rem;font-weight:800;color:var(--text-main)">—</div>
+              </div>
+            </div>
+            <p style="margin-top:0.75rem;font-size:0.8rem;color:var(--text-subdued)" id="an-pass-label"></p>
+          </div>
+        </div>
+
+        <!-- Recent activity -->
+        <div class="dash-card">
+          <span class="card-label">Recent Activity</span>
+          <p class="card-sub">Latest platform events</p>
+          <div class="activity-feed" id="an-activity" style="margin-top:0.75rem"></div>
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" crossorigin="anonymous"></script>
+  <script src="/js/admin-shell.js"></script>
+  <script>
+  (async () => {
+
+    /* ── Fetch dashboard data ────────────────────────────── */
+    let data;
+    try {
+      const r = await fetch('/admin/api/dashboard');
+      if (!r.ok) return;
+      data = await r.json();
+    } catch (_) { return; }
+
+    /* ── KPI tiles ───────────────────────────────────────── */
+    const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+    setVal('an-total-users', data.totalUsers);
+    setVal('an-active',      data.activeReviewees);
+    setVal('an-readiness',   data.avgReadiness + '%');
+    setVal('an-pass-rate',   data.passRate + '%');
+
+    /* ── Chart.js theme-aware colors ─────────────────────── */
+    const isDark  = () => document.documentElement.getAttribute('data-theme') !== 'light';
+    const gridCol = () => isDark() ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)';
+    const lblCol  = () => isDark() ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)';
+
+    /* ── Domain performance bars ─────────────────────────── */
+    const domainBarsEl = document.getElementById('an-domain-bars');
+    if (domainBarsEl && data.domainAverages) {
+      domainBarsEl.innerHTML = data.domainAverages.map(({ domain, avg }) => {
+        const valCls  = avg >= 70 ? ' good' : avg < 60 ? ' warn' : '';
+        const fillCls = avg < 60  ? ' warn' : '';
+        return `
+          <div class="msc-bar-item">
+            <div class="msc-bar-label">
+              <span>${domain}</span>
+              <span class="mbar-val${valCls}">${avg}%</span>
+            </div>
+            <div class="msc-bar-track">
+              <div class="msc-bar-fill${fillCls}" data-bw="${avg}"
+                style="width:0%;transition:width 1.1s cubic-bezier(0.4,0,0.2,1)"></div>
+            </div>
+          </div>`;
+      }).join('');
+      setTimeout(() => {
+        domainBarsEl.querySelectorAll('.msc-bar-fill[data-bw]').forEach(b => {
+          b.style.width = b.dataset.bw + '%';
+        });
+      }, 300);
+    }
+
+    /* ── Radar chart ─────────────────────────────────────── */
+    const radarCanvas = document.getElementById('radar-chart');
+    if (radarCanvas && data.domainAverages) {
+      const labels = data.domainAverages.map(d => d.domain.replace(' Ability', ''));
+      const values = data.domainAverages.map(d => d.avg);
+      new Chart(radarCanvas, {
+        type: 'radar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Avg Score',
+            data: values,
+            fill: true,
+            backgroundColor: 'rgba(255,153,51,0.12)',
+            borderColor:     '#FF9933',
+            pointBackgroundColor: '#FF9933',
+            pointBorderColor:     '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor:     '#FF9933',
+            borderWidth: 2,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            r: {
+              beginAtZero: true,
+              max: 100,
+              ticks:    { display: false, stepSize: 25 },
+              grid:     { color: gridCol() },
+              angleLines:{ color: gridCol() },
+              pointLabels: {
+                color:    lblCol(),
+                font:     { size: 11 },
+              },
+            }
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: { label: ctx => ' ' + ctx.raw + '%' }
+            }
+          }
+        }
+      });
+    }
+
+    /* ── Signup trend (mock monthly data) ────────────────── */
+    const signupsCanvas = document.getElementById('signups-chart');
+    if (signupsCanvas) {
+      const months  = ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
+      const signups = [8, 14, 11, 19, 22, data.recentSignups || 14];
+      new Chart(signupsCanvas, {
+        type: 'bar',
+        data: {
+          labels: months,
+          datasets: [{
+            label: 'New Signups',
+            data: signups,
+            backgroundColor: 'rgba(255,153,51,0.75)',
+            borderRadius: 6,
+            borderSkipped: false,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { grid: { display: false }, ticks: { color: lblCol() } },
+            y: { grid: { color: gridCol() }, ticks: { color: lblCol(), precision: 0 }, beginAtZero: true },
+          },
+          plugins: {
+            legend: { display: false },
+          }
+        }
+      });
+    }
+
+    /* ── Level split bars ────────────────────────────────── */
+    const levelBarsEl = document.getElementById('an-level-bars');
+    if (levelBarsEl && data.usersByLevel) {
+      levelBarsEl.innerHTML = data.usersByLevel.map(({ level, count }) => {
+        const pct = Math.round((count / data.totalUsers) * 100);
+        return `
+          <div class="msc-bar-item">
+            <div class="msc-bar-label">
+              <span>${level}</span>
+              <span class="mbar-val">${count} <span style="opacity:0.5;font-weight:400">(${pct}%)</span></span>
+            </div>
+            <div class="msc-bar-track">
+              <div class="msc-bar-fill" data-bw="${pct}"
+                style="width:0%;transition:width 1.1s cubic-bezier(0.4,0,0.2,1)"></div>
+            </div>
+          </div>`;
+      }).join('');
+      setTimeout(() => {
+        levelBarsEl.querySelectorAll('.msc-bar-fill[data-bw]').forEach(b => {
+          b.style.width = b.dataset.bw + '%';
+        });
+      }, 350);
+    }
+
+    /* ── Level doughnut chart ────────────────────────────── */
+    const doughnutCanvas = document.getElementById('level-doughnut');
+    if (doughnutCanvas && data.usersByLevel) {
+      const labels = data.usersByLevel.map(d => d.level);
+      const values = data.usersByLevel.map(d => d.count);
+      new Chart(doughnutCanvas, {
+        type: 'doughnut',
+        data: {
+          labels,
+          datasets: [{
+            data: values,
+            backgroundColor: ['#FF9933', '#FF3366', '#818cf8'],
+            borderColor:     'transparent',
+            hoverOffset:     8,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '65%',
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color:     lblCol(),
+                boxWidth:  12,
+                padding:   14,
+                font:      { size: 12 },
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: ctx => ' ' + ctx.label + ': ' + ctx.raw + ' users',
+              }
+            }
+          }
+        }
+      });
+    }
+
+    /* ── Focus areas (weak domains) ───────────────── */
+    const weakEl = document.getElementById('an-weak-domains');
+    const weakTip = document.getElementById('an-weak-tip');
+    if (weakEl && data.domainAverages) {
+      const weak = data.domainAverages.filter(d => d.avg < 65);
+      if (weak.length) {
+        weakEl.innerHTML = weak.map(d => `
+          <span style="display:inline-flex;align-items:center;gap:0.35rem;padding:0.3rem 0.7rem;
+            background:rgba(255,51,102,0.08);border:1px solid rgba(255,51,102,0.2);
+            border-radius:99px;font-size:0.78rem;font-weight:600;color:var(--fs-pink)">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
+            ${d.domain.replace(' Ability','')}&nbsp;${d.avg}%
+          </span>`).join('');
+        if (weakTip) weakTip.textContent = 'These areas need more practice content and targeted exercises.';
+      } else {
+        weakEl.innerHTML = '<span style="font-size:0.85rem;color:var(--text-subdued)">All domains are performing well!</span>';
+      }
+    }
+
+    /* ── Pass rate ring ──────────────────────── */
+    if (data.passRate != null) {
+      setVal('an-pass-ring-val', data.passRate + '%');
+      const passLabel = document.getElementById('an-pass-label');
+      if (passLabel) passLabel.textContent = Math.round(data.totalUsers * data.passRate / 100) + ' of ' + data.totalUsers + ' users passing';
+      setTimeout(() => {
+        const ring = document.getElementById('an-pass-ring');
+        if (ring) {
+          const offset = 251.33 - (data.passRate / 100) * 251.33;
+          ring.style.strokeDashoffset = offset;
+          const col = data.passRate >= 60 ? '#4ade80' : data.passRate >= 40 ? '#FF9933' : '#FF3366';
+          ring.style.stroke = col;
+        }
+      }, 400);
+    }
+
+    /* ── Recent activity feed ───────────────── */
+    const actEl = document.getElementById('an-activity');
+    if (actEl && data.recentActivity) {
+      const icons = { signup: 'person_add', diagnostic: 'monitor_heart', quiz: 'quiz' };
+      actEl.innerHTML = data.recentActivity.map(item => `
+        <div class="activity-item">
+          <span class="activity-icon activity-icon--${item.type}">
+            <span class="material-symbols-outlined" style="font-size:15px;line-height:1;font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 20">${icons[item.type] || 'info'}</span>
+          </span>
+          <div class="activity-body">
+            <p class="activity-text">${item.text}</p>
+            <span class="activity-time">${item.time}</span>
+          </div>
+        </div>`).join('');
+    }
+
+  })();
+  </script>
+
+</body>
+</html>

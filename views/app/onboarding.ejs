@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Initial Profile Setup | Hauers</title>
+
+  <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/auth.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block">
+
+  <script src="/js/theme-toggle.js"></script>
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <linearGradient id="fs-gradient" x1="100%" y1="100%" x2="0%" y2="0%">
+        <stop offset="0%" stop-color="#FF3366" />
+        <stop offset="50%" stop-color="#FF9933" />
+        <stop offset="100%" stop-color="#FFD633" />
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <div class="ambient-glow"></div>
+
+  <button id="theme-toggle-btn" class="auth-theme-toggle" aria-label="Toggle Theme">
+    <span class="material-symbols-outlined sun-icon">light_mode</span>
+    <span class="material-symbols-outlined moon-icon">dark_mode</span>
+  </button>
+
+  <main class="auth-main">
+    <div class="auth-column">
+      <div class="greeting-area">
+        <div class="brand-logos">
+          <img src="/assets/access-logo.svg" alt="ACCESS logo" style="height: 28px;">
+          <span class="brand-x">&times;</span>
+          <img src="/assets/hauers-logo.svg" alt="Hauers logo" style="height: 28px;">
+        </div>
+        <h1 class="greeting">Profile Setup</h1>
+        <p class="greeting-sub">Complete your setup so we can personalize your review journey.</p>
+      </div>
+
+      <div class="ob-steps" id="ob-steps">
+        <div class="ob-step active" data-step="1">
+          <div class="ob-step-dot">1</div>
+          <span class="ob-step-label">Identity</span>
+        </div>
+        <div class="ob-step-line" id="line-1-2"></div>
+        <div class="ob-step" data-step="2">
+          <div class="ob-step-dot">2</div>
+          <span class="ob-step-label">Exam</span>
+        </div>
+        <div class="ob-step-line" id="line-2-3"></div>
+        <div class="ob-step" data-step="3">
+          <div class="ob-step-dot">3</div>
+          <span class="ob-step-label">Preferences</span>
+        </div>
+      </div>
+
+      <form id="ob-form" action="/reviewee/diagnostic" method="GET" novalidate>
+        <div class="ob-panel" data-panel="1">
+          <p class="ob-question">Personal Information</p>
+
+          <div class="grid-3" style="margin-bottom:1rem;">
+            <div class="form-group">
+              <label class="input-label" for="firstName">First Name</label>
+              <div class="input-field"><div class="input-inner"><div class="input-stack"><input type="text" id="firstName" name="firstName" placeholder="Juan" required></div></div></div>
+            </div>
+            <div class="form-group">
+              <label class="input-label" for="middleName">Middle Name</label>
+              <div class="input-field"><div class="input-inner"><div class="input-stack"><input type="text" id="middleName" name="middleName" placeholder="Perez"></div></div></div>
+            </div>
+            <div class="form-group">
+              <label class="input-label" for="lastName">Last Name</label>
+              <div class="input-field"><div class="input-inner"><div class="input-stack"><input type="text" id="lastName" name="lastName" placeholder="Dela Cruz" required></div></div></div>
+            </div>
+          </div>
+
+          <div class="grid-2" style="margin-bottom:1rem;">
+            <div class="form-group" style="position: relative;">
+              <label class="input-label" for="birthDateDisplay">Birth Date</label>
+              <div class="input-field">
+                <div class="input-inner ob-date-shell">
+                  <div class="input-stack">
+                    <input type="hidden" id="birthDate" name="birthDate" required>
+                    <input type="text" id="birthDateDisplay" placeholder="MM/DD/YYYY">
+                    <span class="material-symbols-outlined input-trailing-icon" style="cursor: pointer; pointer-events: auto;">calendar_month</span>
+                  </div>
+                </div>
+              </div>
+              <div class="ob-calendar" id="birthDateCalendar" aria-hidden="true"></div>
+            </div>
+            <div class="form-group">
+              <label class="input-label" for="sex">Sex</label>
+              <div class="input-field">
+                <div class="input-inner">
+                  <div class="input-stack">
+                    <select class="ob-select" id="sex" name="sex" required>
+                      <option value="" disabled selected>Select sex...</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Intersex">Intersex</option>
+                      <option value="Prefer not to say">Prefer not to say</option>
+                    </select>
+                    <span class="material-symbols-outlined input-trailing-icon">expand_more</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <p class="ob-question" style="margin-top:1.25rem;font-size:1.05rem;">Reviewee Profile</p>
+          <div class="form-group">
+            <label class="input-label" for="revieweeType">Type of reviewee</label>
+            <div class="input-field">
+              <div class="input-inner">
+                <div class="input-stack">
+                  <select class="ob-select" id="revieweeType" name="revieweeType" required>
+                    <option value="" disabled selected>Select an option...</option>
+                    <option value="student">Student</option>
+                    <option value="alumni">Alumni</option>
+                    <option value="employee">Employee</option>
+                  </select>
+                  <span class="material-symbols-outlined input-trailing-icon">expand_more</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="section-school" class="dynamic-section">
+            <div class="form-group">
+              <label class="input-label" for="college">College / Department</label>
+              <div class="input-field">
+                <div class="input-inner">
+                  <div class="input-stack">
+                    <select class="ob-select" id="college" name="college">
+                      <option value="" disabled selected>Select College / Campus...</option>
+                      <option value="Buhi Campus">Buhi Campus</option>
+                      <option value="College of Arts and Sciences">College of Arts and Sciences</option>
+                      <option value="College of Computer Studies">College of Computer Studies</option>
+                      <option value="College of Engineering and Architecture">College of Engineering and Architecture</option>
+                      <option value="College of Health Sciences">College of Health Sciences</option>
+                      <option value="College of Technological and Developmental Education">College of Technological and Developmental Education</option>
+                      <option value="College of Tourism, Hospitality and Business Management">College of Tourism, Hospitality and Business Management</option>
+                    </select>
+                    <span class="material-symbols-outlined input-trailing-icon">expand_more</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="input-label" for="program">Program / Course</label>
+                <div class="input-field"><div class="input-inner"><div class="input-stack"><input type="text" id="program" name="program" placeholder="e.g. BSCS"></div></div></div>
+              </div>
+              <div class="form-group">
+                <label class="input-label" for="yearLevel">Year Level / Graduated</label>
+                <div class="input-field"><div class="input-inner"><div class="input-stack"><input type="text" id="yearLevel" name="yearLevel" placeholder="e.g. 4th Year or 2023"></div></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="section-employee" class="dynamic-section">
+            <div class="form-group">
+              <label class="input-label" for="department">Department or Office</label>
+              <div class="input-field"><div class="input-inner"><div class="input-stack"><input type="text" id="department" name="department" placeholder="e.g. HR Department"></div></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ob-panel hidden" data-panel="2">
+          <p class="ob-question">Exam Information</p>
+
+          <div class="form-group">
+            <label class="input-label" for="examLevel">Target Exam Level</label>
+            <div class="input-field">
+              <div class="input-inner">
+                <div class="input-stack">
+                  <select class="ob-select" id="examLevel" name="examLevel" required>
+                    <option value="" disabled selected>Select level...</option>
+                    <option value="Professional">Professional (CSE-PPT)</option>
+                    <option value="Subprofessional">Subprofessional (CSE-PPT)</option>
+                  </select>
+                  <span class="material-symbols-outlined input-trailing-icon">expand_more</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="input-label" for="examDate">Target Exam Date</label>
+            <div class="input-field">
+              <div class="input-inner">
+                <div class="input-stack">
+                  <select class="ob-select" id="examDate" name="examDate" required>
+                    <option value="" disabled selected>Select target window...</option>
+                    <option value="March">March</option>
+                    <option value="August">August</option>
+                  </select>
+                  <span class="material-symbols-outlined input-trailing-icon">expand_more</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ob-panel hidden" data-panel="3">
+          <p class="ob-question">How do you prefer to study?</p>
+
+          <div class="form-group">
+            <label class="input-label">Preferred Study Time</label>
+            <div class="ob-time-opts" style="display:flex;gap:0.5rem;">
+              <label class="ob-time-card" style="flex:1;"><input type="radio" name="studyTime" value="morning"><div class="ob-time-inner">Morning</div></label>
+              <label class="ob-time-card" style="flex:1;"><input type="radio" name="studyTime" value="afternoon"><div class="ob-time-inner">Afternoon</div></label>
+              <label class="ob-time-card" style="flex:1;"><input type="radio" name="studyTime" value="evening"><div class="ob-time-inner">Evening</div></label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="input-label" for="studyHours">Available Study Time</label>
+            <div class="input-field"><div class="input-inner"><div class="input-stack" style="gap:0.5rem;">
+              <span class="material-symbols-outlined input-icon">schedule</span>
+              <input type="range" id="studyHours" name="studyHours" min="1" max="40" value="10" style="flex:1;">
+              <output for="studyHours" id="hours-display" style="font-weight:700;min-width:3ch;text-align:right;">10</output>
+              <span style="color:var(--text-subdued)">hrs/wk</span>
+            </div></div></div>
+          </div>
+
+          <div class="form-group">
+            <label class="input-label">Preferred Study Days</label>
+            <div class="ob-days-grid" style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+              <label class="ob-day-chip"><input type="checkbox" name="studyDays" value="Mon"><span>Mon</span></label>
+              <label class="ob-day-chip"><input type="checkbox" name="studyDays" value="Tue"><span>Tue</span></label>
+              <label class="ob-day-chip"><input type="checkbox" name="studyDays" value="Wed"><span>Wed</span></label>
+              <label class="ob-day-chip"><input type="checkbox" name="studyDays" value="Thu"><span>Thu</span></label>
+              <label class="ob-day-chip"><input type="checkbox" name="studyDays" value="Fri"><span>Fri</span></label>
+              <label class="ob-day-chip"><input type="checkbox" name="studyDays" value="Sat"><span>Sat</span></label>
+              <label class="ob-day-chip"><input type="checkbox" name="studyDays" value="Sun"><span>Sun</span></label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="input-label" for="confidence">How confident or ready are you for the exam?</label>
+            <div class="input-field"><div class="input-inner"><div class="input-stack" style="gap:0.5rem;">
+              <span class="material-symbols-outlined input-icon">psychology</span>
+              <input type="range" id="confidence" name="confidence" min="1" max="10" value="5" style="flex:1;">
+              <output for="confidence" id="conf-display" style="font-weight:700;min-width:3ch;text-align:right;">5</output>
+              <span style="color:var(--text-subdued)">/10</span>
+            </div></div></div>
+          </div>
+
+          <div class="form-group">
+            <label class="input-label">Struggling Areas / Focus Topics</label>
+            <div class="ob-days-grid" style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+              <label class="ob-day-chip"><input type="checkbox" name="strugglingAreas" value="Numerical"><span>Numerical Ability</span></label>
+              <label class="ob-day-chip"><input type="checkbox" name="strugglingAreas" value="Verbal"><span>Verbal Ability</span></label>
+              <label class="ob-day-chip"><input type="checkbox" name="strugglingAreas" value="Clerical"><span>Clerical Operations</span></label>
+              <label class="ob-day-chip"><input type="checkbox" name="strugglingAreas" value="Logic"><span>Logic & Reasoning</span></label>
+              <label class="ob-day-chip"><input type="checkbox" name="strugglingAreas" value="General Info"><span>General Info</span></label>
+            </div>
+          </div>
+        </div>
+
+        <div class="ob-nav" id="ob-nav">
+          <button type="button" id="ob-back" class="ob-back-btn hidden">Back</button>
+          <button type="button" id="ob-next" class="submit-btn" style="flex:1;">Continue</button>
+        </div>
+      </form>
+
+      <section id="completion-view" class="completion-view hidden" aria-live="polite">
+        <div class="success-panel">
+          <div class="success-icon" aria-hidden="true">
+            <span class="material-symbols-outlined" style="font-size:36px;color:#fff">check</span>
+          </div>
+          <h2 class="success-title sa-item" style="--sa-delay:0.18s">Profile Setup Complete!</h2>
+          <p class="success-desc sa-item" style="--sa-delay:0.28s">You are ready for your pre-diagnostic. Start the test now to generate your initial feedback and study direction.</p>
+          <a href="/reviewee/diagnostic" class="submit-btn sa-item" style="--sa-delay:0.38s;max-width:320px;width:100%;display:inline-flex;justify-content:center;text-decoration:none;">Start Pre-Diagnostic</a>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof initThemeToggle === 'function') initThemeToggle();
+
+      // Make entire input shells behave like the control inside (inputs + selects)
+      document.querySelectorAll('.input-inner').forEach(inner => {
+        // Custom date shell has its own behavior; don't override it here
+        if (inner.classList.contains('ob-date-shell')) return;
+
+        const textLike = inner.querySelector('input[type="text"], input[type="email"], input[type="password"], textarea');
+        const select = inner.querySelector('select');
+
+        if (select || textLike) {
+          inner.style.cursor = 'text';
+          inner.addEventListener('click', (e) => {
+            // Ignore direct clicks on interactive children, let the browser handle them
+            if (e.target.closest('select, input, textarea, button')) return;
+
+            if (select && !select.classList.contains('ob-select')) {
+              select.focus();
+              select.click();
+              return;
+            }
+
+            if (textLike) {
+              textLike.focus();
+            }
+          });
+        }
+      });
+
+      // Custom themed calendar for birth date
+      (function initBirthDateCalendar() {
+        const shell = document.querySelector('.ob-date-shell');
+        const hiddenInput = document.getElementById('birthDate');
+        const displayInput = document.getElementById('birthDateDisplay');
+        const calendar = document.getElementById('birthDateCalendar');
+        if (!shell || !hiddenInput || !displayInput || !calendar) return;
+
+        const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+        let current = new Date();
+        let selected = null;
+
+        function formatValue(date) {
+          const y = date.getFullYear();
+          const m = String(date.getMonth() + 1).padStart(2, '0');
+          const d = String(date.getDate()).padStart(2, '0');
+          return `${y}-${m}-${d}`;
+        }
+
+        function formatLabel(date) {
+          return date.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' });
+        }
+
+        function render() {
+          const year = current.getFullYear();
+          const month = current.getMonth();
+          const firstOfMonth = new Date(year, month, 1);
+          const startDay = firstOfMonth.getDay();
+          const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+          const today = new Date();
+          const todayKey = formatValue(today);
+          const selectedKey = selected ? formatValue(selected) : null;
+
+          calendar.innerHTML = '';
+
+          const header = document.createElement('div');
+          header.className = 'ob-calendar-header';
+          
+          const titleControls = document.createElement('div');
+          titleControls.style.display = 'flex';
+          titleControls.style.gap = '0.4rem';
+
+          const monthSelect = document.createElement('select');
+          monthSelect.className = 'ob-calendar-select';
+          const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+          monthNames.forEach((mName, idx) => {
+            const opt = document.createElement('option');
+            opt.value = idx;
+            opt.textContent = mName;
+            if (idx === month) opt.selected = true;
+            monthSelect.appendChild(opt);
+          });
+          monthSelect.addEventListener('change', (e) => {
+            e.stopPropagation();
+            current.setMonth(parseInt(e.target.value));
+            render();
+          });
+
+          const yearSelect = document.createElement('select');
+          yearSelect.className = 'ob-calendar-select';
+          const initialYear = new Date().getFullYear();
+          for(let y = initialYear - 100; y <= initialYear + 10; y++) {
+            const opt = document.createElement('option');
+            opt.value = y;
+            opt.textContent = y;
+            if (y === year) opt.selected = true;
+            yearSelect.appendChild(opt);
+          }
+          yearSelect.addEventListener('change', (e) => {
+            e.stopPropagation();
+            current.setFullYear(parseInt(e.target.value));
+            render();
+          });
+
+          titleControls.appendChild(monthSelect);
+          titleControls.appendChild(yearSelect);
+          const nav = document.createElement('div');
+          nav.className = 'ob-calendar-nav';
+          const prev = document.createElement('button');
+          prev.type = 'button';
+          prev.innerHTML = '&lsaquo;';
+          const next = document.createElement('button');
+          next.type = 'button';
+          next.innerHTML = '&rsaquo;';
+          prev.addEventListener('click', (e) => {
+            e.stopPropagation();
+            current = new Date(year, month - 1, 1);
+            render();
+          });
+          next.addEventListener('click', (e) => {
+            e.stopPropagation();
+            current = new Date(year, month + 1, 1);
+            render();
+          });
+          nav.appendChild(prev);
+          nav.appendChild(next);
+          header.appendChild(titleControls);
+          header.appendChild(nav);
+          calendar.appendChild(header);
+
+          const grid = document.createElement('div');
+          grid.className = 'ob-calendar-grid';
+
+          WEEKDAYS.forEach(d => {
+            const cell = document.createElement('div');
+            cell.className = 'ob-calendar-cell is-weekday-label';
+            cell.textContent = d;
+            grid.appendChild(cell);
+          });
+
+          // leading blanks
+          for (let i = 0; i < startDay; i++) {
+            const blank = document.createElement('div');
+            blank.className = 'ob-calendar-cell';
+            grid.appendChild(blank);
+          }
+
+          for (let day = 1; day <= daysInMonth; day++) {
+            const date = new Date(year, month, day);
+            const key = formatValue(date);
+            const cell = document.createElement('button');
+            cell.type = 'button';
+            cell.className = 'ob-calendar-cell is-day';
+            cell.textContent = String(day);
+
+            if (key === todayKey) {
+              cell.classList.add('is-today');
+            }
+            if (key === selectedKey) {
+              cell.classList.add('is-selected');
+            }
+
+            cell.addEventListener('click', (e) => {
+              e.stopPropagation();
+              selected = date;
+              hiddenInput.value = formatValue(date);
+              displayInput.value = formatLabel(date);
+              calendar.classList.remove('visible');
+            });
+
+            grid.appendChild(cell);
+          }
+
+          calendar.appendChild(grid);
+        }
+
+        function openCalendar() {
+          // Close active select menus
+          document.querySelectorAll('.ob-select-menu.visible').forEach(m => {
+            m.classList.remove('visible');
+            const mfg = m.closest('.form-group');
+            if (mfg) {
+              mfg.style.zIndex = '1';
+              const mif = mfg.querySelector('.input-field');
+              if (mif) mif.classList.remove('has-active-menu');
+            }
+          });
+
+          render();
+          calendar.classList.add('visible');
+          const fg = calendar.closest('.form-group');
+          if (fg) {
+            fg.style.zIndex = '50';
+            const inputField = fg.querySelector('.input-field');
+            if (inputField) inputField.classList.add('has-active-menu');
+          }
+        }
+
+        function closeCalendar() {
+          calendar.classList.remove('visible');
+          const fg = calendar.closest('.form-group');
+          if (fg) {
+            fg.style.zIndex = '1';
+            const inputField = fg.querySelector('.input-field');
+            if (inputField) inputField.classList.remove('has-active-menu');
+          }
+        }
+
+        // Open/close when clicking on the calendar icon shell
+        const calendarIcon = shell.querySelector('.input-trailing-icon');
+        calendarIcon.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (calendar.classList.contains('visible')) {
+            closeCalendar();
+          } else {
+            openCalendar();
+          }
+        });
+
+        // Date input mask for manual typing
+        displayInput.addEventListener('input', (e) => {
+          let val = e.target.value.replace(/\D/g, '');
+          if(val.length > 8) val = val.substring(0, 8);
+          let formatted = val;
+          if(val.length > 2) {
+            formatted = val.substring(0, 2) + '/' + val.substring(2);
+            if(val.length > 4) {
+              formatted = val.substring(0, 2) + '/' + val.substring(2, 4) + '/' + val.substring(4);
+            }
+          }
+          if (e.target.value !== formatted) {
+            e.target.value = formatted;
+          }
+          if(formatted.length === 10) {
+            const parts = formatted.split('/');
+            // parts: MM, DD, YYYY
+            hiddenInput.value = `${parts[2]}-${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}`;
+            selected = new Date(parts[2], parseInt(parts[0]) - 1, parts[1]);
+            current = new Date(parts[2], parseInt(parts[0]) - 1, 1);
+            if (calendar.classList.contains('visible')) render();
+          }
+        });
+
+        displayInput.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openCalendar();
+        });
+
+        document.addEventListener('click', (e) => {
+          if (!shell.contains(e.target) && !calendar.contains(e.target)) {
+            closeCalendar();
+          }
+        });
+      })();
+
+      // Custom select dropdowns aligned with Hauers theme
+      (function initCustomSelects() {
+        const selects = document.querySelectorAll('.ob-panel select.ob-select');
+        if (!selects.length) return;
+
+        function getSelectedLabel(select) {
+          const opt = select.selectedOptions[0] || select.querySelector('option');
+          return opt ? opt.textContent : '';
+        }
+
+        selects.forEach(select => {
+          const inner = select.closest('.input-inner');
+          const stack = select.closest('.input-stack');
+          if (!inner || !stack || inner.dataset.enhancedSelect === '1') return;
+
+          inner.dataset.enhancedSelect = '1';
+
+          const icon = stack.querySelector('.input-trailing-icon');
+          const display = document.createElement('div');
+          display.className = 'ob-select-display';
+          display.textContent = getSelectedLabel(select);
+          if (!select.value) {
+            display.classList.add('is-placeholder');
+          }
+
+          if (icon) {
+            stack.insertBefore(display, icon);
+          } else {
+            stack.appendChild(display);
+          }
+
+          const menu = document.createElement('div');
+          menu.className = 'ob-select-menu';
+
+          select.querySelectorAll('option').forEach(opt => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'ob-select-option';
+            btn.textContent = opt.textContent;
+
+            if (opt.disabled) {
+              btn.classList.add('is-disabled');
+              btn.disabled = true;
+            }
+
+            if (opt.selected && !opt.disabled) {
+              btn.classList.add('is-selected');
+            }
+
+            btn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              if (opt.disabled) return;
+
+              select.value = opt.value;
+              display.textContent = opt.textContent;
+              display.classList.remove('is-placeholder');
+
+              menu.querySelectorAll('.ob-select-option').forEach(o => o.classList.remove('is-selected'));
+              btn.classList.add('is-selected');
+
+              // Notify any listeners (e.g., reviewee type dynamic sections)
+              select.dispatchEvent(new Event('change', { bubbles: true }));
+
+              menu.classList.remove('visible');
+              const currentFg = select.closest('.form-group');
+              if (currentFg) {
+                currentFg.style.zIndex = '1';
+                const inputField = currentFg.querySelector('.input-field');
+                if (inputField) inputField.classList.remove('has-active-menu');
+              }
+            });
+
+            menu.appendChild(btn);
+          });
+
+          const fg = select.closest('.form-group');
+          if(fg) {
+            fg.style.position = 'relative';
+            fg.appendChild(menu);
+          } else {
+            inner.appendChild(menu);
+          }
+
+          function toggleMenu() {
+            const isOpen = menu.classList.contains('visible');
+            document.querySelectorAll('.ob-select-menu.visible').forEach(m => {
+              if (m !== menu) {
+                m.classList.remove('visible');
+                const mfg = m.closest('.form-group');
+                if (mfg) {
+                  mfg.style.zIndex = '1';
+                  const mif = mfg.querySelector('.input-field');
+                  if (mif) mif.classList.remove('has-active-menu');
+                }
+              }
+            });
+
+            // Close calendar if it's open
+            const cal = document.getElementById('birthDateCalendar');
+            if (cal && cal.classList.contains('visible')) {
+              cal.classList.remove('visible');
+              const cfg = cal.closest('.form-group');
+              if (cfg) {
+                cfg.style.zIndex = '1';
+                const cif = cfg.querySelector('.input-field');
+                if (cif) cif.classList.remove('has-active-menu');
+              }
+            }
+
+            const ifield = inner.closest('.input-field');
+            if (isOpen) {
+              menu.classList.remove('visible');
+              if(fg) fg.style.zIndex = '1';
+              if(ifield) ifield.classList.remove('has-active-menu');
+            } else {
+              menu.classList.add('visible');
+              if(fg) fg.style.zIndex = '50';
+              if(ifield) ifield.classList.add('has-active-menu');
+            }
+          }
+
+          inner.addEventListener('click', (e) => {
+            // If click is inside the menu itself, ignore here
+            if (e.target.closest('.ob-select-menu') || e.target.closest('.ob-select-option')) return;
+            e.stopPropagation();
+            toggleMenu();
+          });
+        });
+
+        document.addEventListener('click', () => {
+          document.querySelectorAll('.ob-select-menu.visible').forEach(m => {
+            m.classList.remove('visible');
+            const mfg = m.closest('.form-group');
+            if (mfg) {
+              mfg.style.zIndex = '1';
+              const mif = mfg.querySelector('.input-field');
+              if (mif) mif.classList.remove('has-active-menu');
+            }
+          });
+        });
+      })();
+
+      let step = 1;
+      const TOTAL = 3;
+
+      const panels = document.querySelectorAll('.ob-panel');
+      const stepDots = document.querySelectorAll('.ob-step');
+      const line12 = document.getElementById('line-1-2');
+      const line23 = document.getElementById('line-2-3');
+      const nextBtn = document.getElementById('ob-next');
+      const backBtn = document.getElementById('ob-back');
+      const nav = document.getElementById('ob-nav');
+      const form = document.getElementById('ob-form');
+      const greeting = document.querySelector('.greeting-area');
+      const steps = document.getElementById('ob-steps');
+      const completionView = document.getElementById('completion-view');
+      const authColumn = document.querySelector('.auth-column');
+
+      const revieweeType = document.getElementById('revieweeType');
+      const schoolSection = document.getElementById('section-school');
+      const employeeSection = document.getElementById('section-employee');
+
+      function syncTypeSections() {
+        const type = revieweeType ? revieweeType.value : '';
+        if (schoolSection) schoolSection.classList.toggle('active', type === 'student' || type === 'alumni');
+        if (employeeSection) employeeSection.classList.toggle('active', type === 'employee');
+      }
+
+      if (revieweeType) {
+        revieweeType.addEventListener('change', syncTypeSections);
+        syncTypeSections();
+      }
+
+      const hours = document.getElementById('studyHours');
+      const hoursDisplay = document.getElementById('hours-display');
+      if (hours && hoursDisplay) {
+        hours.addEventListener('input', () => { hoursDisplay.textContent = hours.value; });
+      }
+
+      const confidence = document.getElementById('confidence');
+      const confDisplay = document.getElementById('conf-display');
+      if (confidence && confDisplay) {
+        confidence.addEventListener('input', () => { confDisplay.textContent = confidence.value; });
+      }
+
+      function updateUI(n) {
+        panels.forEach(p => p.classList.toggle('hidden', Number(p.dataset.panel) !== n));
+        stepDots.forEach(s => {
+          const sn = Number(s.dataset.step);
+          s.classList.toggle('active', sn === n);
+          s.classList.toggle('done', sn < n);
+        });
+
+        if (line12) line12.classList.toggle('done', n > 1);
+        if (line23) line23.classList.toggle('done', n > 2);
+        backBtn.classList.toggle('hidden', n === 1);
+
+        if (n === 3) nextBtn.textContent = 'Submit Profile';
+        else nextBtn.textContent = 'Continue';
+
+        nav.style.display = 'flex';
+      }
+
+      function validate(currentStep) {
+        const panel = document.querySelector('.ob-panel[data-panel="' + currentStep + '"]');
+        if (!panel) return true;
+
+        const requiredInputs = panel.querySelectorAll('input[required], select[required]');
+        let valid = true;
+
+        requiredInputs.forEach(el => {
+          const dyn = el.closest('.dynamic-section');
+          if (dyn && !dyn.classList.contains('active')) return;
+
+          if (!String(el.value || '').trim()) valid = false;
+        });
+
+        return valid;
+      }
+
+      function shake(currentStep) {
+        const panel = document.querySelector('.ob-panel[data-panel="' + currentStep + '"]');
+        if (!panel) return;
+        panel.classList.remove('shake');
+        void panel.offsetWidth;
+        panel.classList.add('shake');
+        panel.addEventListener('animationend', () => panel.classList.remove('shake'), { once: true });
+      }
+
+      nextBtn.addEventListener('click', () => {
+        if (!validate(step)) {
+          shake(step);
+          return;
+        }
+
+        if (step < TOTAL) {
+          step += 1;
+          updateUI(step);
+          return;
+        }
+
+        if (step === TOTAL) {
+          sessionStorage.setItem('onboardingComplete', 'true');
+          const fd = new FormData(document.getElementById('ob-form'));
+          const data = Object.fromEntries(fd.entries());
+
+          const selectedAreas = Array.from(document.querySelectorAll('input[name="strugglingAreas"]:checked')).map(i => i.value);
+          if (selectedAreas.length) data.strugglingAreas = selectedAreas;
+
+          const selectedDays = Array.from(document.querySelectorAll('input[name="studyDays"]:checked')).map(i => i.value);
+          if (selectedDays.length) data.studyDays = selectedDays;
+
+          sessionStorage.setItem('studyPrefs', JSON.stringify(data));
+
+          if (form) form.classList.add('hidden');
+          if (greeting) greeting.classList.add('hidden');
+          if (steps) steps.classList.add('hidden');
+          if (completionView) completionView.classList.remove('hidden');
+          if (authColumn) authColumn.classList.add('completion-mode');
+        }
+      });
+
+      backBtn.addEventListener('click', () => {
+        if (step > 1) {
+          step -= 1;
+          updateUI(step);
+        }
+      });
+
+      updateUI(step);
+    });
+  </script>
+</body>
+</html>
