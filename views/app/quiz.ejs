@@ -612,10 +612,10 @@
   <script>
   (function () {
     var allQuestions = [];
-    var filteredQs   = [];
     var currentIdx   = 0;
     var userAnswers  = [];
     var selectedCat  = 'All';
+    var currentSessionId = null;
 
     /* ── Phase switch ── */
     function show(phase) {
@@ -633,43 +633,51 @@
       document.querySelectorAll('.quiz-cat-chip').forEach(function (c) { c.classList.remove('active'); });
       chip.classList.add('active');
       selectedCat = chip.dataset.cat;
-      updateCount();
     });
 
-    function updateCount() {
-      var n = selectedCat === 'All'
-        ? allQuestions.length
-        : allQuestions.filter(function (q) { return q.domain === selectedCat; }).length;
-      var el = document.getElementById('quiz-count-label');
-      if (el) el.textContent = n + ' question' + (n !== 1 ? 's' : '');
-    }
-
     /* ── Start ── */
-    document.getElementById('quiz-start-btn').addEventListener('click', function () {
-      // Direct call to app-shell state function if possible, or manual bridge
+    document.getElementById('quiz-start-btn').addEventListener('click', async function () {
+      const btn = this;
+      btn.disabled = true;
+      btn.innerHTML = 'Starting... <span class="material-symbols-outlined" style="font-size:18px">hourglass_empty</span>';
+      
       const shell = document.querySelector('.app-shell');
       const sidebar = document.getElementById('app-sidebar');
       if (shell) shell.classList.add('sidebar-collapsed');
       if (sidebar) sidebar.classList.add('collapsed');
       document.body.classList.add('sidebar-collapsed');
-      
-      // Persist for app-shell.js to pick up on next page/refresh
       localStorage.setItem('hauers_sidebar_collapsed', '1');
 
-      filteredQs = selectedCat === 'All'
-        ? allQuestions.slice()
-        : allQuestions.filter(function (q) { return q.domain === selectedCat; });
-      if (!filteredQs.length) return;
-      currentIdx  = 0;
-      userAnswers = [];
-      show('question');
-      renderQ();
+      try {
+        const res = await fetch('/reviewee/api/session/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ domain: selectedCat })
+        });
+        const data = await res.json();
+        
+        if (data.questions && data.questions.length > 0) {
+          allQuestions = data.questions;
+          currentSessionId = data.sessionId;
+          currentIdx  = 0;
+          userAnswers = [];
+          show('question');
+          renderQ();
+        } else {
+          alert("No questions found for this domain.");
+        }
+      } catch (err) {
+        alert("Failed to start session.");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Start Assessment <span class="material-symbols-outlined" style="font-size:18px">arrow_forward</span>';
+      }
     });
 
     /* ── Render question ── */
     function renderQ() {
-      var q     = filteredQs[currentIdx];
-      var total = filteredQs.length;
+      var q     = allQuestions[currentIdx];
+      var total = allQuestions.length;
       var num   = currentIdx + 1;
 
       var fill = document.getElementById('quiz-prog-fill');
@@ -683,11 +691,11 @@
       if (dbadge)   dbadge.textContent   = q.domain;
       if (difbadge) {
         difbadge.textContent = q.difficulty;
-        difbadge.className   = 'quiz-diff-badge diff-' + q.difficulty.toLowerCase();
+        difbadge.className   = 'quiz-diff-badge diff-' + (q.difficulty ? q.difficulty.toLowerCase() : 'medium');
       }
 
       var qText = document.getElementById('quiz-q-text');
-      if (qText) qText.textContent = q.question;
+      if (qText) qText.textContent = q.question_text;
 
       var choicesEl = document.getElementById('quiz-choices');
       if (choicesEl) {
@@ -718,55 +726,86 @@
     }
 
     /* ── Handle answer ── */
-    function handleAnswer(chosen, q, clickedBtn) {
+    async function handleAnswer(chosen, q, clickedBtn) {
       if(document.querySelector('.quiz-choice:disabled')) return; // Prevent multiple clicks
-
-      var isCorrect = chosen === q.answer;
-      userAnswers.push({ id: q.id, domain: q.domain, chosen: chosen, correct: q.answer, isCorrect: isCorrect });
-
+      
       document.querySelectorAll('.quiz-choice').forEach(function (btn) {
-        btn.disabled = true;
-        var v = btn.dataset.val;
-        if (v === q.answer)    {
-          btn.classList.add('correct');
-          btn.querySelector('.choice-action-icon').textContent = 'check_circle';
-          btn.querySelector('.choice-action-icon').style.opacity = '1';
-          btn.querySelector('.choice-action-icon').style.color = '#4ade80';
-          btn.querySelector('.choice-action-icon').style.transform = 'translateX(0)';
-        }
-        else if (v === chosen) {
-          btn.classList.add('wrong');
-          btn.querySelector('.choice-action-icon').textContent = 'cancel';
-          btn.querySelector('.choice-action-icon').style.opacity = '1';
-          btn.querySelector('.choice-action-icon').style.color = 'var(--fs-pink)';
-          btn.querySelector('.choice-action-icon').style.transform = 'translateX(0)';
-        }
+        btn.disabled = true; // Lock choices immediately
       });
 
-      var fb = document.getElementById('quiz-feedback');
-      if (fb) {
-        fb.innerHTML = isCorrect
-          ? '<span class="material-symbols-outlined" style="font-size:20px;">task_alt</span> <span>Excellent! Correct answer.</span>'
-          : '<span class="material-symbols-outlined" style="font-size:20px;">error</span> <span>The correct answer is <strong>' + q.answer + '</strong></span>';
-        fb.className = 'qz-feedback ' + (isCorrect ? 'correct' : 'wrong');
-        fb.hidden    = false;
-      }
+      clickedBtn.innerHTML += '<span class="material-symbols-outlined" style="margin-left:auto; animation:spin 1s linear infinite;">autorenew</span>';
 
-      var nw      = document.getElementById('quiz-next-wrap');
-      var nextBtn = document.getElementById('quiz-next-btn');
-      var isLast  = currentIdx === filteredQs.length - 1;
-      
-      // Update progress bar to include this question
-      var fill = document.getElementById('quiz-prog-fill');
-      if (fill) fill.style.width = ((currentIdx + 1) / filteredQs.length * 100) + '%';
-      
-      if (nextBtn) nextBtn.innerHTML = isLast ? 'Show My Results <span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>' : 'Next Question <span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>';
-      if (nw) nw.hidden = false;
-      if (nextBtn) {
-        nextBtn.onclick = function () {
-          if (isLast) { showResults(); }
-          else        { currentIdx++; renderQ(); }
-        };
+      try {
+        const res = await fetch('/reviewee/api/session/answer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId: currentSessionId,
+            questionId: q.id,
+            chosenAnswerText: chosen
+          })
+        });
+        const data = await res.json();
+        const isCorrect = data.correct;
+        const correctAns = data.correctAnswer;
+        
+        userAnswers.push({ 
+          id: q.id, 
+          domain: q.domain, 
+          chosen: chosen, 
+          correct: correctAns, 
+          isCorrect: isCorrect,
+          delta: data.delta
+        });
+
+        document.querySelectorAll('.quiz-choice').forEach(function (btn) {
+          var v = btn.dataset.val;
+          btn.innerHTML = btn.innerHTML.replace(/<span.*autorenew.*<\/span>/, ''); // Remove spinner
+          
+          if (v === correctAns) {
+            btn.classList.add('correct');
+            btn.querySelector('.choice-action-icon').textContent = 'check_circle';
+            btn.querySelector('.choice-action-icon').style.opacity = '1';
+            btn.querySelector('.choice-action-icon').style.color = '#4ade80';
+            btn.querySelector('.choice-action-icon').style.transform = 'translateX(0)';
+          }
+          else if (v === chosen && !isCorrect) {
+            btn.classList.add('wrong');
+            btn.querySelector('.choice-action-icon').textContent = 'cancel';
+            btn.querySelector('.choice-action-icon').style.opacity = '1';
+            btn.querySelector('.choice-action-icon').style.color = 'var(--fs-pink)';
+            btn.querySelector('.choice-action-icon').style.transform = 'translateX(0)';
+          }
+        });
+
+        var fb = document.getElementById('quiz-feedback');
+        if (fb) {
+          let mEloMsg = ` (M-Elo Delta: ${data.delta > 0 ? '+' : ''}${data.delta})`;
+          fb.innerHTML = isCorrect
+            ? '<span class="material-symbols-outlined" style="font-size:20px;">task_alt</span> <span>Excellent! Correct answer.' + mEloMsg + '</span>'
+            : '<span class="material-symbols-outlined" style="font-size:20px;">error</span> <span>The correct answer is <strong>' + correctAns + '</strong>' + mEloMsg + '</span>';
+          fb.className = 'qz-feedback ' + (isCorrect ? 'correct' : 'wrong');
+          fb.hidden    = false;
+        }
+
+        var nw      = document.getElementById('quiz-next-wrap');
+        var nextBtn = document.getElementById('quiz-next-btn');
+        var isLast  = currentIdx === allQuestions.length - 1;
+        
+        var fill = document.getElementById('quiz-prog-fill');
+        if (fill) fill.style.width = ((currentIdx + 1) / allQuestions.length * 100) + '%';
+        
+        if (nextBtn) nextBtn.innerHTML = isLast ? 'Show My Results <span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>' : 'Next Question <span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span>';
+        if (nw) nw.hidden = false;
+        if (nextBtn) {
+          nextBtn.onclick = function () {
+            if (isLast) { showResults(); }
+            else        { currentIdx++; renderQ(); }
+          };
+        }
+      } catch (err) {
+        alert("Failed to submit answer.");
+        document.querySelectorAll('.quiz-choice').forEach(function (btn) { btn.disabled = false; });
       }
     }
 
@@ -790,34 +829,12 @@
       var correct = userAnswers.filter(function (a) { return a.isCorrect; }).length;
       var pct     = total ? Math.round(correct / total * 100) : 0;
 
-      /* ── Persist session to server ── */
-      (function persistSession() {
-        var domainMap = {};
-        userAnswers.forEach(function (a) {
-          if (!domainMap[a.domain]) domainMap[a.domain] = { correct: 0, total: 0 };
-          domainMap[a.domain].total++;
-          if (a.isCorrect) domainMap[a.domain].correct++;
-        });
-        var domains = Object.keys(domainMap);
-        var deltas  = {};
-        domains.forEach(function (d) {
-          var m    = domainMap[d];
-          var dpct = m.total ? Math.round(m.correct / m.total * 100) : 0;
-          deltas[d] = Math.round((dpct - 50) / 10); // small delta ±
-        });
-        fetch('/reviewee/api/sessions', {
-          method:  'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify({
-            startedAt:     new Date(Date.now() - total * 40000).toISOString(),
-            endedAt:       new Date().toISOString(),
-            questionCount: total,
-            domains:       domains,
-            score:         pct,
-            domainDeltas:  deltas,
-          }),
-        }).catch(function () {});
-      })();
+      /* ── End session on server ── */
+      fetch('/reviewee/api/session/end', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId: currentSessionId })
+      }).catch(function() {});
 
       var scoreVal  = document.getElementById('quiz-score-val');
       var scoreFrac = document.getElementById('quiz-score-frac');
@@ -855,11 +872,12 @@
           if (!da.length) return;
           var dc   = da.filter(function (a) { return a.isCorrect; }).length;
           var dpct = Math.round(dc / da.length * 100);
+          var domainDelta = da.reduce((sum, a) => sum + (a.delta || 0), 0);
           var cls  = dpct >= 80 ? 'good' : dpct >= 60 ? 'warn' : 'bad';
           
           brkdwnEl.innerHTML +=
             '<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.3rem;">' +
-              '<span style="font-size:0.875rem; font-weight:600; color:var(--text-main);">' + domain + '</span>' +
+              '<span style="font-size:0.875rem; font-weight:600; color:var(--text-main);">' + domain + ' <span style="font-weight:normal; opacity:0.6;">(Δ ' + (domainDelta > 0 ? '+' : '') + Math.round(domainDelta) + ')</span></span>' +
               '<span class="' + cls + '" style="font-weight:700; font-size:0.85rem;">' + dc + '/' + da.length + ' (' + dpct + '%)</span>' +
             '</div>' +
             '<div style="height:6px; background:var(--card-bg); border:1px solid var(--border-subdued); border-radius:99px; margin-bottom:0.85rem; overflow:hidden;">' +
@@ -878,7 +896,7 @@
 
       var reviewList = document.getElementById('quiz-review-list');
       if (reviewList) {
-        reviewList.innerHTML = filteredQs.map(function (q, i) {
+        reviewList.innerHTML = allQuestions.map(function (q, i) {
           var ua  = userAnswers.find(function (a) { return a.id === q.id; });
           if (!ua) return '';
           var isCorr = ua.isCorrect;
@@ -891,9 +909,9 @@
             '<div class="qz-review-item" style="background:' + bg + '; border:1px solid ' + border + ';">' +
               '<span class="material-symbols-outlined" style="color:' + color + ';">' + icon + '</span>' +
               '<div>' +
-                '<p class="qz-review-q">' + (i + 1) + '. ' + q.question + '</p>' +
+                '<p class="qz-review-q">' + (i + 1) + '. ' + q.question_text + '</p>' +
                 (!isCorr
-                  ? '<p class="qz-review-ans">Your answer: <span style="text-decoration:line-through;">' + ua.chosen + '</span> <br> Correct answer: <strong style="color:var(--text-main);">' + q.answer + '</strong></p>'
+                  ? '<p class="qz-review-ans">Your answer: <span style="text-decoration:line-through;">' + ua.chosen + '</span> <br> Correct answer: <strong style="color:var(--text-main);">' + ua.correct + '</strong></p>'
                   : '<p class="qz-review-ans">Correct: <strong>' + ua.chosen + '</strong></p>') +
               '</div>' +
             '</div>'
@@ -918,23 +936,39 @@
       var restartBtn = document.getElementById('quiz-restart-btn');
       if (restartBtn) {
         restartBtn.onclick = function () { 
-          // Reset progress bar on restart to give smooth animation
           var fill = document.getElementById('quiz-prog-fill');
           if (fill) fill.style.width = '0%';
+          // Reset URL to remove auto-start behavior on restart
+          window.history.replaceState({}, document.title, window.location.pathname);
           show('setup'); 
         };
       }
     }
 
-    /* ── Load questions ── */
-    (async function init() {
-      try {
-        var r = await fetch('/reviewee/api/quiz');
-        if (!r.ok) return;
-        var data = await r.json();
-        allQuestions = data.questions || [];
-        updateCount();
-      } catch (_) {}
+    /* ── Auto-start if redirected from launcher ── */
+    (function init() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const preselectedDomain = urlParams.get('domain');
+      
+      if (preselectedDomain) {
+        // Find and click the matching chip
+        const chips = document.querySelectorAll('.quiz-cat-chip');
+        let found = false;
+        chips.forEach(function(c) {
+          if (c.dataset.cat === preselectedDomain) {
+            c.click();
+            found = true;
+          }
+        });
+        
+        // Auto-start
+        if (found) {
+          setTimeout(() => {
+            const startBtn = document.getElementById('quiz-start-btn');
+            if (startBtn) startBtn.click();
+          }, 100);
+        }
+      }
     })();
 
   })();

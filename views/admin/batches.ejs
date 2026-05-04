@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Batches & Enrollment | Hauers Admin</title>
+  <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <script src="/js/theme-toggle.js"></script>
+</head>
+<body data-role="admin">
+
+  <div id="navbar-placeholder"><%- include('../partials/navbar') %></div>
+
+  <div class="app-shell sidebar-collapsed">
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div id="sidebar-placeholder"><%- include('../partials/admin-sidebar') %></div>
+
+    <main class="page-content">
+
+      <header class="page-header bat-page-header">
+        <h1 class="page-title">Batches &amp; Enrollment</h1>
+        <button type="button" class="bat-btn-create" id="btn-new-batch">
+          <span class="material-symbols-outlined">add</span>
+          Create new batch
+        </button>
+      </header>
+
+      <!-- KPI row — mirrors My Progress stat cards -->
+      <div class="home-stats-row bat-kpi">
+        <div class="dash-card home-stat-card">
+          <div class="home-stat-ico-wrap home-stat-ico-wrap--blue"><span class="material-symbols-outlined">domain</span></div>
+          <div class="home-stat-copy">
+            <span class="home-stat-value" id="bat-kpi-total">—</span>
+            <span class="home-stat-label">Total batches</span>
+          </div>
+        </div>
+        <div class="dash-card home-stat-card">
+          <div class="home-stat-ico-wrap home-stat-ico-wrap--green"><span class="material-symbols-outlined">play_circle</span></div>
+          <div class="home-stat-copy">
+            <span class="home-stat-value" id="bat-kpi-active">—</span>
+            <span class="home-stat-label">Active</span>
+          </div>
+        </div>
+        <div class="dash-card home-stat-card">
+          <div class="home-stat-ico-wrap home-stat-ico-wrap--amber"><span class="material-symbols-outlined">edit_note</span></div>
+          <div class="home-stat-copy">
+            <span class="home-stat-value" id="bat-kpi-draft">—</span>
+            <span class="home-stat-label">Draft</span>
+          </div>
+        </div>
+        <div class="dash-card home-stat-card">
+          <div class="home-stat-ico-wrap home-stat-ico-wrap--fire"><span class="material-symbols-outlined">group</span></div>
+          <div class="home-stat-copy">
+            <span class="home-stat-value" id="bat-kpi-enrolled">—</span>
+            <span class="home-stat-label">Reviewees enrolled</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="pgx-grid-2 bat-split">
+
+        <!-- Batch list -->
+        <div class="dash-card bat-panel">
+          <div class="bat-panel-head">
+            <p class="pgx-section-label pgx-section-label--flush">Batch list</p>
+          </div>
+          <div class="admin-table-wrap bat-table-wrap">
+            <div style="overflow-x:auto">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Batch name</th>
+                    <th>Exam level</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Status</th>
+                    <th>Enrolled</th>
+                  </tr>
+                </thead>
+                <tbody id="bat-tbody">
+                  <tr><td colspan="6" class="bat-empty-cell">Loading…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detail + codes -->
+        <div class="dash-card bat-panel bat-detail-panel" id="bat-detail-panel">
+          <div class="bat-detail-placeholder" id="bat-detail-placeholder">
+            <span class="material-symbols-outlined bat-ph-icon">touch_app</span>
+            <p class="bat-ph-title">Select a batch</p>
+            <p class="bat-ph-sub">Choose a row in the table to manage review period, capacity, and enrollment codes.</p>
+          </div>
+
+          <div id="bat-detail-body" hidden>
+            <p class="pgx-section-label">Batch overview</p>
+            <form id="bat-edit-form" class="bat-form" autocomplete="off">
+              <input type="hidden" id="bf-id">
+              <div class="bat-form-grid">
+                <div class="bat-field bat-field--full">
+                  <label class="bat-field-lbl" for="bf-name">Batch name</label>
+                  <input class="bat-input" id="bf-name" required placeholder="e.g. May 2026 Review — Professional">
+                </div>
+                <div class="bat-field">
+                  <label class="bat-field-lbl" for="bf-level">Exam level</label>
+                  <select class="bat-input bat-select" id="bf-level" required>
+                    <option value="professional">Professional</option>
+                    <option value="subprofessional">Sub-professional</option>
+                  </select>
+                </div>
+                <div class="bat-field">
+                  <label class="bat-field-lbl" for="bf-status">Status</label>
+                  <select class="bat-input bat-select" id="bf-status" required>
+                    <option value="draft">Draft</option>
+                    <option value="active">Active</option>
+                    <option value="closed">Closed</option>
+                  </select>
+                </div>
+                <div class="bat-field">
+                  <label class="bat-field-lbl" for="bf-start">Review start</label>
+                  <input class="bat-input" type="date" id="bf-start" required>
+                </div>
+                <div class="bat-field">
+                  <label class="bat-field-lbl" for="bf-end">Review end</label>
+                  <input class="bat-input" type="date" id="bf-end" required>
+                </div>
+                <div class="bat-field">
+                  <label class="bat-field-lbl" for="bf-cap">Max reviewees <span class="bat-optional">(optional)</span></label>
+                  <input class="bat-input" type="number" id="bf-cap" min="0" placeholder="No limit">
+                </div>
+              </div>
+              <div class="bat-form-actions">
+                <button type="submit" class="bat-btn-save" id="bf-save">Save changes</button>
+              </div>
+            </form>
+
+            <div class="bat-codes-section">
+              <div class="bat-codes-head">
+                <p class="pgx-section-label pgx-section-label--flush">Enrollment codes</p>
+                <div class="bat-codes-btns">
+                  <button type="button" class="bat-btn-ghost" id="btn-export-codes">
+                    <span class="material-symbols-outlined">download</span>
+                    Export CSV
+                  </button>
+                  <button type="button" class="bat-btn-secondary" id="btn-gen-codes">
+                    <span class="material-symbols-outlined">key</span>
+                    Generate codes
+                  </button>
+                </div>
+              </div>
+              <p class="bat-codes-hint">Codes are masked by default. Reveal to copy. Revoke marks a code invalid for new enrollments.</p>
+              <div class="admin-table-wrap">
+                <div style="overflow-x:auto">
+                  <table class="admin-table bat-codes-table">
+                    <thead>
+                      <tr>
+                        <th>Code</th>
+                        <th>Used by</th>
+                        <th>Used date</th>
+                        <th>Status</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody id="bat-codes-tbody">
+                      <tr><td colspan="5" class="bat-empty-cell">No codes yet.</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Create batch modal (new only — uses same fields as overview for consistency) -->
+  <div class="bat-modal-overlay" id="modal-new-batch" hidden>
+    <div class="bat-modal" role="dialog" aria-modal="true" aria-labelledby="bat-modal-title">
+      <div class="bat-modal-head">
+        <h2 class="bat-modal-title" id="bat-modal-title">Create new batch</h2>
+        <button type="button" class="bat-modal-x" id="bat-modal-close" aria-label="Close"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <form id="bat-create-form" class="bat-modal-form">
+        <div class="bat-form-grid">
+          <div class="bat-field bat-field--full">
+            <label class="bat-field-lbl" for="nb-name">Batch name</label>
+            <input class="bat-input" id="nb-name" required placeholder="e.g. May 2026 Review — Professional">
+          </div>
+          <div class="bat-field">
+            <label class="bat-field-lbl" for="nb-level">Exam level</label>
+            <select class="bat-input bat-select" id="nb-level" required>
+              <option value="professional">Professional</option>
+              <option value="subprofessional">Sub-professional</option>
+            </select>
+          </div>
+          <div class="bat-field">
+            <label class="bat-field-lbl" for="nb-status">Status</label>
+            <select class="bat-input bat-select" id="nb-status" required>
+              <option value="draft" selected>Draft</option>
+              <option value="active">Active</option>
+              <option value="closed">Closed</option>
+            </select>
+          </div>
+          <div class="bat-field">
+            <label class="bat-field-lbl" for="nb-start">Review start</label>
+            <input class="bat-input" type="date" id="nb-start" required>
+          </div>
+          <div class="bat-field">
+            <label class="bat-field-lbl" for="nb-end">Review end</label>
+            <input class="bat-input" type="date" id="nb-end" required>
+          </div>
+          <div class="bat-field bat-field--full">
+            <label class="bat-field-lbl" for="nb-cap">Max reviewees <span class="bat-optional">(optional)</span></label>
+            <input class="bat-input" type="number" id="nb-cap" min="0" placeholder="No limit">
+          </div>
+        </div>
+        <div class="bat-modal-actions">
+          <button type="button" class="bat-btn-ghost" id="nb-cancel">Cancel</button>
+          <button type="submit" class="bat-btn-save" id="nb-submit">Create batch</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Generate codes modal -->
+  <div class="bat-modal-overlay" id="modal-gen-codes" hidden>
+    <div class="bat-modal bat-modal--sm" role="dialog" aria-modal="true" aria-labelledby="bat-gen-title">
+      <div class="bat-modal-head">
+        <h2 class="bat-modal-title" id="bat-gen-title">Generate enrollment codes</h2>
+        <button type="button" class="bat-modal-x" id="bat-gen-close" aria-label="Close"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <form id="bat-gen-form" class="bat-modal-form">
+        <div class="bat-field">
+          <label class="bat-field-lbl" for="gc-qty">Quantity</label>
+          <input class="bat-input" type="number" id="gc-qty" min="1" max="500" value="5" required>
+        </div>
+        <div class="bat-field">
+          <label class="bat-field-lbl" for="gc-max">Uses per code</label>
+          <input class="bat-input" type="number" id="gc-max" min="1" value="1" required>
+          <p class="bat-field-hint">How many reviewees can redeem each code (usually 1).</p>
+        </div>
+        <div class="bat-field bat-field--full">
+          <label class="bat-field-lbl" for="gc-exp">Expiry <span class="bat-optional">(optional)</span></label>
+          <input class="bat-input" type="datetime-local" id="gc-exp">
+        </div>
+        <div class="bat-modal-actions">
+          <button type="button" class="bat-btn-ghost" id="gc-cancel">Cancel</button>
+          <button type="submit" class="bat-btn-save" id="gc-submit">Generate</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="rxv-toast" id="bat-toast" hidden>
+    <span class="material-symbols-outlined" id="bat-toast-ic">check_circle</span>
+    <span id="bat-toast-msg"></span>
+  </div>
+
+  <script src="/js/admin-shell.js"></script>
+  <script>
+  (function () {
+    const $ = id => document.getElementById(id);
+
+    function toast(msg, err) {
+      const t = $('bat-toast'), ic = $('bat-toast-ic'), m = $('bat-toast-msg');
+      if (ic) { ic.textContent = err ? 'error' : 'check_circle'; ic.style.color = err ? '#f87171' : '#4ade80'; }
+      if (m) m.textContent = msg;
+      t.removeAttribute('hidden');
+      t.classList.add('rxv-toast--show');
+      setTimeout(() => { t.classList.remove('rxv-toast--show'); setTimeout(() => t.setAttribute('hidden',''), 280); }, 3200);
+    }
+
+    function fmtDate(d) {
+      if (!d) return '—';
+      return new Date(d).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+    function capLvl(v) {
+      if (!v) return '—';
+      return v === 'professional' ? 'Professional' : 'Sub-professional';
+    }
+    function statusBadge(st) {
+      const cls = st === 'active' ? 'bat-st--active' : st === 'closed' ? 'bat-st--closed' : 'bat-st--draft';
+      return `<span class="bat-status-pill ${cls}">${st}</span>`;
+    }
+    function maskCode(code) {
+      if (!code || code.length < 6) return '••••••';
+      return code.slice(0, 2) + '••••' + code.slice(-2);
+    }
+    function codeStatusLabel(ds) {
+      if (ds === 'revoked') return { t: 'Revoked', c: 'bat-cs--revoked' };
+      if (ds === 'expired') return { t: 'Expired', c: 'bat-cs--expired' };
+      if (ds === 'used')    return { t: 'Used', c: 'bat-cs--used' };
+      return { t: 'Available', c: 'bat-cs--avail' };
+    }
+
+    let allBatches = [];
+    let selectedId = null;
+    const revealed = new Set();
+
+    async function loadBatches() {
+      try {
+        const r = await fetch('/admin/api/batches');
+        if (!r.ok) throw new Error();
+        allBatches = (await r.json()).batches || [];
+      } catch {
+        $('bat-tbody').innerHTML = '<tr><td colspan="6" class="bat-empty-cell">Could not load batches.</td></tr>';
+        return;
+      }
+
+      const totalEnr = allBatches.reduce((s, b) => s + (Number(b.enrollment_count) || 0), 0);
+      $('bat-kpi-total').textContent    = allBatches.length;
+      $('bat-kpi-active').textContent   = allBatches.filter(b => b.status === 'active').length;
+      $('bat-kpi-draft').textContent    = allBatches.filter(b => b.status === 'draft').length;
+      $('bat-kpi-enrolled').textContent = totalEnr;
+
+      if (!allBatches.length) {
+        $('bat-tbody').innerHTML = '<tr><td colspan="6" class="bat-empty-cell">No batches yet. Create one to get started.</td></tr>';
+        return;
+      }
+
+      $('bat-tbody').innerHTML = allBatches.map(b => {
+        const sel = selectedId === b.id ? 'bat-row--selected' : '';
+        return `<tr class="bat-row ${sel}" data-id="${b.id}" role="button" tabindex="0">
+          <td><strong>${escapeHtml(b.name)}</strong></td>
+          <td style="font-size:.82rem">${capLvl(b.exam_level)}</td>
+          <td style="font-size:.82rem;color:var(--text-subdued)">${fmtDate(b.start_date)}</td>
+          <td style="font-size:.82rem;color:var(--text-subdued)">${fmtDate(b.end_date)}</td>
+          <td>${statusBadge(b.status)}</td>
+          <td style="font-size:.82rem;font-weight:600">${b.enrollment_count ?? 0}</td>
+        </tr>`;
+      }).join('');
+
+      document.querySelectorAll('.bat-row').forEach(row => {
+        const pick = () => selectBatch(Number(row.dataset.id));
+        row.addEventListener('click', pick);
+        row.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
+      });
+
+      if (selectedId && !allBatches.find(b => b.id === selectedId)) {
+        selectedId = null;
+        showPlaceholder();
+      } else if (selectedId) {
+        selectBatch(selectedId);
+      }
+    }
+
+    function escapeHtml(s) {
+      const d = document.createElement('div');
+      d.textContent = s;
+      return d.innerHTML;
+    }
+
+    function showPlaceholder() {
+      $('bat-detail-placeholder').removeAttribute('hidden');
+      $('bat-detail-body').setAttribute('hidden', '');
+    }
+
+    async function selectBatch(id) {
+      selectedId = id;
+      revealed.clear();
+      document.querySelectorAll('.bat-row').forEach(r => {
+        r.classList.toggle('bat-row--selected', Number(r.dataset.id) === id);
+      });
+
+      $('bat-detail-placeholder').setAttribute('hidden', '');
+      $('bat-detail-body').removeAttribute('hidden');
+
+      let batch;
+      try {
+        const r = await fetch('/admin/api/batches/' + id);
+        if (!r.ok) throw new Error();
+        batch = (await r.json()).batch;
+      } catch { toast('Could not load batch.', true); showPlaceholder(); return; }
+
+      $('bf-id').value = batch.id;
+      $('bf-name').value = batch.name;
+      $('bf-level').value = batch.exam_level;
+      $('bf-status').value = batch.status;
+      $('bf-start').value = String(batch.start_date).slice(0, 10);
+      $('bf-end').value   = String(batch.end_date).slice(0, 10);
+      $('bf-cap').value   = batch.max_capacity != null ? batch.max_capacity : '';
+
+      await loadCodes(id);
+    }
+
+    async function loadCodes(batchId) {
+      const tbody = $('bat-codes-tbody');
+      tbody.innerHTML = '<tr><td colspan="5" class="bat-empty-cell">Loading…</td></tr>';
+      try {
+        const r = await fetch('/admin/api/batches/' + batchId + '/codes');
+        if (!r.ok) throw new Error();
+        const { codes } = await r.json();
+        if (!codes.length) {
+          tbody.innerHTML = '<tr><td colspan="5" class="bat-empty-cell">No codes yet. Generate codes to distribute to reviewees.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = codes.map(c => {
+          const id = c.id;
+          const full = c.code;
+          const show = revealed.has(id);
+          const disp = show ? full : maskCode(full);
+          const st = codeStatusLabel(c.displayStatus);
+          const usedBy = c.usedByNames || '—';
+          const usedDt = c.firstUsedAt ? fmtDate(c.firstUsedAt) : '—';
+          const canRevoke = c.is_active && c.displayStatus !== 'expired';
+          return `<tr data-code-id="${id}">
+            <td>
+              <code class="bat-code-txt">${disp}</code>
+              <button type="button" class="bat-icon-btn bat-reveal" data-id="${id}" title="${show ? 'Hide' : 'Reveal'}" aria-label="Reveal code">
+                <span class="material-symbols-outlined">${show ? 'visibility_off' : 'visibility'}</span>
+              </button>
+            </td>
+            <td style="font-size:.8rem;max-width:140px;overflow:hidden;text-overflow:ellipsis" title="${escapeHtml(usedBy)}">${escapeHtml(usedBy)}</td>
+            <td style="font-size:.8rem;color:var(--text-subdued)">${usedDt}</td>
+            <td><span class="bat-code-status ${st.c}">${st.t}</span></td>
+            <td>
+              ${canRevoke ? `<button type="button" class="bat-link-danger bat-revoke" data-id="${id}">Revoke</button>` : '<span style="font-size:.75rem;color:var(--text-subdued)">—</span>'}
+            </td>
+          </tr>`;
+        }).join('');
+
+        tbody.querySelectorAll('.bat-reveal').forEach(btn => {
+          btn.addEventListener('click', e => {
+            e.stopPropagation();
+            const cid = Number(btn.dataset.id);
+            if (revealed.has(cid)) revealed.delete(cid);
+            else revealed.add(cid);
+            loadCodes(batchId);
+          });
+        });
+        tbody.querySelectorAll('.bat-revoke').forEach(btn => {
+          btn.addEventListener('click', async e => {
+            e.stopPropagation();
+            if (!confirm('Revoke this code? It will no longer accept new enrollments.')) return;
+            const cid = Number(btn.dataset.id);
+            const r = await fetch('/admin/api/enrollment-codes/' + cid + '/revoke', { method: 'POST' });
+            if (r.ok) { toast('Code revoked.'); loadCodes(batchId); }
+            else toast('Could not revoke.', true);
+          });
+        });
+      } catch {
+        tbody.innerHTML = '<tr><td colspan="5" class="bat-empty-cell">Failed to load codes.</td></tr>';
+      }
+    }
+
+    /* Create modal */
+    $('btn-new-batch').addEventListener('click', () => {
+      $('modal-new-batch').removeAttribute('hidden');
+      $('bat-create-form').reset();
+      $('nb-status').value = 'draft';
+    });
+    function closeNew() { $('modal-new-batch').setAttribute('hidden', ''); }
+    $('bat-modal-close').addEventListener('click', closeNew);
+    $('nb-cancel').addEventListener('click', closeNew);
+    $('modal-new-batch').addEventListener('click', e => { if (e.target.id === 'modal-new-batch') closeNew(); });
+
+    $('bat-create-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const btn = $('nb-submit');
+      btn.disabled = true;
+      const cap = $('nb-cap').value.trim();
+      try {
+        const r = await fetch('/admin/api/batches', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: $('nb-name').value.trim(),
+            exam_level: $('nb-level').value,
+            start_date: $('nb-start').value,
+            end_date: $('nb-end').value,
+            max_capacity: cap === '' ? null : cap,
+            status: $('nb-status').value,
+          }),
+        });
+        const d = await r.json();
+        if (!r.ok) { toast(d.error || 'Create failed', true); return; }
+        closeNew();
+        toast('Batch created.');
+        selectedId = d.batchId;
+        await loadBatches();
+      } finally { btn.disabled = false; }
+    });
+
+    /* Edit form */
+    $('bat-edit-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const id = $('bf-id').value;
+      const btn = $('bf-save');
+      btn.disabled = true;
+      const cap = $('bf-cap').value.trim();
+      try {
+        const r = await fetch('/admin/api/batches/' + id, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: $('bf-name').value.trim(),
+            exam_level: $('bf-level').value,
+            start_date: $('bf-start').value,
+            end_date: $('bf-end').value,
+            max_capacity: cap === '' ? null : cap,
+            status: $('bf-status').value,
+          }),
+        });
+        if (!r.ok) { const d = await r.json(); toast(d.error || 'Save failed', true); return; }
+        toast('Batch saved.');
+        await loadBatches();
+        await selectBatch(Number(id));
+      } finally { btn.disabled = false; }
+    });
+
+    /* Generate modal */
+    $('btn-gen-codes').addEventListener('click', () => {
+      if (!selectedId) return;
+      $('modal-gen-codes').removeAttribute('hidden');
+      $('gc-qty').value = '5';
+      $('gc-max').value = '1';
+      $('gc-exp').value = '';
+    });
+    function closeGen() { $('modal-gen-codes').setAttribute('hidden', ''); }
+    $('bat-gen-close').addEventListener('click', closeGen);
+    $('gc-cancel').addEventListener('click', closeGen);
+    $('modal-gen-codes').addEventListener('click', e => { if (e.target.id === 'modal-gen-codes') closeGen(); });
+
+    $('bat-gen-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      if (!selectedId) return;
+      const btn = $('gc-submit');
+      btn.disabled = true;
+      try {
+        const expRaw = $('gc-exp').value.trim();
+        const expires_at = expRaw ? expRaw.replace('T', ' ') + ':00' : null;
+        const r = await fetch('/admin/api/batches/' + selectedId + '/codes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            quantity: $('gc-qty').value,
+            max_uses: $('gc-max').value,
+            expires_at,
+          }),
+        });
+        const d = await r.json();
+        if (!r.ok) { toast(d.error || 'Generation failed', true); return; }
+        closeGen();
+        toast(`Generated ${d.count} code(s).`);
+        await loadCodes(selectedId);
+        await loadBatches();
+      } finally { btn.disabled = false; }
+    });
+
+    $('btn-export-codes').addEventListener('click', () => {
+      if (!selectedId) return;
+      window.location.href = '/admin/api/batches/' + selectedId + '/codes/export';
+    });
+
+    loadBatches();
+  })();
+  </script>
+
+</body>
+</html>

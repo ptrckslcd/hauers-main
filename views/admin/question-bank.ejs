@@ -19,449 +19,624 @@
 
     <main class="page-content">
 
-      <!-- ── Page header ── -->
-      <header class="page-header">
-        <div>
-          <h1 class="page-title">Question Bank</h1>
-
-        </div>
-        <button class="cta-pill" id="qb-add-btn" type="button">
-          <span class="material-symbols-outlined" style="font-size:18px;margin-right:0.45rem">add_circle</span>
-          Add Question
+      <header class="page-header qk-page-header">
+        <h1 class="page-title">Question Bank</h1>
+        <button type="button" class="bat-btn-create" id="qk-add-btn">
+          <span class="material-symbols-outlined">add</span>
+          Add question
         </button>
       </header>
 
-      <!-- ── Stats row ── -->
-      <div class="dash-grid dash-grid--4col">
-
-        <div class="dash-card admin-kpi-card">
-          <div class="admin-kpi-header">
-            <span class="card-label">Total Questions</span>
-            <span class="admin-kpi-icon admin-kpi-icon--blue">
-              <span class="material-symbols-outlined">library_books</span>
-            </span>
+      <!-- KPI row -->
+      <div class="home-stats-row bat-kpi">
+        <div class="dash-card home-stat-card">
+          <div class="home-stat-ico-wrap home-stat-ico-wrap--blue"><span class="material-symbols-outlined">library_books</span></div>
+          <div class="home-stat-copy">
+            <span class="home-stat-value" id="qk-kpi-total">—</span>
+            <span class="home-stat-label">Total questions</span>
           </div>
-          <div class="admin-kpi-val" id="qb-total">—</div>
-          <p class="card-sub">in the library</p>
         </div>
-
-        <div class="dash-card admin-kpi-card">
-          <div class="admin-kpi-header">
-            <span class="card-label">Verbal Ability</span>
-            <span class="admin-kpi-icon" style="background:rgba(129,140,248,0.12);color:#818cf8">
-              <span class="material-symbols-outlined">translate</span>
-            </span>
+        <div class="dash-card home-stat-card">
+          <div class="home-stat-ico-wrap home-stat-ico-wrap--green"><span class="material-symbols-outlined">check_circle</span></div>
+          <div class="home-stat-copy">
+            <span class="home-stat-value" id="qk-kpi-active">—</span>
+            <span class="home-stat-label">Active</span>
           </div>
-          <div class="admin-kpi-val" id="qb-verbal">—</div>
-          <p class="card-sub">questions</p>
         </div>
-
-        <div class="dash-card admin-kpi-card">
-          <div class="admin-kpi-header">
-            <span class="card-label">Numerical Ability</span>
-            <span class="admin-kpi-icon admin-kpi-icon--orange">
-              <span class="material-symbols-outlined">calculate</span>
-            </span>
+        <div class="dash-card home-stat-card">
+          <div class="home-stat-ico-wrap home-stat-ico-wrap--amber"><span class="material-symbols-outlined">edit_note</span></div>
+          <div class="home-stat-copy">
+            <span class="home-stat-value" id="qk-kpi-draft">—</span>
+            <span class="home-stat-label">Draft</span>
           </div>
-          <div class="admin-kpi-val" id="qb-numerical">—</div>
-          <p class="card-sub">questions</p>
         </div>
-
-        <div class="dash-card admin-kpi-card">
-          <div class="admin-kpi-header">
-            <span class="card-label">Clerical Ability</span>
-            <span class="admin-kpi-icon admin-kpi-icon--green">
-              <span class="material-symbols-outlined">inventory_2</span>
-            </span>
+        <div class="dash-card home-stat-card">
+          <div class="home-stat-ico-wrap qk-kpi-ico--archived"><span class="material-symbols-outlined">archive</span></div>
+          <div class="home-stat-copy">
+            <span class="home-stat-value" id="qk-kpi-archived">—</span>
+            <span class="home-stat-label">Archived</span>
           </div>
-          <div class="admin-kpi-val" id="qb-clerical">—</div>
-          <p class="card-sub">questions</p>
-        </div>
-
-      </div>
-
-      <!-- ── Search bar ── -->
-      <div id="qb-search"></div>
-
-      <!-- ── Filter chips + sort ── -->
-      <div class="rm-filter-bar" id="qb-filters">
-        <div class="rm-filter-row">
-          <span class="rm-filter-label">Domain</span>
-          <button class="rm-filter-chip active" data-filter="domain" data-val="all">All</button>
-          <button class="rm-filter-chip" data-filter="domain" data-val="Verbal Ability">Verbal</button>
-          <button class="rm-filter-chip" data-filter="domain" data-val="Numerical Ability">Numerical</button>
-          <button class="rm-filter-chip" data-filter="domain" data-val="Clerical Ability">Clerical</button>
-        </div>
-        <div class="rm-filter-row">
-          <span class="rm-filter-label">Difficulty</span>
-          <button class="rm-filter-chip active" data-filter="difficulty" data-val="all">All</button>
-          <button class="rm-filter-chip" data-filter="difficulty" data-val="Easy">Easy</button>
-          <button class="rm-filter-chip" data-filter="difficulty" data-val="Medium">Medium</button>
-          <button class="rm-filter-chip" data-filter="difficulty" data-val="Hard">Hard</button>
         </div>
       </div>
 
-      <!-- ── Sort bar + result count ── -->
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.6rem;flex-wrap:wrap;gap:0.5rem">
-        <p class="sw-result-msg" id="qb-result-msg" style="margin:0"></p>
-        <div style="display:flex;align-items:center;gap:0.5rem">
-          <span style="font-size:0.75rem;color:var(--text-subdued)">Sort by</span>
-          <select id="qb-sort"
-            style="font-size:0.8rem;padding:0.3rem 0.65rem;border-radius:8px;border:1px solid var(--border-subdued);background:var(--card-bg);color:var(--text-main);cursor:pointer">
-            <option value="id">Default (ID)</option>
-            <option value="domain">Domain</option>
-            <option value="difficulty">Difficulty</option>
-          </select>
+      <!-- Toolbar (inner row avoids dash-card column flex breaking layout) -->
+      <div class="dash-card qk-toolbar">
+        <p class="qk-toolbar-label">Search and filters</p>
+        <div class="qk-toolbar-inner">
+          <div class="qk-search-wrap">
+            <label class="qk-sr-only" for="qk-search">Search question text</label>
+            <span class="material-symbols-outlined qk-search-ic" aria-hidden="true">search</span>
+            <input type="search" class="qk-search-input" id="qk-search" placeholder="Search by question or choice text…" autocomplete="off">
+          </div>
+          <div class="qk-filters" role="group" aria-label="Filter questions">
+            <div class="qk-filter-group">
+              <label class="qk-filter-lbl" for="qk-f-domain">Domain</label>
+              <select class="qk-filter-select" id="qk-f-domain">
+                <option value="">All domains</option>
+              </select>
+            </div>
+            <div class="qk-filter-group">
+              <label class="qk-filter-lbl" for="qk-f-level">Exam level</label>
+              <select class="qk-filter-select" id="qk-f-level">
+                <option value="">All levels</option>
+                <option value="professional">Professional</option>
+                <option value="subprofessional">Sub-professional</option>
+                <option value="both">Both</option>
+              </select>
+            </div>
+            <div class="qk-filter-group">
+              <label class="qk-filter-lbl" for="qk-f-diff">Difficulty</label>
+              <select class="qk-filter-select" id="qk-f-diff">
+                <option value="">All</option>
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+            </div>
+            <div class="qk-filter-group">
+              <label class="qk-filter-lbl" for="qk-f-status">Status</label>
+              <select class="qk-filter-select" id="qk-f-status">
+                <option value="">All statuses</option>
+                <option value="active">Active</option>
+                <option value="draft">Draft</option>
+                <option value="archived">Archived</option>
+              </select>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- ── Question list ── -->
-      <div class="qb-list" id="qb-list"></div>
+      <!-- Table -->
+      <div class="dash-card qk-table-card">
+          <p class="pgx-section-label pgx-section-label--flush qk-result-msg" id="qk-result-msg">Loading…</p>
+        <div class="qk-table-scroll">
+          <table class="admin-table qk-table">
+            <thead>
+              <tr>
+                <th class="qk-col-id">#</th>
+                <th>Question</th>
+                <th class="qk-col-difficulty">Difficulty</th>
+                <th class="qk-col-level">Exam level</th>
+                <th class="qk-col-status">Status</th>
+                <th class="qk-col-actions" aria-label="Actions"></th>
+              </tr>
+            </thead>
+            <tbody id="qk-tbody">
+              <tr><td colspan="6" class="bat-empty-cell">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
 
     </main>
   </div>
 
-  <!-- ══════════════════════════════════════════════════════
-       Add Question Modal
-  ══════════════════════════════════════════════════════ -->
-  <div class="ep-overlay" id="aq-overlay" hidden>
-    <div class="ep-modal" style="max-width:580px;width:100%">
-      <div class="ep-modal-header">
-        <h3 class="ep-modal-title">Add New Question</h3>
-        <button class="ep-close" id="aq-close" type="button" aria-label="Close">×</button>
+  <!-- Add / Edit modal -->
+  <div class="bat-modal-overlay" id="qk-modal" hidden>
+    <div class="bat-modal qk-modal-wide" role="dialog" aria-modal="true" aria-labelledby="qk-modal-title">
+      <div class="bat-modal-head">
+        <h2 class="bat-modal-title" id="qk-modal-title">Add question</h2>
+        <button type="button" class="bat-modal-x" id="qk-modal-close" aria-label="Close"><span class="material-symbols-outlined">close</span></button>
       </div>
-      <div class="st-alert" id="aq-alert" style="margin-bottom:0"></div>
-      <form id="aq-form" class="ep-form" novalidate>
+      <form id="qk-form" class="bat-modal-form" autocomplete="off" novalidate>
+        <input type="hidden" id="qf-id">
 
         <!-- Question text -->
-        <div class="ep-field">
-          <label class="ep-label" for="aq-question">Question Text <span style="color:var(--accent-primary)">*</span></label>
-          <textarea id="aq-question" class="ep-input" rows="3"
-            placeholder="Type the question here…"
-            style="resize:vertical;min-height:72px"></textarea>
+        <div class="bat-field bat-field--full qk-field-spaced">
+          <label class="bat-field-lbl" for="qf-text">Question text <span class="qk-req">*</span></label>
+          <textarea class="bat-input qk-textarea" id="qf-text" rows="3" placeholder="Type the full question here…" required></textarea>
         </div>
 
-        <!-- Domain + Difficulty -->
-        <div class="ep-form-row">
-          <div class="ep-field">
-            <label class="ep-label" for="aq-domain">Domain <span style="color:var(--accent-primary)">*</span></label>
-            <select id="aq-domain" class="ep-input ep-select">
-              <option value="Verbal Ability">Verbal Ability</option>
-              <option value="Numerical Ability">Numerical Ability</option>
-              <option value="Clerical Ability">Clerical Ability</option>
+        <!-- Choices A–D -->
+        <div class="bat-field bat-field--full qk-field-spaced">
+          <label class="bat-field-lbl">Choices <span class="qk-req">*</span></label>
+          <div class="qk-choices-grid">
+            <div class="qk-choice-row">
+              <span class="qk-choice-lbl">A</span>
+              <input class="bat-input qk-choice-input" id="qf-ca" type="text" placeholder="Choice A" required data-letter="a">
+            </div>
+            <div class="qk-choice-row">
+              <span class="qk-choice-lbl">B</span>
+              <input class="bat-input qk-choice-input" id="qf-cb" type="text" placeholder="Choice B" required data-letter="b">
+            </div>
+            <div class="qk-choice-row">
+              <span class="qk-choice-lbl">C</span>
+              <input class="bat-input qk-choice-input" id="qf-cc" type="text" placeholder="Choice C" required data-letter="c">
+            </div>
+            <div class="qk-choice-row">
+              <span class="qk-choice-lbl">D</span>
+              <input class="bat-input qk-choice-input" id="qf-cd" type="text" placeholder="Choice D" required data-letter="d">
+            </div>
+          </div>
+        </div>
+
+        <!-- Correct answer radios (updated live as choices fill in) -->
+        <div class="bat-field bat-field--full qk-field-spaced">
+          <label class="bat-field-lbl">Correct answer <span class="qk-req">*</span></label>
+          <div class="qk-correct-row" id="qf-correct-row">
+            <label class="qk-correct-opt" data-letter="a">
+              <input type="radio" name="qf-correct" value="a" class="qk-radio">
+              <span class="qk-correct-badge">A</span>
+              <span class="qk-correct-text" id="qf-ct-a">Choice A</span>
+            </label>
+            <label class="qk-correct-opt" data-letter="b">
+              <input type="radio" name="qf-correct" value="b" class="qk-radio">
+              <span class="qk-correct-badge">B</span>
+              <span class="qk-correct-text" id="qf-ct-b">Choice B</span>
+            </label>
+            <label class="qk-correct-opt" data-letter="c">
+              <input type="radio" name="qf-correct" value="c" class="qk-radio">
+              <span class="qk-correct-badge">C</span>
+              <span class="qk-correct-text" id="qf-ct-c">Choice C</span>
+            </label>
+            <label class="qk-correct-opt" data-letter="d">
+              <input type="radio" name="qf-correct" value="d" class="qk-radio">
+              <span class="qk-correct-badge">D</span>
+              <span class="qk-correct-text" id="qf-ct-d">Choice D</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Explanation -->
+        <div class="bat-field bat-field--full qk-field-spaced">
+          <label class="bat-field-lbl" for="qf-expl">Explanation <span class="bat-optional">(optional, shown after answering)</span></label>
+          <textarea class="bat-input qk-textarea" id="qf-expl" rows="2" placeholder="Explain why the correct answer is right…"></textarea>
+        </div>
+
+        <!-- Domain, Exam level, Difficulty, Status, M-Elo -->
+        <div class="bat-form-grid qk-meta-grid">
+          <div class="bat-field bat-field--full">
+            <label class="bat-field-lbl">Domain tags <span class="qk-req">*</span></label>
+            <div class="qk-domain-checks" id="qf-domains">
+              <span class="qk-muted-inline">Loading domains…</span>
+            </div>
+          </div>
+          <div class="bat-field">
+            <label class="bat-field-lbl" for="qf-level">Exam level <span class="qk-req">*</span></label>
+            <select class="bat-input bat-select" id="qf-level" required>
+              <option value="both">Both</option>
+              <option value="professional">Professional</option>
+              <option value="subprofessional">Sub-professional</option>
             </select>
           </div>
-          <div class="ep-field">
-            <label class="ep-label" for="aq-difficulty">Difficulty <span style="color:var(--accent-primary)">*</span></label>
-            <select id="aq-difficulty" class="ep-input ep-select">
-              <option value="Easy">Easy</option>
-              <option value="Medium">Medium</option>
-              <option value="Hard">Hard</option>
+          <div class="bat-field">
+            <label class="bat-field-lbl" for="qf-diff">Difficulty <span class="qk-req">*</span></label>
+            <select class="bat-input bat-select" id="qf-diff" required>
+              <option value="medium">Medium</option>
+              <option value="easy">Easy</option>
+              <option value="hard">Hard</option>
             </select>
           </div>
-        </div>
-
-        <!-- Choices A – D -->
-        <p class="ep-label" style="margin-bottom:0.45rem">Choices <span style="color:var(--accent-primary)">*</span></p>
-        <div style="display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1rem">
-          <div style="display:flex;align-items:center;gap:0.55rem">
-            <span style="font-weight:700;font-size:0.8rem;color:var(--text-subdued);width:18px;text-align:center">A</span>
-            <input id="aq-choice-a" class="ep-input" type="text" placeholder="Choice A" style="flex:1">
+          <div class="bat-field">
+            <label class="bat-field-lbl" for="qf-status">Status <span class="qk-req">*</span></label>
+            <select class="bat-input bat-select" id="qf-status" required>
+              <option value="active">Active</option>
+              <option value="draft">Draft</option>
+            </select>
           </div>
-          <div style="display:flex;align-items:center;gap:0.55rem">
-            <span style="font-weight:700;font-size:0.8rem;color:var(--text-subdued);width:18px;text-align:center">B</span>
-            <input id="aq-choice-b" class="ep-input" type="text" placeholder="Choice B" style="flex:1">
-          </div>
-          <div style="display:flex;align-items:center;gap:0.55rem">
-            <span style="font-weight:700;font-size:0.8rem;color:var(--text-subdued);width:18px;text-align:center">C</span>
-            <input id="aq-choice-c" class="ep-input" type="text" placeholder="Choice C" style="flex:1">
-          </div>
-          <div style="display:flex;align-items:center;gap:0.55rem">
-            <span style="font-weight:700;font-size:0.8rem;color:var(--text-subdued);width:18px;text-align:center">D</span>
-            <input id="aq-choice-d" class="ep-input" type="text" placeholder="Choice D" style="flex:1">
+          <div class="bat-field">
+            <label class="bat-field-lbl" for="qf-melo">Initial M-Elo rating</label>
+            <input class="bat-input" type="number" id="qf-melo" value="1200" min="400" max="3000" step="1">
+            <p class="bat-field-hint">Default 1200. Adjust for known difficulty calibration.</p>
           </div>
         </div>
 
-        <!-- Correct answer -->
-        <div class="ep-field">
-          <label class="ep-label" for="aq-answer">Correct Answer <span style="color:var(--accent-primary)">*</span></label>
-          <select id="aq-answer" class="ep-input ep-select">
-            <option value="">— Select the correct choice —</option>
-            <option value="a">A — (fill choice A first)</option>
-            <option value="b">B — (fill choice B first)</option>
-            <option value="c">C — (fill choice C first)</option>
-            <option value="d">D — (fill choice D first)</option>
-          </select>
-        </div>
+        <div id="qf-err" class="qk-form-err" hidden></div>
 
-        <div class="ep-form-actions">
-          <button type="button" class="ep-btn-cancel" id="aq-cancel">Cancel</button>
-          <button type="submit" class="cta-pill" id="aq-submit">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:0.35rem">
-              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-            Add Question
-          </button>
+        <div class="bat-modal-actions">
+          <button type="button" class="bat-btn-ghost" id="qk-modal-cancel">Cancel</button>
+          <button type="submit" class="bat-btn-save" id="qk-modal-submit">Add question</button>
         </div>
       </form>
     </div>
   </div>
 
-  <script src="/js/search-widget.js"></script>
+  <!-- Archive confirm -->
+  <div class="bat-modal-overlay" id="qk-arch-modal" hidden>
+    <div class="bat-modal bat-modal--sm" role="dialog" aria-modal="true">
+      <div class="bat-modal-head">
+        <h2 class="bat-modal-title">Archive question?</h2>
+        <button type="button" class="bat-modal-x" id="qk-arch-close" aria-label="Close"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="qk-confirm-body">
+        <p class="qk-confirm-text">
+          Question <strong id="qk-arch-label" class="qk-confirm-id"></strong> will be hidden from reviewees and excluded from new sessions. You can restore it by editing status back to Active.
+        </p>
+        <div class="bat-modal-actions qk-confirm-actions">
+          <button type="button" class="bat-btn-ghost" id="qk-arch-cancel">Cancel</button>
+          <button type="button" class="bat-btn-save qk-confirm-archive-btn" id="qk-arch-confirm">Archive</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete confirm -->
+  <div class="bat-modal-overlay" id="qk-del-modal" hidden>
+    <div class="bat-modal bat-modal--sm" role="dialog" aria-modal="true">
+      <div class="bat-modal-head">
+        <h2 class="bat-modal-title">Delete question?</h2>
+        <button type="button" class="bat-modal-x" id="qk-del-close" aria-label="Close"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="qk-confirm-body">
+        <p class="qk-confirm-text">
+          Question <strong id="qk-del-label" class="qk-confirm-id"></strong> will be permanently removed from the question bank. This action cannot be undone.
+        </p>
+        <div class="bat-modal-actions qk-confirm-actions">
+          <button type="button" class="bat-btn-ghost" id="qk-del-cancel">Cancel</button>
+          <button type="button" class="bat-btn-save qk-btn-danger" id="qk-del-confirm">Delete permanently</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rxv-toast" id="qk-toast" hidden>
+    <span class="material-symbols-outlined" id="qk-toast-ic">check_circle</span>
+    <span id="qk-toast-msg"></span>
+  </div>
+
   <script src="/js/admin-shell.js"></script>
   <script>
-  (async () => {
+  (function () {
+    const $ = id => document.getElementById(id);
 
-    /* ── Fetch all questions ─────────────────────────────── */
-    let data;
-    try {
-      const r = await fetch('/admin/api/questions');
-      if (!r.ok) return;
-      data = await r.json();
-    } catch (_) { return; }
-
-    const allQuestions = data.questions || [];
-
-    /* ── KPI tiles ───────────────────────────────────────── */
-    function updateKpis() {
-      const setKpi = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-      setKpi('qb-total',    allQuestions.length);
-      setKpi('qb-verbal',   allQuestions.filter(q => q.domain === 'Verbal Ability').length);
-      setKpi('qb-numerical',allQuestions.filter(q => q.domain === 'Numerical Ability').length);
-      setKpi('qb-clerical', allQuestions.filter(q => q.domain === 'Clerical Ability').length);
-    }
-    updateKpis();
-
-    /* ── Domain helper ───────────────────────────────────── */
-    function domainClass(d) {
-      if (d === 'Verbal Ability')    return 'verbal';
-      if (d === 'Numerical Ability') return 'numerical';
-      if (d === 'Clerical Ability')  return 'clerical';
-      return 'general';
+    /* ─── Toast ─────────────────────────────────────────────── */
+    function toast(msg, err) {
+      const t = $('qk-toast'), ic = $('qk-toast-ic'), m = $('qk-toast-msg');
+      if (ic) { ic.textContent = err ? 'error' : 'check_circle'; ic.style.color = err ? '#f87171' : '#4ade80'; }
+      if (m) m.textContent = msg;
+      t.removeAttribute('hidden');
+      t.classList.add('rxv-toast--show');
+      setTimeout(() => { t.classList.remove('rxv-toast--show'); setTimeout(() => t.setAttribute('hidden',''), 280); }, 3200);
     }
 
-    /* ── Sort helper ─────────────────────────────────────── */
-    const diffOrder = { 'Easy': 0, 'Medium': 1, 'Hard': 2 };
-    function sortQuestions(qs) {
-      const mode = document.getElementById('qb-sort')?.value || 'id';
-      if (mode === 'domain')      return [...qs].sort((a, b) => a.domain.localeCompare(b.domain) || a.id - b.id);
-      if (mode === 'difficulty')  return [...qs].sort((a, b) => diffOrder[a.difficulty] - diffOrder[b.difficulty] || a.id - b.id);
-      return [...qs].sort((a, b) => a.id - b.id);
+    /* ─── Helpers ────────────────────────────────────────────── */
+    function escHtml(s) { const d = document.createElement('div'); d.textContent = String(s||''); return d.innerHTML; }
+
+    function diffBadge(d) {
+      const cls = d === 'hard' ? 'qk-diff--hard' : d === 'easy' ? 'qk-diff--easy' : 'qk-diff--med';
+      return `<span class="qk-diff-badge ${cls}">${d}</span>`;
+    }
+    function statusPill(s) {
+      const cls = s === 'active' ? 'bat-st--active' : s === 'archived' ? 'bat-st--closed' : 'bat-st--draft';
+      return `<span class="bat-status-pill ${cls}">${s}</span>`;
+    }
+    function levelLabel(l) {
+      return l === 'professional' ? 'Prof.' : l === 'subprofessional' ? 'Sub-prof.' : 'Both';
+    }
+    function domainChips(names) {
+      if (!names || !names.length) return '<span class="qk-muted-inline">None</span>';
+      return names.map(n => `<span class="qk-domain-chip">${escHtml(n.replace(' Ability',''))}</span>`).join('');
     }
 
-    /* ── Render questions ────────────────────────────────── */
-    const list      = document.getElementById('qb-list');
-    const resultMsg = document.getElementById('qb-result-msg');
+    /* ─── State ──────────────────────────────────────────────── */
+    let allQuestions = [], allDomains = [];
+    let searchTimer = null;
 
-    function renderQuestions(qs) {
-      if (!list) return;
-      const sorted = sortQuestions(qs);
-      if (!sorted.length) {
-        list.innerHTML = '<div class="rm-no-results"><span class="rm-no-icon">🔍</span>No questions match your search.</div>';
-        if (resultMsg) resultMsg.textContent = '';
-        return;
-      }
-      list.innerHTML = sorted.map(q => {
-        const diffCls = q.difficulty === 'Hard' ? ' hard' : (q.difficulty === 'Easy' ? ' easy' : '');
-        const dc = domainClass(q.domain);
-        return (
-          `<a class="qb-row" href="/admin/question-bank/${q.id}">` +
-          `<div class="qb-row-accent qb-row-accent--${dc}"></div>` +
-          `<div class="qb-row-body">` +
-          `  <div class="qb-meta">` +
-          `    <span class="qb-num">#${q.id}</span>` +
-          `    <span class="q-domain-badge ${dc}">${q.domain.replace(' Ability', '')}</span>` +
-          `    <span class="q-difficulty${diffCls}">${q.difficulty}</span>` +
-          `  </div>` +
-          `  <p class="qb-text">${q.question}</p>` +
-          `  <div class="qb-choices-preview">` +
-          q.choices.map((c, i) => {
-            const letter = ['A','B','C','D'][i];
-            const isCorrect = c === q.answer;
-            return `<span class="qb-choice-chip${isCorrect ? ' correct' : ''}">${letter}. ${c}${isCorrect ? ' ✓' : ''}</span>`;
-          }).join('') +
-          `  </div>` +
-          `</div>` +
-          `<div class="qb-row-actions">` +
-          `  <span class="qb-btn-view">View →</span>` +
-          `</div>` +
-          `</a>`
-        );
-      }).join('');
-      if (resultMsg) {
-        resultMsg.textContent = qs.length < allQuestions.length
-          ? 'Showing ' + qs.length + ' of ' + allQuestions.length + ' questions'
-          : allQuestions.length + ' question' + (allQuestions.length !== 1 ? 's' : '') + ' total';
-      }
-    }
+    /* ─── Fetch & render ─────────────────────────────────────── */
+    async function fetchQuestions() {
+      const params = new URLSearchParams();
+      const q = $('qk-search').value.trim();
+      const domain = $('qk-f-domain').value;
+      const level  = $('qk-f-level').value;
+      const diff   = $('qk-f-diff').value;
+      const status = $('qk-f-status').value;
+      if (q)      params.set('q', q);
+      if (domain) params.set('domain_id', domain);
+      if (level)  params.set('exam_level', level);
+      if (diff)   params.set('difficulty', diff);
+      if (status) params.set('status', status);
 
-    /* ── Active filter state ─────────────────────────────── */
-    let activeDomain = 'all';
-    let activeDiff   = 'all';
-    function applyFilters(qs) {
-      return qs.filter(q => {
-        const dm = activeDomain === 'all' || q.domain     === activeDomain;
-        const df = activeDiff   === 'all' || q.difficulty === activeDiff;
-        return dm && df;
-      });
-    }
+      const isFiltered = q || domain || level || diff || status;
 
-    /* ── Initial render ──────────────────────────────────── */
-    renderQuestions(allQuestions);
-
-    /* ── Search widget ───────────────────────────────────── */
-    const sw = new SearchWidget({
-      containerId:   'qb-search',
-      placeholder:   'Search questions by text, keyword or domain…',
-      apiUrl:        '/admin/api/search',
-      defaultParams: { scope: 'questions' },
-      onResults: results => renderQuestions(results),
-      onClear:   ()      => renderQuestions(applyFilters(allQuestions)),
-    });
-    sw.mount();
-
-    /* ── Filter chips ────────────────────────────────────── */
-    document.querySelectorAll('#qb-filters .rm-filter-chip').forEach(chip => {
-      chip.addEventListener('click', () => {
-        const filterKey = chip.dataset.filter;
-        const val       = chip.dataset.val;
-        document.querySelectorAll('#qb-filters .rm-filter-chip[data-filter="' + filterKey + '"]')
-          .forEach(c => c.classList.remove('active'));
-        chip.classList.add('active');
-        if (filterKey === 'domain')     activeDomain = val;
-        if (filterKey === 'difficulty') activeDiff   = val;
-        if (sw.getValue()) {
-          sw.setParams({ domain: activeDomain, difficulty: activeDiff });
-        } else {
-          renderQuestions(applyFilters(allQuestions));
-        }
-      });
-    });
-
-    /* ── Sort dropdown ───────────────────────────────────── */
-    const sortEl = document.getElementById('qb-sort');
-    if (sortEl) {
-      sortEl.addEventListener('change', () => {
-        if (!sw.getValue()) renderQuestions(applyFilters(allQuestions));
-      });
-    }
-
-    /* ══════════════════════════════════════════════════════
-       Add Question Modal
-    ══════════════════════════════════════════════════════ */
-    const overlay   = document.getElementById('aq-overlay');
-    const closeBtn  = document.getElementById('aq-close');
-    const cancelBtn = document.getElementById('aq-cancel');
-    const form      = document.getElementById('aq-form');
-    const alertBox  = document.getElementById('aq-alert');
-    const addBtn    = document.getElementById('qb-add-btn');
-
-    function openModal() {
-      form.reset();
-      alertBox.textContent = '';
-      alertBox.className   = 'st-alert';
-      overlay.hidden = false;
-      document.getElementById('aq-question').focus();
-      updateAnswerDropdown();
-    }
-    function closeModal() { overlay.hidden = true; }
-
-    if (addBtn)    addBtn.addEventListener('click', openModal);
-    if (closeBtn)  closeBtn.addEventListener('click', closeModal);
-    if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
-    overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !overlay.hidden) closeModal(); });
-
-    /* ── Dynamically update the "Correct Answer" dropdown ── */
-    const choiceIds  = ['aq-choice-a','aq-choice-b','aq-choice-c','aq-choice-d'];
-    const answerSel  = document.getElementById('aq-answer');
-    const letters    = ['A','B','C','D'];
-
-    function updateAnswerDropdown() {
-      const prevVal = answerSel.value;
-      while (answerSel.options.length > 1) answerSel.remove(1);
-      choiceIds.forEach((cid, i) => {
-        const text = document.getElementById(cid)?.value?.trim() || '';
-        const opt  = document.createElement('option');
-        opt.value  = letters[i].toLowerCase();
-        opt.textContent = text ? `${letters[i]}. ${text}` : `${letters[i]} — (fill choice ${letters[i]} first)`;
-        opt.disabled = !text;
-        answerSel.appendChild(opt);
-      });
-      if (prevVal) answerSel.value = prevVal;
-    }
-    choiceIds.forEach(cid => {
-      document.getElementById(cid)?.addEventListener('input', updateAnswerDropdown);
-    });
-
-    /* ── Show alert inside modal ─────────────────────────── */
-    function showModalAlert(msg, type) {
-      alertBox.textContent = msg;
-      alertBox.className   = 'st-alert ' + (type === 'error' ? 'st-alert--error' : 'st-alert--success');
-      alertBox.style.marginBottom = '0.75rem';
-    }
-
-    /* ── Toast notification ──────────────────────────────── */
-    function showToast(msg, isError) {
-      const t = document.createElement('div');
-      t.className = 'ep-toast';
-      t.textContent = msg;
-      if (isError) t.style.borderLeftColor = '#f87171';
-      document.body.appendChild(t);
-      requestAnimationFrame(() => t.classList.add('show'));
-      setTimeout(() => {
-        t.classList.remove('show');
-        setTimeout(() => t.remove(), 330);
-      }, 3000);
-    }
-
-    /* ── Form submit ─────────────────────────────────────── */
-    form.addEventListener('submit', async e => {
-      e.preventDefault();
-      alertBox.textContent = '';
-      alertBox.className   = 'st-alert';
-
-      const question   = document.getElementById('aq-question').value.trim();
-      const domain     = document.getElementById('aq-domain').value;
-      const difficulty = document.getElementById('aq-difficulty').value;
-      const choiceVals = choiceIds.map(cid => document.getElementById(cid)?.value?.trim() || '');
-      const answerIdx  = letters.indexOf((answerSel.value || '').toUpperCase());
-
-      if (!question)               return showModalAlert('Question text is required.', 'error');
-      if (choiceVals.some(c => !c)) return showModalAlert('All four choices must be filled in.', 'error');
-      if (answerIdx === -1)         return showModalAlert('Please select the correct answer.', 'error');
-
-      const chosenAnswer = choiceVals[answerIdx];
-
-      const submitBtn = document.getElementById('aq-submit');
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Saving…';
+      $('qk-tbody').innerHTML = '<tr><td colspan="6" class="bat-empty-cell">Loading...</td></tr>';
 
       try {
-        const res = await fetch('/admin/api/questions', {
-          method:  'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify({ question, domain, difficulty, choices: choiceVals, answer: chosenAnswer }),
-        });
-        const json = await res.json();
-        if (!res.ok) throw new Error(json.error || 'Failed to add question.');
+        const r = await fetch('/admin/api/questions?' + params.toString());
+        if (!r.ok) throw new Error();
+        const data = await r.json();
 
-        /* ── Update local data + re-render ────────────────── */
-        allQuestions.push(json.question);
-        updateKpis();
-        renderQuestions(applyFilters(allQuestions));
-        closeModal();
-        showToast('Question #' + json.question.id + ' added successfully!');
+        allQuestions = data.questions || [];
+        allDomains   = data.domains   || [];
 
-      } catch (err) {
-        showModalAlert(err.message, 'error');
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:0.35rem"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Question';
+        // KPIs always reflect total set
+        $('qk-kpi-total').textContent    = data.total    ?? '—';
+        $('qk-kpi-active').textContent   = data.active   ?? '—';
+        $('qk-kpi-draft').textContent    = data.draft    ?? '—';
+        $('qk-kpi-archived').textContent = data.archived ?? '—';
+
+        // Populate domain filter (idempotent — only on first load)
+        const domSel = $('qk-f-domain');
+        if (domSel.options.length <= 1 && allDomains.length) {
+          allDomains.forEach(d => {
+            const o = document.createElement('option');
+            o.value = d.id; o.textContent = d.name;
+            domSel.appendChild(o);
+          });
+        }
+
+        renderTable(allQuestions, isFiltered);
+      } catch {
+        $('qk-tbody').innerHTML = '<tr><td colspan="6" class="bat-empty-cell">Could not load questions.</td></tr>';
       }
+    }
+
+    function renderTable(qs, isFiltered) {
+      const msg = $('qk-result-msg');
+      if (!qs.length) {
+        $('qk-tbody').innerHTML = '<tr><td colspan="6" class="bat-empty-cell">' +
+          (isFiltered ? 'No questions match the current filters.' : 'No questions yet. Add one to get started.') +
+          '</td></tr>';
+        if (msg) msg.textContent = '0 questions';
+        return;
+      }
+      if (msg) msg.textContent = qs.length + ' question' + (qs.length !== 1 ? 's' : '');
+
+      $('qk-tbody').innerHTML = qs.map((q, idx) => {
+        const preview = q.question_text.length > 90 ? q.question_text.slice(0, 90) + '…' : q.question_text;
+        const href = `/admin/question-bank/${q.id}`;
+        return `<tr class="qk-row" data-href="${href}">
+          <td class="qk-id-cell">${idx + 1}</td>
+          <td class="qk-preview-cell">
+            <a class="qk-question-link" href="${href}"><span class="qk-question-preview">${escHtml(preview)}</span></a>
+          </td>
+          <td>${diffBadge(q.difficulty)}</td>
+          <td class="qk-level-cell">${levelLabel(q.exam_level)}</td>
+          <td>${statusPill(q.status)}</td>
+          <td class="qk-actions-cell">
+            <a class="qk-btn-view" href="/admin/question-bank/${q.id}" title="View / details">
+              <span class="material-symbols-outlined">open_in_new</span>
+            </a>
+            <button type="button" class="qk-btn-edit" title="Edit" data-id="${q.id}">
+              <span class="material-symbols-outlined">edit</span>
+            </button>
+            ${q.status !== 'archived' ? `<button type="button" class="qk-btn-arch" title="Archive" data-id="${q.id}" data-num="#${q.id}">
+              <span class="material-symbols-outlined">archive</span>
+            </button>` : ''}
+            <button type="button" class="qk-btn-delete" title="Delete permanently" data-id="${q.id}" data-num="#${q.id}">
+              <span class="material-symbols-outlined">delete</span>
+            </button>
+          </td>
+        </tr>
+        <tr class="qk-domain-row" data-href="${href}">
+          <td></td>
+          <td colspan="5" class="qk-domain-band"><span class="qk-domain-band-label">Domains</span>${domainChips(q.domain_names)}</td>
+        </tr>`;
+      }).join('');
+
+      $('qk-tbody').querySelectorAll('.qk-row, .qk-domain-row').forEach(row => {
+        row.addEventListener('click', e => {
+          if (e.target.closest('a, button, input, select, textarea')) return;
+          const href = row.dataset.href;
+          if (href) window.location.href = href;
+        });
+      });
+      $('qk-tbody').querySelectorAll('.qk-btn-edit').forEach(btn => {
+        btn.addEventListener('click', () => openEdit(Number(btn.dataset.id)));
+      });
+      $('qk-tbody').querySelectorAll('.qk-btn-arch').forEach(btn => {
+        btn.addEventListener('click', () => openArchive(Number(btn.dataset.id), btn.dataset.num));
+      });
+      $('qk-tbody').querySelectorAll('.qk-btn-delete').forEach(btn => {
+        btn.addEventListener('click', () => openDelete(Number(btn.dataset.id), btn.dataset.num));
+      });
+    }
+
+    /* ─── Filter / search events ─────────────────────────────── */
+    $('qk-search').addEventListener('input', () => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(fetchQuestions, 320);
+    });
+    ['qk-f-domain','qk-f-level','qk-f-diff','qk-f-status'].forEach(id => {
+      $(id).addEventListener('change', fetchQuestions);
+    });
+    /* ─── Modal helpers ──────────────────────────────────────── */
+    function openModal() { $('qk-modal').removeAttribute('hidden'); }
+    function closeModal() { $('qk-modal').setAttribute('hidden',''); }
+
+    $('qk-modal-close').addEventListener('click', closeModal);
+    $('qk-modal-cancel').addEventListener('click', closeModal);
+    $('qk-modal').addEventListener('click', e => { if (e.target.id === 'qk-modal') closeModal(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closeArchModal(); closeDelModal(); } });
+
+    /* ─── Choice inputs → live-update correct-answer labels ─── */
+    const choiceMap = { a: 'qf-ca', b: 'qf-cb', c: 'qf-cc', d: 'qf-cd' };
+    ['a','b','c','d'].forEach(l => {
+      $(choiceMap[l]).addEventListener('input', () => {
+        const txt = $(choiceMap[l]).value.trim();
+        $('qf-ct-' + l).textContent = txt || 'Choice ' + l.toUpperCase();
+      });
     });
 
+    /* ─── Populate domain checkboxes in modal ─────────────────── */
+    function renderDomainChecks(selectedIds) {
+      const container = $('qf-domains');
+      if (!allDomains.length) { container.innerHTML = '<span class="qk-muted-inline">No domains available.</span>'; return; }
+      container.innerHTML = allDomains.map(d =>
+        `<label class="qk-dom-check-lbl">
+          <input type="checkbox" class="qk-dom-check" value="${d.id}"
+            ${(selectedIds||[]).includes(d.id) ? 'checked' : ''}>
+          <span>${escHtml(d.name)}</span>
+        </label>`
+      ).join('');
+    }
+
+    /* ─── Open Add modal ─────────────────────────────────────── */
+    function openAdd() {
+      $('qk-modal-title').textContent  = 'Add question';
+      $('qk-modal-submit').textContent = 'Add question';
+      $('qf-id').value = '';
+      $('qk-form').reset();
+      ['a','b','c','d'].forEach(l => { $('qf-ct-' + l).textContent = 'Choice ' + l.toUpperCase(); });
+      $('qf-melo').value = '1200';
+      $('qf-diff').value = 'medium';
+      $('qf-status').value = 'active';
+      $('qf-level').value = 'both';
+      renderDomainChecks([]);
+      hideFormErr();
+      openModal();
+      $('qf-text').focus();
+    }
+
+    /* ─── Open Edit modal ────────────────────────────────────── */
+    async function openEdit(id) {
+      $('qk-modal-title').textContent  = 'Edit question';
+      $('qk-modal-submit').textContent = 'Save changes';
+      hideFormErr();
+      renderDomainChecks([]);
+      openModal();
+
+      try {
+        const r = await fetch('/admin/api/questions/' + id);
+        if (!r.ok) throw new Error();
+        const { question: q } = await r.json();
+
+        $('qf-id').value          = q.id;
+        $('qf-text').value        = q.question_text;
+        $('qf-ca').value          = q.choice_a;
+        $('qf-cb').value          = q.choice_b;
+        $('qf-cc').value          = q.choice_c;
+        $('qf-cd').value          = q.choice_d;
+        $('qf-expl').value        = q.explanation || '';
+        $('qf-level').value       = q.exam_level;
+        $('qf-diff').value        = q.difficulty;
+        $('qf-status').value      = q.status;
+        $('qf-melo').value        = q.melo_difficulty ?? 1200;
+
+        ['a','b','c','d'].forEach(l => {
+          $('qf-ct-' + l).textContent = $(choiceMap[l]).value.trim() || 'Choice ' + l.toUpperCase();
+        });
+
+        const radio = document.querySelector(`input[name="qf-correct"][value="${q.correct_choice}"]`);
+        if (radio) radio.checked = true;
+
+        renderDomainChecks((q.domains || []).map(d => d.id));
+      } catch {
+        toast('Could not load question.', true);
+        closeModal();
+      }
+    }
+
+    $('qk-add-btn').addEventListener('click', openAdd);
+
+    function hideFormErr() { $('qf-err').setAttribute('hidden',''); $('qf-err').textContent = ''; }
+    function showFormErr(msg) { $('qf-err').textContent = msg; $('qf-err').removeAttribute('hidden'); }
+
+    /* ─── Form submit ────────────────────────────────────────── */
+    $('qk-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      hideFormErr();
+
+      const correctRadio = document.querySelector('input[name="qf-correct"]:checked');
+      if (!correctRadio) return showFormErr('Select the correct answer.');
+
+      const domChecked = Array.from(document.querySelectorAll('.qk-dom-check:checked')).map(c => Number(c.value));
+      if (!domChecked.length) return showFormErr('Select at least one domain tag.');
+
+      const btn = $('qk-modal-submit');
+      btn.disabled = true;
+      const editId = $('qf-id').value;
+
+      const payload = {
+        question_text: $('qf-text').value.trim(),
+        choice_a: $('qf-ca').value.trim(),
+        choice_b: $('qf-cb').value.trim(),
+        choice_c: $('qf-cc').value.trim(),
+        choice_d: $('qf-cd').value.trim(),
+        correct_choice: correctRadio.value,
+        explanation: $('qf-expl').value.trim() || null,
+        exam_level: $('qf-level').value,
+        difficulty: $('qf-diff').value,
+        status: $('qf-status').value,
+        melo_difficulty: Number($('qf-melo').value) || 1200,
+        domain_ids: domChecked,
+      };
+
+      try {
+        const url    = editId ? '/admin/api/questions/' + editId : '/admin/api/questions';
+        const method = editId ? 'PUT' : 'POST';
+        const r = await fetch(url, { method, headers: { 'Content-Type':'application/json' }, body: JSON.stringify(payload) });
+        const d = await r.json();
+        if (!r.ok) { showFormErr(d.error || 'Save failed.'); return; }
+        closeModal();
+        toast(editId ? 'Question updated.' : 'Question #' + d.question.id + ' added.');
+        fetchQuestions();
+      } catch { showFormErr('Network error. Please try again.'); }
+      finally  { btn.disabled = false; }
+    });
+
+    /* ─── Archive ────────────────────────────────────────────── */
+    let archiveTarget = null;
+    function openArchive(id, label) {
+      archiveTarget = id;
+      $('qk-arch-label').textContent = label;
+      $('qk-arch-modal').removeAttribute('hidden');
+    }
+    function closeArchModal() { $('qk-arch-modal').setAttribute('hidden',''); archiveTarget = null; }
+    $('qk-arch-close').addEventListener('click',  closeArchModal);
+    $('qk-arch-cancel').addEventListener('click', closeArchModal);
+    $('qk-arch-modal').addEventListener('click', e => { if (e.target.id === 'qk-arch-modal') closeArchModal(); });
+    $('qk-arch-confirm').addEventListener('click', async () => {
+      if (!archiveTarget) return;
+      const btn = $('qk-arch-confirm');
+      btn.disabled = true;
+      try {
+        const r = await fetch('/admin/api/questions/' + archiveTarget + '/archive', { method: 'POST' });
+        if (!r.ok) throw new Error();
+        closeArchModal();
+        toast('Question archived.');
+        fetchQuestions();
+      } catch { toast('Could not archive.', true); }
+      finally  { btn.disabled = false; }
+    });
+
+    let deleteTarget = null;
+    function openDelete(id, label) {
+      deleteTarget = id;
+      $('qk-del-label').textContent = label;
+      $('qk-del-modal').removeAttribute('hidden');
+    }
+    function closeDelModal() { $('qk-del-modal').setAttribute('hidden',''); deleteTarget = null; }
+    $('qk-del-close').addEventListener('click',  closeDelModal);
+    $('qk-del-cancel').addEventListener('click', closeDelModal);
+    $('qk-del-modal').addEventListener('click', e => { if (e.target.id === 'qk-del-modal') closeDelModal(); });
+    $('qk-del-confirm').addEventListener('click', async () => {
+      if (!deleteTarget) return;
+      const btn = $('qk-del-confirm');
+      btn.disabled = true;
+      try {
+        const r = await fetch('/admin/api/questions/' + deleteTarget, { method: 'DELETE' });
+        if (!r.ok) throw new Error();
+        closeDelModal();
+        toast('Question deleted.');
+        fetchQuestions();
+      } catch { toast('Could not delete question.', true); }
+      finally  { btn.disabled = false; }
+    });
+
+    /* ─── Initial load ───────────────────────────────────────── */
+    fetchQuestions();
   })();
   </script>
+
 </body>
 </html>

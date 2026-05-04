@@ -12,13 +12,6 @@
           </a>
         </li>
 
-        <li class="sidebar-item" data-label="Profile">
-          <a href="/reviewee/learner-profile" class="sidebar-link">
-            <span class="material-symbols-outlined sidebar-icon">manage_accounts</span>
-            <span class="sidebar-label">Profile</span>
-          </a>
-        </li>
-
         <li class="sidebar-item" data-label="Review">
           <a href="/reviewee/review" class="sidebar-link">
             <span class="material-symbols-outlined sidebar-icon">menu_book</span>
@@ -26,10 +19,10 @@
           </a>
         </li>
 
-        <li class="sidebar-item" data-label="Progress">
+        <li class="sidebar-item" data-label="My Progress">
           <a href="/reviewee/progress" class="sidebar-link">
             <span class="material-symbols-outlined sidebar-icon">insights</span>
-            <span class="sidebar-label">Progress</span>
+            <span class="sidebar-label">My Progress</span>
           </a>
         </li>
 
@@ -47,27 +40,54 @@
           </a>
         </li>
 
+        <li class="sidebar-item" data-label="Announcements">
+          <a href="/reviewee/announcements" class="sidebar-link">
+            <span class="material-symbols-outlined sidebar-icon">campaign</span>
+            <span class="sidebar-label">Announcements</span>
+          </a>
+        </li>
+
       </ul>
+      
+      <hr class="sidebar-divider" style="margin: 1rem 0; border: none; border-top: 1px solid var(--border-subdued);" />
+      
+      <ul class="sidebar-list">
+        <li class="sidebar-item" data-label="My Profile">
+          <a href="/reviewee/profile" class="sidebar-link">
+            <span class="material-symbols-outlined sidebar-icon">person</span>
+            <span class="sidebar-label">My Profile</span>
+          </a>
+        </li>
+
+        <li class="sidebar-item" data-label="Settings">
+          <a href="/reviewee/settings" class="sidebar-link">
+            <span class="material-symbols-outlined sidebar-icon">settings</span>
+            <span class="sidebar-label">Settings</span>
+          </a>
+        </li>
     </nav>
 
   <div class="sidebar-footer">
-    <div class="sidebar-footer-links">
-      <a href="/privacy" class="sidebar-link" data-label="Privacy Policy" target="_blank" rel="noopener">
-        <span class="material-symbols-outlined sidebar-icon">policy</span>
-        <span class="sidebar-label">Privacy Policy</span>
-      </a>
-      <a href="/terms" class="sidebar-link" data-label="Terms of Service" target="_blank" rel="noopener">
-        <span class="material-symbols-outlined sidebar-icon">gavel</span>
-        <span class="sidebar-label">Terms of Service</span>
-      </a>
-    </div>
     <p class="sidebar-footer-note">CSPC ACCESS x Hauers<br>&copy; 2026. All rights reserved.</p>
   </div>
 
   </div><!-- /.sidebar-inner -->
 
-  <button class="sidebar-collapse-handle" id="sidebar-collapse-handle" type="button" aria-label="Toggle sidebar">
-    <span class="material-symbols-outlined nav-hamburger-icon">menu</span>
+  <button class="sidebar-collapse-handle" id="sidebar-collapse-handle" type="button" aria-expanded="true" aria-controls="app-sidebar" aria-label="Collapse sidebar">
+    <span class="material-symbols-outlined sidebar-collapse-icon" id="sidebar-collapse-icon" aria-hidden="true">chevron_left</span>
   </button>
 
 </aside>
+
+<script>
+  (function() {
+    const currentPath = window.location.pathname;
+    const sidebarLinks = document.querySelectorAll('.sidebar-link');
+    sidebarLinks.forEach(link => {
+      // Check for exact match or if it's the dashboard
+      if (link.getAttribute('href') === currentPath) {
+        link.classList.add('active');
+      }
+    });
+  })();
+</script>

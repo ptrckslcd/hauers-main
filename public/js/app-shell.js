@@ -70,6 +70,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   const COLLAPSED_KEY = 'hauers_sidebar_collapsed';
   const isCollapsed = () => localStorage.getItem(COLLAPSED_KEY) === '1';
 
+  function syncCollapseHandleUI(collapsed) {
+    const handle = document.getElementById('sidebar-collapse-handle');
+    const icon = document.getElementById('sidebar-collapse-icon');
+    if (handle) {
+      handle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+      handle.setAttribute('aria-label', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
+    }
+    if (icon) {
+      /* Expanded: chevron points left (collapse). Collapsed: chevron points right (expand). */
+      icon.textContent = collapsed ? 'chevron_right' : 'chevron_left';
+    }
+  }
+
   function applyCollapsedState(animate) {
     if (!sidebar || !shell) return;
     if (animate) {
@@ -80,6 +93,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     sidebar.classList.toggle('collapsed', collapsed);
     shell.classList.toggle('sidebar-collapsed', collapsed);
     document.body.classList.toggle('sidebar-collapsed', collapsed);
+    syncCollapseHandleUI(collapsed);
   }
 
   // Restore persisted state immediately (no transition flash)
@@ -141,11 +155,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.error('Failed to load user info', err);
   }
 
-  /* Profile popup links for reviewee */
+  /* Profile popup links logic */
   const nppEditLink     = document.getElementById('npp-edit-link');
   const nppSettingsLink = document.getElementById('npp-settings-link');
-  if (nppEditLink)     nppEditLink.href     = '/reviewee/learner-profile';
-  if (nppSettingsLink) nppSettingsLink.href = '/reviewee/settings';
+  
+  if (document.body.dataset.role === 'admin') {
+    if (nppEditLink) nppEditLink.style.display = 'none';
+    if (nppSettingsLink) nppSettingsLink.href = '/admin/settings';
+  } else {
+    if (nppEditLink) nppEditLink.href = '/reviewee/profile';
+    if (nppSettingsLink) nppSettingsLink.href = '/reviewee/settings';
+  }
 
   /* Nav-user click → toggle profile popup */
   const navUserEl    = document.getElementById('nav-user');

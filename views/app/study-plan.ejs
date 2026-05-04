@@ -19,343 +19,247 @@
 
     <main class="page-content">
 
-      <!-- ── Page header ── -->
       <header class="page-header">
-        <div>
-          <h1 class="page-title">Study Plan</h1>
-          <p class="page-subtitle">Your personalised 7-week roadmap to exam readiness</p>
-        </div>
-        <div class="sp-header-chips">
-          <span class="sp-chip sp-chip--week" id="sp-week-badge">Week — of —</span>
-          <span class="sp-chip sp-chip--days" id="sp-days-badge">— days left</span>
-        </div>
+        <h1 class="page-title">Study Plan</h1>
       </header>
 
-      <!-- ── Row 1: Weekly Goals + Exam Countdown ── -->
-      <div class="dash-grid dash-grid--2col">
+      <!-- Row 1: Overview + Current phase -->
+      <div class="pgx-grid-2">
+        <div class="dash-card spx-card-overview">
+          <p class="pgx-section-label">Plan Overview</p>
 
-        <!-- Weekly Goals -->
-        <div class="dash-card">
-          <span class="card-label">Weekly Goal Progress</span>
-          <p class="card-sub">Track your practice targets for this week</p>
-          <div class="sp-goals" id="sp-goal-rows"></div>
-        </div>
-
-        <!-- Exam Countdown -->
-        <div class="dash-card">
-          <span class="card-label">Exam Countdown</span>
-          <div class="sp-countdown">
-            <div class="sp-countdown-num" id="sp-days-num">—</div>
-            <div class="sp-countdown-label">days until exam</div>
-            <div class="sp-countdown-sub" id="sp-exam-date-label">—</div>
-          </div>
-          <div class="sp-countdown-divider"></div>
-          <div class="sp-stat-pair">
-            <div class="sp-stat-box">
-              <div class="sp-stat-num" id="sp-weeks-left">—</div>
-              <div class="sp-stat-label">weeks left</div>
+          <div class="spx-exam-block">
+            <div>
+              <span class="spx-k">Target exam date</span>
+              <p class="spx-exam-date" id="spx-exam-date">—</p>
             </div>
-            <div class="sp-stat-box">
-              <div class="sp-stat-num" id="sp-current-week">—</div>
-              <div class="sp-stat-label">current week</div>
+            <a href="/reviewee/profile" class="spx-profile-link">Edit in profile</a>
+          </div>
+
+          <div class="spx-metrics">
+            <div class="spx-metric">
+              <span class="spx-metric-n" id="spx-weeks-rem">—</span>
+              <span class="spx-metric-l">Weeks remaining</span>
+            </div>
+            <div class="spx-metric-div"></div>
+            <div class="spx-metric">
+              <span class="spx-metric-n" id="spx-cur-week">—</span>
+              <span class="spx-metric-l">Current week</span>
+            </div>
+            <div class="spx-metric-div"></div>
+            <div class="spx-metric">
+              <span class="spx-metric-n" id="spx-total-weeks">—</span>
+              <span class="spx-metric-l">Total weeks</span>
+            </div>
+          </div>
+
+          <div class="spx-sessions-progress">
+            <div class="spx-sessions-head">
+              <span class="spx-sessions-title">Weekly session goal</span>
+              <span class="spx-sessions-frac" id="spx-sessions-frac">—</span>
+            </div>
+            <div class="spx-sessions-track">
+              <div class="spx-sessions-fill" id="spx-sessions-fill" style="width:0%"></div>
             </div>
           </div>
         </div>
 
-      </div>
-
-      <!-- ── This Week ── -->
-      <div class="dash-card" style="margin-bottom: 2.5rem;">
-        <div class="sp-week-header">
-          <span class="card-label">This Week</span>
-          <span class="sp-week-range" id="sp-week-range">—</span>
-        </div>
-        <p class="card-sub">Your daily task schedule — stay consistent!</p>
-        <div class="sp-week-grid" id="sp-week-grid"></div>
-      </div>
-
-      <!-- ── Phase Timeline + Domain Coverage ── -->
-      <div class="dash-grid dash-grid--2col" style="margin-bottom: 2.5rem;">
-
-        <!-- Phase Timeline -->
-        <div class="dash-card">
-          <span class="card-label">Study Phases</span>
-          <p class="card-sub">Your 7-week structured learning path</p>
-          <div class="sp-phases" id="sp-phases"></div>
-        </div>
-
-        <!-- Domain Coverage -->
-        <div class="dash-card">
-          <span class="card-label">Domain Coverage</span>
-          <p class="card-sub">Proficiency scores from your diagnostic exam</p>
-          <div class="sp-domain-bars" id="sp-domain-bars"></div>
-          <div class="sp-divider"></div>
-          <span class="sp-section-label">Weak Domains</span>
-          <div class="sp-weak-tags" id="sp-weak-tags"></div>
-        </div>
-
-      </div>
-
-      <!-- ── Recommended Resources ── -->
-      <div class="dash-card" style="margin-bottom: 2.5rem;">
-        <span class="card-label">Recommended Resources</span>
-        <p class="card-sub">Curated study materials per domain</p>
-        <div class="sp-resources-grid" id="sp-resources"></div>
-      </div>
-
-      <!-- ── CTA ── -->
-      <div class="dash-card">
-        <div class="sp-cta">
-          <div>
-            <div class="sp-cta-title">Ready to practice today?</div>
-            <div class="sp-cta-sub">Jump into a focused quiz to build your score.</div>
+        <div class="dash-card spx-card-phase-now">
+          <p class="pgx-section-label">Your phase</p>
+          <div class="spx-phase-now-inner" id="spx-phase-now">
+            <span class="spx-phase-now-badge" id="spx-phase-badge">—</span>
+            <h2 class="spx-phase-now-title" id="spx-phase-title">—</h2>
+            <p class="spx-phase-now-sub" id="spx-phase-weeks">—</p>
           </div>
-          <div class="sp-cta-actions">
-            <a href="/reviewee/quiz" class="cta-pill">Take a Quiz</a>
-            <a href="/reviewee/diagnostic" class="cta-pill" style="background:var(--card-bg);color:var(--text-main);border-color:var(--border-subdued)">Retake Diagnostic</a>
-          </div>
+          <ul class="spx-phase-now-bullets" id="spx-phase-bullets"></ul>
+        </div>
+      </div>
+
+      <!-- Weekly schedule -->
+      <div class="dash-card spx-card-week">
+        <div class="spx-week-head">
+          <p class="pgx-section-label pgx-section-label--flush">Weekly schedule</p>
+          <span class="spx-week-range" id="spx-week-range"></span>
+        </div>
+        <div class="pgx-chart-shell spx-week-shell">
+          <div class="spx-week-grid" id="spx-week-grid"></div>
+        </div>
+        <div class="spx-start-row">
+          <a href="#" class="spx-start-primary" id="spx-start-today" hidden>
+            <span class="material-symbols-outlined" style="font-size:18px">play_circle</span>
+            Start today's session
+          </a>
+          <p class="spx-start-hint" id="spx-start-hint" hidden></p>
+        </div>
+      </div>
+
+      <!-- Phases + log -->
+      <div class="pgx-grid-2 spx-bottom-grid">
+        <div class="dash-card spx-card-roadmap">
+          <p class="pgx-section-label pgx-section-label--flush">Preparation timeline</p>
+          <div class="spx-roadmap" id="spx-roadmap"></div>
+        </div>
+        <div class="dash-card spx-card-log">
+          <p class="pgx-section-label pgx-section-label--flush">Plan adjustment log</p>
+          <div class="spx-log-list" id="spx-log-list"></div>
         </div>
       </div>
 
     </main>
-  </div><!-- /.app-shell -->
+  </div>
 
   <script src="/js/app-shell.js"></script>
   <script>
   (function () {
-    /* ── Stats Count-up utility ── */
-    function animateValue(obj, start, end, duration, isScore = false) {
-      if (!obj) return;
-      let startTimestamp = null;
-      const step = (timestamp) => {
-        if (!startTimestamp) startTimestamp = timestamp;
-        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-        const val = Math.floor(progress * (end - start) + start);
-        obj.innerHTML = isScore ? `${val}%` : val;
-        if (progress < 1) {
-          window.requestAnimationFrame(step);
-        }
-      };
-      window.requestAnimationFrame(step);
+    const DOMAIN_SLUG = {
+      'Verbal Ability':      'verbal',
+      'Numerical Ability':   'numerical',
+      'Analytical Ability':  'analytical',
+      'Clerical Ability':    'clerical',
+      'General Information': 'general',
+    };
+    const DOMAIN_SHORT = {
+      'Verbal Ability':      'Verbal',
+      'Numerical Ability':   'Numerical',
+      'Analytical Ability':  'Analytical',
+      'Clerical Ability':    'Clerical',
+      'General Information': 'Gen. Info',
+    };
+
+    function fmtRange(daily) {
+      if (!daily?.length) return '';
+      const a = daily[0].date;
+      const b = daily[daily.length - 1].date;
+      const fa = new Date(a + 'T12:00:00').toLocaleDateString('en-PH', { month: 'short', day: 'numeric' });
+      const fb = new Date(b + 'T12:00:00').toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
+      return fa + ' – ' + fb;
     }
 
-    function daysUntil(dateStr) {
-      const diff = Math.ceil((new Date(dateStr) - new Date()) / 864e5);
-      return diff > 0 ? diff : 0;
-    }
-
-    function fmtDate(dateStr) {
-      return new Date(dateStr).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' });
-    }
-
-    /* ── Goal bars ── */
-    function buildGoalRows(wg) {
-      const rows = [
-        { name: 'Quizzes',        done: wg.quizzesDone,       total: wg.quizzes       },
-        { name: 'Readings',       done: wg.readingsDone,      total: wg.readings      },
-        { name: 'Practice Items', done: wg.practiceItemsDone, total: wg.practiceItems },
-      ];
-      document.getElementById('sp-goal-rows').innerHTML = rows.map(r => {
-        const pct = Math.round((r.done / r.total) * 100);
+    function renderWeekGrid(daily, todayIso, diagOk) {
+      const el = document.getElementById('spx-week-grid');
+      el.innerHTML = daily.map(d => {
+        const isToday = d.date === todayIso;
+        const slug = DOMAIN_SLUG[d.domain] || 'general';
+        const done = d.completed;
+        const cls = ['spx-day', isToday ? 'spx-day--today' : '', done ? 'spx-day--done' : ''].filter(Boolean).join(' ');
         return `
-          <div class="sp-goal-row">
-            <div class="sp-goal-header">
-              <span class="sp-goal-name">${r.name}</span>
-              <span class="sp-goal-frac">${r.done} / ${r.total}</span>
+          <div class="${cls}">
+            <div class="spx-day-top">
+              <span class="spx-day-name">${d.day}</span>
+              <span class="spx-day-date">${d.date.slice(5).replace('-', '/')}</span>
             </div>
-            <div class="sp-goal-track">
-              <div class="sp-goal-fill" style="width: 0%" data-target="${pct}"></div>
-            </div>
-          </div>`;
-      }).join('');
-      requestAnimationFrame(() => {
-        document.querySelectorAll('#sp-goal-rows .sp-goal-fill').forEach(el => {
-          setTimeout(() => { el.style.width = el.dataset.target + '%'; }, 100);
-        });
-      });
-    }
-
-    /* ── Week grid ── */
-    function buildWeekGrid(tasks) {
-      const todayStr = new Date().toISOString().slice(0, 10);
-      const container = document.getElementById('sp-week-grid');
-      
-      container.innerHTML = tasks.map(d => {
-        const isToday = d.date === todayStr || d.day === 'Thu';
-        const cls = ['sp-day-card', d.done ? 'done' : '', isToday ? 'today' : ''].filter(Boolean).join(' ');
-        const statusCls = d.done ? 'done' : (isToday ? 'today' : '');
-        const taskLines = d.tasks.map(t => `<div class="sp-day-task">${t}</div>`).join('');
-        return `
-          <div class="${cls}" data-done="${d.done}">
-            <div class="sp-day-top">
-              <span class="sp-day-name">${d.day}</span>
-              <span class="sp-day-status ${statusCls}">
-                <span class="material-symbols-outlined" style="font-size:12px;color:#fff;font-weight:bold;display:${d.done ? 'block' : 'none'}">check</span>
-              </span>
-            </div>
-            <div class="sp-day-date">${d.date ? d.date.slice(5).replace('-', '/') : ''}</div>
-            <div class="sp-day-tasks">${taskLines}</div>
+            <span class="q-domain-badge ${slug} spx-day-badge">${DOMAIN_SHORT[d.domain] || d.domain}</span>
+            <p class="spx-day-meta">~${d.estMinutes} min session</p>
+            ${done
+              ? '<span class="spx-done-badge"><span class="material-symbols-outlined" style="font-size:13px">check</span> Completed</span>'
+              : '<span class="spx-pending-label">Scheduled</span>'}
           </div>`;
       }).join('');
 
-      container.querySelectorAll('.sp-day-card').forEach(card => {
-        card.addEventListener('click', () => {
-          const isDone = card.getAttribute('data-done') === 'true';
-          const next = !isDone;
-          card.setAttribute('data-done', next);
-          card.classList.toggle('done', next);
-          const status = card.querySelector('.sp-day-status');
-          status.classList.toggle('done', next);
-          status.querySelector('.material-symbols-outlined').style.display = next ? 'block' : 'none';
-        });
-      });
-
-      if (tasks.length) {
-        document.getElementById('sp-week-range').textContent =
-          fmtDate(tasks[0].date) + ' – ' + fmtDate(tasks[tasks.length - 1].date);
-      }
-    }
-
-    /* ── Phase timeline ── */
-    function buildPhases(phases) {
-      const checkSvg = `<span class="material-symbols-outlined" style="font-size:14px;color:#fff;font-weight:bold">check</span>`;
-      document.getElementById('sp-phases').innerHTML = phases.map(p => {
-        const dotCls = p.done ? ' done' : p.current ? ' current' : '';
-        const dot = `<div class="sp-phase-dot${dotCls}">${p.done ? checkSvg : ''}</div>`;
-        const badge = p.current ? `<span class="sp-current-badge">Current</span>` : '';
-        const items = p.items.map(i => `<li>${i}</li>`).join('');
-        const phaseCls = `sp-phase${p.done ? ' done' : ''}${p.current ? ' current' : ''}`;
-        return `
-          <div class="${phaseCls}">
-            <div class="sp-phase-spine">
-              ${dot}
-              <div class="sp-phase-connector"></div>
-            </div>
-            <div class="sp-phase-body">
-              <div class="sp-phase-title-row">
-                <span class="sp-phase-title">${p.title}</span>
-                <span class="sp-phase-meta">${p.label} · Wks ${p.weeks}</span>
-                ${badge}
-              </div>
-              <ul class="sp-phase-items">${items}</ul>
-            </div>
-          </div>`;
-      }).join('');
-    }
-
-    /* ── Domain bars ── */
-    function buildDomainBars(domainScores, weakDomains) {
-      const colorMap = {
-        'Verbal Ability':    '#7c3aed',
-        'Numerical Ability': '#ff9933',
-        'Clerical Ability':  '#3b82f6',
-      };
-      document.getElementById('sp-domain-bars').innerHTML = domainScores.map(ds => {
-        const name  = Object.keys(ds)[0];
-        const score = ds[name];
-        const color = colorMap[name] || '#ff9933';
-        const isWeak = weakDomains && weakDomains.includes(name);
-        return `
-          <div class="sp-domain-bar-row">
-            <div class="sp-domain-bar-header">
-              <span class="sp-domain-name">
-                ${name}${isWeak ? ' <span class="sp-weak-label">⚠ weak</span>' : ''}
-              </span>
-              <span class="sp-domain-score" data-score="${score}">0%</span>
-            </div>
-            <div class="sp-domain-track">
-              <div class="sp-domain-fill" style="background:${color}; width: 0%" data-target="${score}"></div>
-            </div>
-          </div>`;
-      }).join('');
-      requestAnimationFrame(() => {
-        document.querySelectorAll('#sp-domain-bars .sp-domain-bar-row').forEach(row => {
-          const fill = row.querySelector('.sp-domain-fill');
-          const scoreEl = row.querySelector('.sp-domain-score');
-          const target = parseInt(fill.dataset.target);
-          setTimeout(() => { 
-            fill.style.width = target + '%';
-            animateValue(scoreEl, 0, target, 1200, true);
-          }, 150);
-        });
-      });
-    }
-
-    /* ── Weak tags ── */
-    function buildWeakTags(weakDomains) {
-      const wrap = document.getElementById('sp-weak-tags');
-      if (!weakDomains || !weakDomains.length) {
-        wrap.innerHTML = '<span style="font-size:0.82rem;color:var(--text-subdued)">No weak domains — great job!</span>';
+      const startA = document.getElementById('spx-start-today');
+      const hint = document.getElementById('spx-start-hint');
+      const todayRow = daily.find(d => d.date === todayIso);
+      if (!diagOk) {
+        startA.hidden = true;
+        hint.hidden = false;
+        hint.textContent = 'Complete the diagnostic to unlock focused practice from your study plan.';
         return;
       }
-      wrap.innerHTML = weakDomains.map(d => `<span class="sp-weak-tag">${d}</span>`).join('');
+      if (todayRow && !todayRow.completed) {
+        const u = '/reviewee/review?domain=' + encodeURIComponent(todayRow.domain) + '&start=1';
+        startA.href = u;
+        startA.removeAttribute('hidden');
+        hint.hidden = true;
+      } else if (todayRow && todayRow.completed) {
+        startA.hidden = true;
+        hint.hidden = false;
+        hint.textContent = "Today's scheduled session is already complete. Nice work.";
+      } else {
+        startA.hidden = true;
+        hint.hidden = true;
+      }
     }
 
-    /* ── Resources ── */
-    function buildResources(resources) {
-      document.getElementById('sp-resources').innerHTML = resources.map(r => `
-        <div class="sp-resource-card">
-          <div class="sp-resource-header">
-            <div class="sp-resource-icon">
-              <span class="material-symbols-outlined">${
-                r.domain.includes('Verbal') ? 'record_voice_over' : 
-                r.domain.includes('Numerical') ? 'calculate' : 
-                r.domain.includes('Clerical') ? 'inventory_2' : 'auto_stories'
-              }</span>
+    function renderRoadmap(phases, currentIdx) {
+      document.getElementById('spx-roadmap').innerHTML = phases.map((p, i) => {
+        const state = p.done ? 'done' : p.current ? 'current' : '';
+        return `
+          <div class="spx-rm-step spx-rm-step--${state || 'upcoming'}">
+            <div class="spx-rm-rail">
+              <div class="spx-rm-dot">${p.done ? '<span class="material-symbols-outlined" style="font-size:14px">check</span>' : i + 1}</div>
+              ${i < phases.length - 1 ? '<div class="spx-rm-line"></div>' : ''}
             </div>
-            <span class="sp-resource-name">${r.domain}</span>
-          </div>
-          <div class="sp-resource-list">
-            ${r.items.map(i => `
-              <a href="#" class="sp-resource-item">
-                <span class="sp-ri-label">${i}</span>
-                <span class="material-symbols-outlined sp-ri-launch">arrow_circle_right</span>
-              </a>
-            `).join('')}
-          </div>
+            <div class="spx-rm-body">
+              <div class="spx-rm-head">
+                <span class="spx-rm-title">${p.title}</span>
+                ${p.current ? '<span class="spx-rm-you">You are here</span>' : ''}
+              </div>
+              <p class="spx-rm-weeks">${p.weeks}</p>
+              <ul class="spx-rm-items">${p.items.map(x => `<li>${x}</li>`).join('')}</ul>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function renderLog(entries) {
+      document.getElementById('spx-log-list').innerHTML = entries.map(e => `
+        <div class="spx-log-item${e.isInfo ? ' spx-log-item--info' : ''}">
+          <span class="spx-log-date">${e.date}</span>
+          <p class="spx-log-msg">${e.message}</p>
         </div>`).join('');
     }
 
-    /* ── Fetch + render ── */
+    function todayLocalKey() {
+      const n = new Date();
+      const y = n.getFullYear();
+      const m = String(n.getMonth() + 1).padStart(2, '0');
+      const d = String(n.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
     Promise.all([
-      fetch('/reviewee/api/study-plan').then(r => r.json()),
-      fetch('/reviewee/api/diagnostic').then(r => r.json()).catch(() => null),
-      fetch('/reviewee/api/dashboard').then(r => r.json()).catch(() => null),
-    ]).then(([sp, diag, dash]) => {
+      fetch('/reviewee/api/study-plan').then(r => r.ok ? r.json() : Promise.reject()),
+      fetch('/reviewee/api/dashboard').then(r => r.ok ? r.json() : {}).catch(() => ({})),
+    ]).then(([sp, dash]) => {
+      const todayIso = todayLocalKey();
+      const diagOk = !!dash.pretestComplete;
 
-      const days     = daysUntil(sp.examDate);
-      const weeksLeft = sp.totalWeeks - sp.currentWeek;
+      document.getElementById('spx-exam-date').textContent =
+        sp.examDateDisplay || 'Not set — add a target date in your learner profile.';
+      document.getElementById('spx-weeks-rem').textContent = sp.weeksRemaining ?? '—';
+      document.getElementById('spx-cur-week').textContent  = sp.currentWeek ?? '—';
+      document.getElementById('spx-total-weeks').textContent = sp.totalWeeks ?? '—';
 
-      const daysNumEl = document.getElementById('sp-days-num');
-      const weeksLeftEl = document.getElementById('sp-weeks-left');
-      
-      animateValue(daysNumEl, 0, days, 1000);
-      animateValue(weeksLeftEl, 0, weeksLeft, 800);
-      
-      document.getElementById('sp-days-badge').textContent    = days + ' days left';
-      document.getElementById('sp-current-week').textContent  = sp.currentWeek;
-      document.getElementById('sp-week-badge').textContent    = 'Week ' + sp.currentWeek + ' of ' + sp.totalWeeks;
-      document.getElementById('sp-exam-date-label').textContent = 'Target: ' + fmtDate(sp.examDate);
+      const wg = sp.weeklySessions || { completed: 0, target: 1 };
+      const tgt = Math.max(1, wg.target);
+      const done = Math.min(wg.completed || 0, tgt);
+      document.getElementById('spx-sessions-frac').textContent =
+        `${done} of ${tgt} sessions this week`;
+      setTimeout(() => {
+        document.getElementById('spx-sessions-fill').style.width =
+          Math.round((done / tgt) * 100) + '%';
+      }, 120);
 
-      buildGoalRows(sp.weeklyGoal);
-      buildWeekGrid(sp.dailyTasks);
-      buildPhases(sp.phases);
+      const phases = sp.phases || [];
+      const idx = sp.currentPhaseIndex ?? 0;
+      const cur = phases[idx];
+      if (cur) {
+        document.getElementById('spx-phase-badge').textContent = cur.label;
+        document.getElementById('spx-phase-title').textContent = cur.title;
+        document.getElementById('spx-phase-weeks').textContent = cur.weeks;
+        document.getElementById('spx-phase-bullets').innerHTML =
+          cur.items.map(t => `<li>${t}</li>`).join('');
+      }
 
-      const domainScores = diag && diag.domainScores
-        ? diag.domainScores
-        : [{ 'Verbal Ability': 75 }, { 'Numerical Ability': 55 }, { 'Clerical Ability': 58 }];
-      const weakDomains = dash && dash.weakDomains
-        ? dash.weakDomains
-        : ['Numerical Ability', 'Clerical Ability'];
-
-      buildDomainBars(domainScores, weakDomains);
-      buildWeakTags(weakDomains);
-      
-      buildResources(sp.resources);
-
+      document.getElementById('spx-week-range').textContent = fmtRange(sp.dailySchedule);
+      renderWeekGrid(sp.dailySchedule || [], todayIso, diagOk);
+      renderRoadmap(phases, idx);
+      renderLog(sp.adjustments || []);
     }).catch(err => console.error('[study-plan]', err));
-
   })();
   </script>
+
+  <%- include('../partials/enrollment-code-modal') %>
+  <script src="/js/toast-notifications.js"></script>
 </body>
 </html>

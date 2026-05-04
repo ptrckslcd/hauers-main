@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>User Detail | Hauers Admin</title>
+  <title>Reviewee Detail | Hauers Admin</title>
   <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
   <link rel="stylesheet" href="/css/base.css">
   <link rel="stylesheet" href="/css/dashboard.css">
@@ -19,71 +19,144 @@
 
     <main class="page-content">
 
-      <!-- ── Back link ── -->
       <a href="/admin/reviewees" class="qd-back-link">
         <span class="material-symbols-outlined" style="font-size:18px">arrow_back</span>
         Back to Reviewees
       </a>
 
-      <!-- ── Hero card ── -->
-      <div class="dash-card" style="margin-bottom:1.25rem">
+      <!-- ══ Hero card ══ -->
+      <div class="dash-card rxv-hero-card">
+        <div class="rxv-hero-left">
+          <div class="rxv-hero-avatar" id="ud-avatar">?</div>
+          <div class="rxv-hero-info">
+            <h1 class="rxv-hero-name" id="ud-full-name">Loading…</h1>
+            <p class="rxv-hero-email" id="ud-email"></p>
+            <div class="rxv-hero-chips" id="ud-chips"></div>
+          </div>
+        </div>
+        <div class="rxv-hero-meta" id="ud-meta-grid">
+          <div class="rxv-meta-item">
+            <span class="rxv-meta-lbl">Exam Level</span>
+            <span class="rxv-meta-val" id="ud-level">—</span>
+          </div>
+          <div class="rxv-meta-item">
+            <span class="rxv-meta-lbl">Batch</span>
+            <span class="rxv-meta-val" id="ud-batch">—</span>
+          </div>
+          <div class="rxv-meta-item">
+            <span class="rxv-meta-lbl">Enrolled</span>
+            <span class="rxv-meta-val" id="ud-enrolled">—</span>
+          </div>
+          <div class="rxv-meta-item">
+            <span class="rxv-meta-lbl">Member Since</span>
+            <span class="rxv-meta-val" id="ud-joined">—</span>
+          </div>
+          <div class="rxv-meta-item">
+            <span class="rxv-meta-lbl">Last Active</span>
+            <span class="rxv-meta-val" id="ud-last-active">—</span>
+          </div>
+          <div class="rxv-meta-item">
+            <span class="rxv-meta-lbl">Streak</span>
+            <span class="rxv-meta-val" id="ud-streak">—</span>
+          </div>
+        </div>
+      </div>
 
-        <div class="ud-hero">
-          <div class="ud-avatar" id="ud-avatar">?</div>
-          <div>
-            <div class="ud-name"  id="ud-full-name">Loading…</div>
-            <div class="ud-email" id="ud-email"></div>
-            <div class="ud-chips" id="ud-chips"></div>
+      <!-- ══ Body grid ══ -->
+      <div class="pgx-grid-2" style="align-items:start;margin-bottom:1.25rem">
+
+        <!-- Learner Profile summary -->
+        <div class="dash-card" style="padding:1.35rem 1.5rem">
+          <p class="pgx-section-label pgx-section-label--flush" style="margin-bottom:0.9rem">Learner Profile</p>
+          <div class="rxv-lp-grid">
+            <div class="rxv-lp-item">
+              <span class="rxv-meta-lbl">Target Exam Date</span>
+              <span class="rxv-meta-val" id="lp-exam-date">—</span>
+            </div>
+            <div class="rxv-lp-item">
+              <span class="rxv-meta-lbl">Study Hours / Week</span>
+              <span class="rxv-meta-val" id="lp-study-hours">—</span>
+            </div>
+            <div class="rxv-lp-item">
+              <span class="rxv-meta-lbl">Preferred Study Time</span>
+              <span class="rxv-meta-val" id="lp-study-time">—</span>
+            </div>
+            <div class="rxv-lp-item">
+              <span class="rxv-meta-lbl">Primary Device</span>
+              <span class="rxv-meta-val" id="lp-device">—</span>
+            </div>
+          </div>
+
+          <div class="prf-divider" style="margin:1rem 0 0.9rem"></div>
+          <p class="pgx-section-label pgx-section-label--flush" style="margin-bottom:0.65rem">Domain Self-Ratings</p>
+          <div id="lp-ratings" class="rxv-ratings">
+            <span style="font-size:0.82rem;color:var(--text-subdued)">Loading…</span>
           </div>
         </div>
 
-        <div class="ud-field-grid">
-          <div class="ud-field">
-            <span class="ud-field-label">Joined</span>
-            <span class="ud-field-value" id="ud-joined">—</span>
+        <!-- Diagnostic status -->
+        <div class="dash-card" style="padding:1.35rem 1.5rem">
+          <p class="pgx-section-label pgx-section-label--flush" style="margin-bottom:0.9rem">Diagnostic Status</p>
+          <div class="rxv-diag-block" id="rxv-diag-block">
+            <div class="rxv-diag-status-row">
+              <span class="rxv-diag-ic" id="rxv-diag-ic">hourglass_empty</span>
+              <div>
+                <p class="rxv-diag-label" id="rxv-diag-label">Not Completed</p>
+                <p class="rxv-diag-sub" id="rxv-diag-sub">Has not taken the diagnostic yet.</p>
+              </div>
+            </div>
           </div>
-          <div class="ud-field">
-            <span class="ud-field-label">Last Active</span>
-            <span class="ud-field-value" id="ud-last-active">—</span>
-          </div>
-          <div class="ud-field">
-            <span class="ud-field-label">Exam Level</span>
-            <span class="ud-field-value" id="ud-level">—</span>
-          </div>
-          <div class="ud-field">
-            <span class="ud-field-label">Study Streak</span>
-            <span class="ud-field-value" id="ud-streak">—</span>
+
+          <div class="prf-divider" style="margin:1.1rem 0"></div>
+
+          <!-- Learner Profile Form Responses -->
+          <p class="pgx-section-label pgx-section-label--flush" style="margin-bottom:0.65rem">Profile Form Responses</p>
+          <div id="ud-form-responses" class="rxv-form-responses">
+            <span style="font-size:0.82rem;color:var(--text-subdued)">Loading…</span>
           </div>
         </div>
 
       </div>
 
-      <!-- ── Profile Form Responses ── -->
-      <div class="dash-grid" style="grid-template-columns: 1fr;">
-        <div class="dash-card">
-          <span class="card-label">Profile Form Responses</span>
-          <p class="card-sub">Self-reported demographic and preparatory information. To protect privacy, individual readiness scores are not shown.</p>
-          
-          <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem;">
-            <!-- Scaffolded responses -->
-            <div style="padding-bottom: 1rem; border-bottom: 1px solid var(--border-subdued);">
-              <span style="font-size: 0.8rem; color: var(--text-subdued); font-weight: 600; text-transform: uppercase;">1. What is your primary mode of preparation?</span>
-              <p style="margin-top: 0.25rem; color: var(--text-main); font-size: 0.95rem;">Self-study with online resources</p>
+      <!-- ══ Actions card ══ -->
+      <div class="dash-card rxv-actions-card">
+        <p class="pgx-section-label pgx-section-label--flush" style="margin-bottom:1rem">Actions</p>
+        <div class="rxv-actions-grid">
+
+          <!-- Approve -->
+          <div class="rxv-action-item" id="action-approve-wrap">
+            <div class="rxv-action-info">
+              <strong>Approve Access</strong>
+              <p>Grants access to the platform without requiring an enrollment code. Use for manually verified reviewees.</p>
             </div>
-            <div style="padding-bottom: 1rem; border-bottom: 1px solid var(--border-subdued);">
-              <span style="font-size: 0.8rem; color: var(--text-subdued); font-weight: 600; text-transform: uppercase;">2. Which domain do you feel least confident about?</span>
-              <p style="margin-top: 0.25rem; color: var(--text-main); font-size: 0.95rem;">Numerical Ability</p>
-            </div>
-            <div style="padding-bottom: 1rem; border-bottom: 1px solid var(--border-subdued);">
-              <span style="font-size: 0.8rem; color: var(--text-subdued); font-weight: 600; text-transform: uppercase;">3. How many hours a week do you plan to study?</span>
-              <p style="margin-top: 0.25rem; color: var(--text-main); font-size: 0.95rem;">10-15 hours</p>
-            </div>
-            <div style="padding-bottom: 1rem; border-bottom: 1px solid var(--border-subdued);">
-              <span style="font-size: 0.8rem; color: var(--text-subdued); font-weight: 600; text-transform: uppercase;">4. Any additional context or feedback?</span>
-              <p style="margin-top: 0.25rem; color: var(--text-main); font-size: 0.95rem; font-style: italic;">"I really need more practice sets for math."</p>
-            </div>
+            <button class="rxv-action-btn rxv-action-btn--approve" id="btn-approve" type="button">Approve</button>
           </div>
+
+          <!-- Reset enrollment -->
+          <div class="rxv-action-item">
+            <div class="rxv-action-info">
+              <strong>Reset Enrollment</strong>
+              <p>Removes the reviewee from their current batch. They will need to re-enroll with a valid code.</p>
+            </div>
+            <button class="rxv-action-btn rxv-action-btn--warn" id="btn-reset" type="button">Reset Enrollment</button>
+          </div>
+
+          <!-- Suspend -->
+          <div class="rxv-action-item">
+            <div class="rxv-action-info">
+              <strong id="suspend-label">Suspend Account</strong>
+              <p id="suspend-sub">Prevents the reviewee from accessing Hauers. They can be unsuspended at any time.</p>
+            </div>
+            <button class="rxv-action-btn rxv-action-btn--danger" id="btn-suspend" type="button">Suspend</button>
+          </div>
+
         </div>
+      </div>
+
+      <!-- Toast -->
+      <div class="rxv-toast" id="rxv-toast" hidden>
+        <span class="material-symbols-outlined" id="rxv-toast-ic">check_circle</span>
+        <span id="rxv-toast-msg"></span>
       </div>
 
     </main>
@@ -92,56 +165,190 @@
   <script src="/js/admin-shell.js"></script>
   <script>
   (async () => {
+    const $ = id => document.getElementById(id);
+    const set = (id, v) => { const e = $(id); if (e) e.textContent = v; };
 
-    /* ── Get user ID from URL ────────────────────────────── */
     const userId = parseInt(window.location.pathname.split('/').pop(), 10);
     if (!userId) return;
 
-    /* ── Fetch user ──────────────────────────────────────── */
-    let user;
+    function fmtDate(d) {
+      return d ? new Date(d).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' }) : '—';
+    }
+    function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : '—'; }
+    function relTime(d) {
+      if (!d) return 'Never';
+      const diff = Math.floor((Date.now() - new Date(d)) / 86400000);
+      if (diff === 0) return 'Today';
+      if (diff === 1) return 'Yesterday';
+      if (diff < 7)  return diff + 'd ago';
+      return fmtDate(d);
+    }
+
+    /* ── Toast ── */
+    function showToast(msg, isError) {
+      const t = $('rxv-toast'), ic = $('rxv-toast-ic'), m = $('rxv-toast-msg');
+      if (!t) return;
+      if (ic) { ic.textContent = isError ? 'error' : 'check_circle'; ic.style.color = isError ? '#f87171' : '#4ade80'; }
+      if (m)  m.textContent = msg;
+      t.removeAttribute('hidden');
+      t.classList.add('rxv-toast--show');
+      setTimeout(() => { t.classList.remove('rxv-toast--show'); setTimeout(() => t.setAttribute('hidden',''), 300); }, 3500);
+    }
+
+    /* ── Load ── */
+    let data;
     try {
       const r = await fetch('/admin/api/users/' + userId);
+      if (r.status === 404) { set('ud-full-name', 'Reviewee not found'); return; }
       if (!r.ok) {
-        document.getElementById('ud-full-name').textContent = 'User not found';
+        set('ud-full-name', 'Could not load reviewee');
+        set('ud-email', 'Try refreshing the page. If this persists, check the server logs.');
         return;
       }
-      user = await r.json();
-    } catch (_) { return; }
-
-    /* ── Helpers ─────────────────────────────────────────── */
-    function fmtDate(d) {
-      return d ? new Date(d).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '—';
+      data = await r.json();
+    } catch {
+      set('ud-full-name', 'Network error');
+      set('ud-email', 'Check your connection and try again.');
+      return;
     }
 
-    /* ── Populate hero ───────────────────────────────────── */
-    const initials = (user.firstName[0] + user.lastName[0]).toUpperCase();
+    const { user, learnerProfile: lp, selfRatings = [], diagnostic, formResponses = [] } = data;
 
-    const avatarEl = document.getElementById('ud-avatar');
-    if (avatarEl) avatarEl.textContent = initials;
+    /* ── Hero ── */
+    const initials = ((user.firstName||'?')[0] + (user.lastName||'?')[0]).toUpperCase();
+    set('ud-avatar',     initials);
+    set('ud-full-name',  user.firstName + ' ' + user.lastName);
+    set('ud-email',      user.email);
+    set('ud-level',      cap(user.examLevel));
+    set('ud-batch',      user.batchName || '—');
+    set('ud-enrolled',   fmtDate(user.enrolledAt));
+    set('ud-joined',     fmtDate(user.joinedAt));
+    set('ud-last-active', relTime(user.lastActive));
+    set('ud-streak',     user.streak ? user.streak + (user.streak === 1 ? ' day' : ' days') : '0 days');
 
-    const nameEl = document.getElementById('ud-full-name');
-    if (nameEl) nameEl.textContent = user.firstName + ' ' + user.lastName;
-
-    const emailEl = document.getElementById('ud-email');
-    if (emailEl) emailEl.textContent = user.email;
-
-    const chipsEl = document.getElementById('ud-chips');
+    /* Status chips */
+    const chipsEl = $('ud-chips');
     if (chipsEl) {
-      const levelChip  = `<span class="q-domain-badge general">${user.examLevel || 'No level'}</span>`;
-      const statusChip = user.isVerified
-        ? `<span class="status-badge status-badge--verified">Verified</span>`
-        : `<span class="status-badge status-badge--pending">Pending Verification</span>`;
-      chipsEl.innerHTML = levelChip + statusChip;
+      let chips = `<span class="rxv-badge rxv-badge--${user.isSuspended ? 'suspended' : user.isEnrolled ? 'enrolled' : 'pending'}">${user.isSuspended ? 'Suspended' : user.isEnrolled ? 'Enrolled' : 'Pending Enrollment'}</span>`;
+      if (user.isApproved) chips += `<span class="rxv-badge rxv-badge--approved" style="margin-left:.35rem">Approved</span>`;
+      if (user.isVerified) chips += `<span class="rxv-badge rxv-badge--done" style="margin-left:.35rem">Email Verified</span>`;
+      chipsEl.innerHTML = chips;
     }
 
-    /* ── Profile fields ──────────────────────────────────── */
-    const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-    setVal('ud-joined',      fmtDate(user.joinedAt));
-    setVal('ud-last-active', fmtDate(user.lastActive));
-    setVal('ud-level',       user.examLevel || '—');
-    setVal('ud-streak',      user.streak ? user.streak + (user.streak === 1 ? ' day' : ' days') : '0 days');
+    /* ── Learner profile ── */
+    if (lp) {
+      set('lp-exam-date',   fmtDate(lp.target_exam_date));
+      set('lp-study-hours', lp.study_hours_per_week != null ? lp.study_hours_per_week + ' hrs / week' : '—');
+      set('lp-study-time',  cap(lp.preferred_study_time));
+      set('lp-device',      cap(lp.primary_device));
+    }
 
+    /* Self-ratings */
+    const ratingsEl = $('lp-ratings');
+    if (ratingsEl) {
+      if (!selfRatings.length) {
+        ratingsEl.innerHTML = '<span style="font-size:.82rem;color:var(--text-subdued)">No self-ratings recorded.</span>';
+      } else {
+        ratingsEl.innerHTML = selfRatings.map(r => {
+          const stars = Array.from({length:5}, (_,i) =>
+            `<span style="color:${i<r.rating?'#f59e0b':'var(--border-default)'}">★</span>`
+          ).join('');
+          return `<div class="rxv-rating-row">
+            <span class="rxv-rating-domain">${r.domain.replace(' Ability','')}</span>
+            <span class="rxv-rating-stars">${stars}</span>
+          </div>`;
+        }).join('');
+      }
+    }
 
+    /* ── Diagnostic ── */
+    const diagLbl = $('rxv-diag-label'), diagSub = $('rxv-diag-sub'), diagIc = $('rxv-diag-ic');
+    if (diagnostic) {
+      if (diagLbl) { diagLbl.textContent = 'Completed'; diagLbl.style.color = '#4ade80'; }
+      if (diagIc)  { diagIc.textContent = 'check_circle'; diagIc.style.color = '#4ade80'; }
+      if (diagSub) diagSub.textContent = `Completed on ${fmtDate(diagnostic.completed_at)} · ${diagnostic.correct_count}/${diagnostic.total_questions} correct`;
+    }
+
+    /* ── Form responses ── */
+    const frEl = $('ud-form-responses');
+    if (frEl) {
+      if (!formResponses.length) {
+        frEl.innerHTML = '<span style="font-size:.82rem;color:var(--text-subdued)">No form responses recorded.</span>';
+      } else {
+        frEl.innerHTML = formResponses.map(fr =>
+          `<div class="rxv-form-row">
+            <p class="rxv-form-q">${fr.question}</p>
+            <p class="rxv-form-a">${fr.answer || '—'}</p>
+          </div>`
+        ).join('');
+      }
+    }
+
+    /* ── Action state sync ── */
+    function syncActionUI() {
+      const approveWrap = $('action-approve-wrap');
+      const btnApprove  = $('btn-approve');
+      if (approveWrap) approveWrap.style.display = user.isApproved ? 'none' : '';
+      if (btnApprove)  btnApprove.disabled = user.isApproved;
+
+      const btnSuspend = $('btn-suspend');
+      const suspLabel  = $('suspend-label');
+      const suspSub    = $('suspend-sub');
+      if (user.isSuspended) {
+        if (btnSuspend) { btnSuspend.textContent = 'Unsuspend'; btnSuspend.className = 'rxv-action-btn rxv-action-btn--approve'; }
+        if (suspLabel) suspLabel.textContent = 'Unsuspend Account';
+        if (suspSub)   suspSub.textContent   = 'Restore access for this reviewee.';
+      }
+    }
+    syncActionUI();
+
+    /* ── Approve ── */
+    $('btn-approve').addEventListener('click', async () => {
+      if (!confirm(`Approve ${user.firstName} ${user.lastName}?\n\nThey will be able to access the platform without an enrollment code.`)) return;
+      const btn = $('btn-approve'); btn.disabled = true; btn.textContent = 'Approving…';
+      try {
+        const r = await fetch(`/admin/api/reviewees/${userId}/approve`, { method: 'POST' });
+        if (!r.ok) throw new Error();
+        user.isApproved = true;
+        syncActionUI();
+        showToast('Reviewee approved successfully.');
+      } catch { showToast('Failed to approve. Please try again.', true); btn.disabled = false; btn.textContent = 'Approve'; }
+    });
+
+    /* ── Reset enrollment ── */
+    $('btn-reset').addEventListener('click', async () => {
+      if (!confirm(`Reset enrollment for ${user.firstName} ${user.lastName}?\n\nThis will remove them from their batch. They will need to re-enroll.`)) return;
+      const btn = $('btn-reset'); btn.disabled = true; btn.textContent = 'Resetting…';
+      try {
+        const r = await fetch(`/admin/api/reviewees/${userId}/reset-enrollment`, { method: 'POST' });
+        if (!r.ok) throw new Error();
+        user.isEnrolled = false; user.batchName = null;
+        set('ud-batch',    '—');
+        set('ud-enrolled', '—');
+        const chipsEl2 = $('ud-chips');
+        if (chipsEl2) chipsEl2.querySelector('.rxv-badge:first-child').textContent = 'Pending Enrollment';
+        showToast('Enrollment reset successfully.');
+      } catch { showToast('Failed to reset enrollment.', true); }
+      finally { btn.disabled = false; btn.textContent = 'Reset Enrollment'; }
+    });
+
+    /* ── Suspend / unsuspend ── */
+    $('btn-suspend').addEventListener('click', async () => {
+      const suspending = !user.isSuspended;
+      const action = suspending ? 'Suspend' : 'Unsuspend';
+      if (!confirm(`${action} ${user.firstName} ${user.lastName}?`)) return;
+      const btn = $('btn-suspend'); btn.disabled = true; btn.textContent = action + 'ing…';
+      try {
+        const r = await fetch(`/admin/api/reviewees/${userId}/suspend`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ suspend: suspending }),
+        });
+        if (!r.ok) throw new Error();
+        user.isSuspended = suspending;
+        syncActionUI();
+        showToast(`Account ${suspending ? 'suspended' : 'unsuspended'} successfully.`);
+      } catch { showToast('Action failed. Please try again.', true); btn.disabled = false; btn.textContent = action; }
+    });
 
   })();
   </script>

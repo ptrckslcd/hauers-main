@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Practice Session | Hauers</title>
+  <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <script src="/js/theme-toggle.js"></script>
+</head>
+<body data-role="reviewee" class="sn-body">
+
+  <!-- Abandon confirmation dialog -->
+  <div class="sn-abandon-overlay" id="sn-abandon-overlay" hidden>
+    <div class="sn-abandon-dialog">
+      <span class="material-symbols-outlined sn-abandon-icon">warning</span>
+      <h3>Leave session?</h3>
+      <p>Your progress so far will be saved, but the session will be marked as abandoned.</p>
+      <div class="sn-abandon-actions">
+        <button class="sn-btn sn-btn--ghost" id="sn-abandon-cancel">Keep Going</button>
+        <button class="sn-btn sn-btn--danger" id="sn-abandon-confirm">Leave Session</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Session container -->
+  <div class="sn-shell" id="sn-shell">
+
+    <!-- Header -->
+    <header class="sn-header">
+      <button class="sn-leave-btn" id="sn-leave-btn" type="button">
+        <span class="material-symbols-outlined" style="font-size:18px">arrow_back</span>
+        Leave
+      </button>
+      <div class="sn-header-center">
+        <span class="sn-header-badge" id="sn-header-badge">—</span>
+        <span class="sn-header-counter" id="sn-header-counter">Question — of —</span>
+      </div>
+      <div class="sn-header-right">
+        <span class="material-symbols-outlined sn-timer-icon" id="sn-timer-icon">timer</span>
+        <span class="sn-timer" id="sn-timer">0:00</span>
+      </div>
+    </header>
+
+    <!-- Progress bar -->
+    <div class="sn-progress-track">
+      <div class="sn-progress-fill" id="sn-progress-fill" style="width:0%"></div>
+    </div>
+
+    <!-- Main area -->
+    <div class="sn-main">
+
+      <!-- Loading state -->
+      <div class="sn-loading" id="sn-loading">
+        <div class="sn-loading-spinner"></div>
+        <p>Preparing your session…</p>
+      </div>
+
+      <!-- Error state -->
+      <div class="sn-error" id="sn-error" hidden>
+        <span class="material-symbols-outlined" style="font-size:2.5rem;color:var(--text-subdued)">error</span>
+        <p id="sn-error-msg">Could not load questions. Please try again.</p>
+        <a href="/reviewee/review" class="sn-btn sn-btn--primary" style="margin-top:1rem">Back to Review</a>
+      </div>
+
+      <!-- Question card -->
+      <div class="sn-question-wrap" id="sn-question-wrap" hidden>
+
+        <div class="sn-q-card">
+          <!-- Question number + domain -->
+          <div class="sn-q-meta">
+            <span class="sn-q-num" id="sn-q-num">Q1</span>
+            <span class="sn-q-domain" id="sn-q-domain">—</span>
+          </div>
+
+          <!-- Question text -->
+          <p class="sn-q-text" id="sn-q-text"></p>
+
+          <!-- Choices -->
+          <div class="sn-choices" id="sn-choices">
+            <button class="sn-choice" data-letter="a" type="button">
+              <span class="sn-choice-letter">A</span>
+              <span class="sn-choice-text" id="sn-choice-a"></span>
+            </button>
+            <button class="sn-choice" data-letter="b" type="button">
+              <span class="sn-choice-letter">B</span>
+              <span class="sn-choice-text" id="sn-choice-b"></span>
+            </button>
+            <button class="sn-choice" data-letter="c" type="button">
+              <span class="sn-choice-letter">C</span>
+              <span class="sn-choice-text" id="sn-choice-c"></span>
+            </button>
+            <button class="sn-choice" data-letter="d" type="button">
+              <span class="sn-choice-letter">D</span>
+              <span class="sn-choice-text" id="sn-choice-d"></span>
+            </button>
+          </div>
+
+          <!-- Feedback panel (shown after answer) -->
+          <div class="sn-feedback" id="sn-feedback" hidden>
+            <div class="sn-feedback-verdict" id="sn-feedback-verdict">
+              <span class="material-symbols-outlined sn-feedback-icon" id="sn-feedback-icon">check_circle</span>
+              <span class="sn-feedback-label" id="sn-feedback-label">Correct!</span>
+            </div>
+            <p class="sn-feedback-explanation" id="sn-feedback-explanation" hidden></p>
+            <div class="sn-feedback-delta" id="sn-feedback-delta" hidden>
+              <span class="material-symbols-outlined" style="font-size:14px">trending_up</span>
+              <span id="sn-delta-text"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="sn-nav">
+          <button class="sn-btn sn-btn--ghost sn-nav-prev" id="sn-prev-btn" type="button" hidden>
+            <span class="material-symbols-outlined" style="font-size:17px">arrow_back</span>
+            Previous
+          </button>
+          <div class="sn-nav-spacer"></div>
+          <button class="sn-btn sn-btn--primary" id="sn-next-btn" type="button" hidden>
+            Next
+            <span class="material-symbols-outlined" style="font-size:17px">arrow_forward</span>
+          </button>
+          <button class="sn-btn sn-btn--finish" id="sn-finish-btn" type="button" hidden>
+            <span class="material-symbols-outlined" style="font-size:17px">check</span>
+            Finish Session
+          </button>
+        </div>
+      </div>
+
+    </div><!-- /.sn-main -->
+
+    <!-- Domain mini-progress bar -->
+    <div class="sn-domain-bar" id="sn-domain-bar" hidden>
+      <div class="sn-domain-scores" id="sn-domain-scores"></div>
+    </div>
+
+  </div><!-- /.sn-shell -->
+
+  <script>
+  (() => {
+    const params  = new URLSearchParams(window.location.search);
+    const domain  = params.get('domain') || 'All';
+    const mode    = params.get('mode')   || 'practice';
+    const count   = parseInt(params.get('count')) || 15;
+    const stype   = params.get('type')   || 'custom';
+
+    // State
+    let sessionId   = null;
+    let questions   = [];
+    let currentIdx  = 0;
+    let answers     = {}; // questionId → {letter, isCorrect, correctLetter, explanation, delta, domain}
+    let startTime   = null;
+    let timerInt    = null;
+    let domainScores = {}; // domain → {total, correct}
+    let answerStart  = null;
+
+    // DOM refs
+    const loadingEl  = document.getElementById('sn-loading');
+    const errorEl    = document.getElementById('sn-error');
+    const errorMsg   = document.getElementById('sn-error-msg');
+    const wrapEl     = document.getElementById('sn-question-wrap');
+    const headerBadge   = document.getElementById('sn-header-badge');
+    const headerCounter = document.getElementById('sn-header-counter');
+    const progressFill  = document.getElementById('sn-progress-fill');
+    const qNum   = document.getElementById('sn-q-num');
+    const qDomain = document.getElementById('sn-q-domain');
+    const qText  = document.getElementById('sn-q-text');
+    const choiceEls = {
+      a: document.getElementById('sn-choice-a'),
+      b: document.getElementById('sn-choice-b'),
+      c: document.getElementById('sn-choice-c'),
+      d: document.getElementById('sn-choice-d'),
+    };
+    const feedbackEl  = document.getElementById('sn-feedback');
+    const verdictEl   = document.getElementById('sn-feedback-verdict');
+    const feedIcon    = document.getElementById('sn-feedback-icon');
+    const feedLabel   = document.getElementById('sn-feedback-label');
+    const feedExpl    = document.getElementById('sn-feedback-explanation');
+    const feedDelta   = document.getElementById('sn-feedback-delta');
+    const deltaText   = document.getElementById('sn-delta-text');
+    const prevBtn     = document.getElementById('sn-prev-btn');
+    const nextBtn     = document.getElementById('sn-next-btn');
+    const finishBtn   = document.getElementById('sn-finish-btn');
+    const domainBar   = document.getElementById('sn-domain-bar');
+    const domainScoresEl = document.getElementById('sn-domain-scores');
+    const timerEl     = document.getElementById('sn-timer');
+    const timerIcon   = document.getElementById('sn-timer-icon');
+
+    const DOMAIN_SHORT = {
+      'Verbal Ability':      'Verbal',
+      'Numerical Ability':   'Numerical',
+      'Analytical Ability':  'Analytical',
+      'Clerical Ability':    'Clerical',
+      'General Information': 'Gen. Info',
+    };
+    const DOMAIN_CLS = {
+      'Verbal Ability':      'verbal',
+      'Numerical Ability':   'numerical',
+      'Analytical Ability':  'analytical',
+      'Clerical Ability':    'clerical',
+      'General Information': 'general',
+    };
+
+    // ── Timer ──────────────────────────────────────────────
+    function startTimer() {
+      startTime = Date.now();
+      timerInt = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        const m = Math.floor(elapsed / 60);
+        const s = elapsed % 60;
+        timerEl.textContent = `${m}:${s.toString().padStart(2,'0')}`;
+        if (mode === 'timed') {
+          const remaining = (45 * 60) - elapsed;
+          if (remaining <= 0) { finishSession(); return; }
+          const rm = Math.floor(remaining / 60);
+          const rs = remaining % 60;
+          timerEl.textContent = `${rm}:${rs.toString().padStart(2,'0')}`;
+          if (remaining <= 300) timerEl.classList.add('sn-timer--warn');
+        }
+      }, 1000);
+    }
+
+    // ── Domain bar ─────────────────────────────────────────
+    function updateDomainBar() {
+      if (!Object.keys(domainScores).length) return;
+      domainBar.removeAttribute('hidden');
+      domainScoresEl.innerHTML = Object.entries(domainScores).map(([dom, d]) => {
+        const pct = d.total ? Math.round((d.correct / d.total) * 100) : 0;
+        const cls = DOMAIN_CLS[dom] || '';
+        return `
+          <div class="sn-ds-item">
+            <span class="sn-ds-label">${DOMAIN_SHORT[dom] || dom}</span>
+            <div class="sn-ds-track">
+              <div class="sn-ds-fill sn-ds-fill--${cls}" style="width:${pct}%"></div>
+            </div>
+            <span class="sn-ds-pct">${pct}%</span>
+          </div>`;
+      }).join('');
+    }
+
+    // ── Render question ────────────────────────────────────
+    function renderQuestion(idx) {
+      const q = questions[idx];
+      const total = questions.length;
+      const answered = answers[q.id];
+      const shortDom = DOMAIN_SHORT[q.domain] || q.domain;
+      const domCls   = DOMAIN_CLS[q.domain]   || '';
+
+      headerBadge.textContent = shortDom;
+      headerBadge.className = `sn-header-badge ${domCls}`;
+      headerCounter.textContent = `Question ${idx + 1} of ${total}`;
+      progressFill.style.width = `${Math.round((idx / total) * 100)}%`;
+      qNum.textContent = `Q${idx + 1}`;
+      qDomain.textContent = shortDom;
+      qDomain.className   = `sn-q-domain q-domain-badge ${domCls}`;
+      qText.textContent   = q.question_text;
+
+      Object.entries(choiceEls).forEach(([letter, el]) => {
+        el.textContent = q.choices[letter] || '';
+      });
+
+      // Choice button states
+      const choiceBtns = document.querySelectorAll('.sn-choice');
+      choiceBtns.forEach(btn => {
+        const letter = btn.dataset.letter;
+        btn.className = 'sn-choice';
+        btn.disabled  = false;
+        if (answered) {
+          btn.disabled = true;
+          if (letter === answered.correctLetter) {
+            btn.classList.add('sn-choice--correct');
+          } else if (letter === answered.letter && !answered.isCorrect) {
+            btn.classList.add('sn-choice--wrong');
+          } else {
+            btn.classList.add('sn-choice--dimmed');
+          }
+        }
+      });
+
+      // Feedback panel
+      if (answered && mode === 'practice') {
+        feedbackEl.removeAttribute('hidden');
+        if (answered.isCorrect) {
+          verdictEl.className = 'sn-feedback-verdict sn-feedback-verdict--correct';
+          feedIcon.textContent = 'check_circle';
+          feedLabel.textContent = 'Correct!';
+        } else {
+          verdictEl.className = 'sn-feedback-verdict sn-feedback-verdict--wrong';
+          feedIcon.textContent = 'cancel';
+          feedLabel.textContent = `Incorrect — correct answer: ${answered.correctLetter.toUpperCase()}`;
+        }
+        if (answered.explanation) {
+          feedExpl.textContent = answered.explanation;
+          feedExpl.removeAttribute('hidden');
+        } else {
+          feedExpl.setAttribute('hidden', '');
+        }
+        if (answered.delta !== undefined) {
+          const sign = answered.delta >= 0 ? '+' : '';
+          deltaText.textContent = `${sign}${answered.delta} pts in ${shortDom}`;
+          feedDelta.className   = `sn-feedback-delta ${answered.delta >= 0 ? 'sn-delta--pos' : 'sn-delta--neg'}`;
+          feedDelta.removeAttribute('hidden');
+        } else {
+          feedDelta.setAttribute('hidden', '');
+        }
+      } else {
+        feedbackEl.setAttribute('hidden', '');
+      }
+
+      // Navigation buttons
+      prevBtn.hidden   = idx === 0;
+      nextBtn.hidden   = true;
+      finishBtn.hidden = true;
+
+      if (answered) {
+        const isLast = idx === total - 1;
+        const allAnswered = questions.every(q2 => answers[q2.id]);
+        if (isLast || allAnswered) {
+          finishBtn.hidden = false;
+        } else {
+          nextBtn.hidden = false;
+        }
+      }
+
+      answerStart = Date.now();
+    }
+
+    // ── Submit answer ──────────────────────────────────────
+    async function submitAnswer(letter) {
+      if (!sessionId) return;
+      const q = questions[currentIdx];
+      if (answers[q.id]) return; // already answered
+
+      const timeSpentMs = answerStart ? Date.now() - answerStart : 0;
+
+      // Optimistic UI
+      const choiceBtns = document.querySelectorAll('.sn-choice');
+      choiceBtns.forEach(btn => { btn.disabled = true; });
+      document.querySelector(`.sn-choice[data-letter="${letter}"]`)?.classList.add('sn-choice--selected');
+
+      let result = null;
+      try {
+        const resp = await fetch('/reviewee/api/session/answer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId,
+            questionId: q.id,
+            chosenAnswerText: q.choices[letter],
+            timeSpentMs,
+          }),
+        });
+        if (resp.ok) result = await resp.json();
+      } catch (_) {}
+
+      if (result) {
+        answers[q.id] = {
+          letter,
+          isCorrect:    result.correct,
+          correctLetter: result.correctChoice,
+          explanation:  result.explanation,
+          delta:        result.delta,
+          domain:       q.domain,
+        };
+
+        // Update domain scores
+        if (!domainScores[q.domain]) domainScores[q.domain] = { total: 0, correct: 0 };
+        domainScores[q.domain].total++;
+        if (result.correct) domainScores[q.domain].correct++;
+        updateDomainBar();
+      }
+
+      renderQuestion(currentIdx);
+    }
+
+    // ── Navigation ─────────────────────────────────────────
+    function goNext() {
+      if (currentIdx < questions.length - 1) {
+        currentIdx++;
+        renderQuestion(currentIdx);
+      }
+    }
+    function goPrev() {
+      if (currentIdx > 0) {
+        currentIdx--;
+        renderQuestion(currentIdx);
+      }
+    }
+
+    // ── Finish session ─────────────────────────────────────
+    async function finishSession() {
+      if (timerInt) clearInterval(timerInt);
+      const timeTakenS = startTime ? Math.floor((Date.now() - startTime) / 1000) : null;
+
+      finishBtn.disabled = true;
+      finishBtn.textContent = 'Saving…';
+
+      try {
+        await fetch('/reviewee/api/session/end', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId, timeTakenS }),
+        });
+      } catch (_) {}
+
+      window.location.href = `/reviewee/review/result?id=${sessionId}`;
+    }
+
+    // ── Event listeners ────────────────────────────────────
+    document.querySelectorAll('.sn-choice').forEach(btn => {
+      btn.addEventListener('click', () => submitAnswer(btn.dataset.letter));
+    });
+
+    nextBtn.addEventListener('click', goNext);
+    prevBtn.addEventListener('click', goPrev);
+    finishBtn.addEventListener('click', finishSession);
+
+    // Abandon dialog
+    document.getElementById('sn-leave-btn').addEventListener('click', () => {
+      document.getElementById('sn-abandon-overlay').removeAttribute('hidden');
+    });
+    document.getElementById('sn-abandon-cancel').addEventListener('click', () => {
+      document.getElementById('sn-abandon-overlay').setAttribute('hidden', '');
+    });
+    document.getElementById('sn-abandon-confirm').addEventListener('click', async () => {
+      if (timerInt) clearInterval(timerInt);
+      if (sessionId) {
+        const timeTakenS = startTime ? Math.floor((Date.now() - startTime) / 1000) : null;
+        try {
+          await fetch('/reviewee/api/session/end', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sessionId, timeTakenS }),
+          });
+        } catch (_) {}
+      }
+      window.location.href = '/reviewee/review';
+    });
+
+    // Warn before page unload
+    window.addEventListener('beforeunload', e => {
+      if (sessionId && !finishBtn.hidden === false) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    });
+
+    // ── Keyboard navigation ────────────────────────────────
+    document.addEventListener('keydown', e => {
+      const map = { '1': 'a', '2': 'b', '3': 'c', '4': 'd', 'a': 'a', 'b': 'b', 'c': 'c', 'd': 'd' };
+      const q = questions[currentIdx];
+      if (q && map[e.key.toLowerCase()] && !answers[q.id]) {
+        submitAnswer(map[e.key.toLowerCase()]);
+      }
+      if (e.key === 'ArrowRight' || e.key === 'Enter') {
+        if (!nextBtn.hidden) goNext();
+      }
+    });
+
+    // ── Load session ───────────────────────────────────────
+    async function loadSession() {
+      try {
+        const resp = await fetch('/reviewee/api/session/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            domain: domain === 'All' ? null : domain,
+            mode,
+            num_questions: count,
+            session_type: stype,
+          }),
+        });
+
+        if (!resp.ok) throw new Error('Server error');
+        const data = await resp.json();
+
+        if (!data.questions || !data.questions.length) {
+          throw new Error('No questions available for this domain. Try "All Domains".');
+        }
+
+        sessionId  = data.sessionId;
+        questions  = data.questions;
+
+        loadingEl.setAttribute('hidden', '');
+        wrapEl.removeAttribute('hidden');
+
+        const domainLabel = domain === 'All' ? 'All Domains' : (DOMAIN_SHORT[domain] || domain);
+        headerBadge.textContent = domainLabel;
+
+        renderQuestion(0);
+        startTimer();
+
+      } catch (err) {
+        loadingEl.setAttribute('hidden', '');
+        errorEl.removeAttribute('hidden');
+        errorMsg.textContent = err.message || 'Could not load questions. Please try again.';
+      }
+    }
+
+    loadSession();
+  })();
+  </script>
+
+</body>
+</html>

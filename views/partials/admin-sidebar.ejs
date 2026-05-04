@@ -19,10 +19,10 @@
           </a>
         </li>
 
-        <li class="sidebar-item" data-label="Profile Form">
-          <a href="/admin/profile-form" class="sidebar-link">
-            <span class="material-symbols-outlined sidebar-icon">assignment</span>
-            <span class="sidebar-label">Profile Form</span>
+        <li class="sidebar-item" data-label="Batches & Enrollment">
+          <a href="/admin/batches" class="sidebar-link">
+            <span class="material-symbols-outlined sidebar-icon">domain_add</span>
+            <span class="sidebar-label">Batches & Enrollment</span>
           </a>
         </li>
 
@@ -33,10 +33,17 @@
           </a>
         </li>
 
-        <li class="sidebar-item" data-label="Materials Library">
+        <li class="sidebar-item" data-label="Learning Materials">
           <a href="/admin/materials" class="sidebar-link">
             <span class="material-symbols-outlined sidebar-icon">library_books</span>
-            <span class="sidebar-label">Materials Library</span>
+            <span class="sidebar-label">Learning Materials</span>
+          </a>
+        </li>
+
+        <li class="sidebar-item" data-label="Profile Form">
+          <a href="/admin/profile-form" class="sidebar-link">
+            <span class="material-symbols-outlined sidebar-icon">assignment</span>
+            <span class="sidebar-label">Profile Form</span>
           </a>
         </li>
 
@@ -47,10 +54,19 @@
           </a>
         </li>
 
-        <li class="sidebar-item" data-label="Reports">
+        <li class="sidebar-item" data-label="Reports & Analytics">
           <a href="/admin/reports" class="sidebar-link">
             <span class="material-symbols-outlined sidebar-icon">bar_chart</span>
-            <span class="sidebar-label">Reports</span>
+            <span class="sidebar-label">Reports & Analytics</span>
+          </a>
+        </li>
+
+        <hr class="sidebar-divider" style="margin: 1rem 0; border: none; border-top: 1px solid var(--border-subdued);" />
+
+        <li class="sidebar-item" data-label="System Settings">
+          <a href="/admin/settings" class="sidebar-link">
+            <span class="material-symbols-outlined sidebar-icon">settings</span>
+            <span class="sidebar-label">System Settings</span>
           </a>
         </li>
 
@@ -58,23 +74,26 @@
     </nav>
 
     <div class="sidebar-footer">
-      <div class="sidebar-footer-links">
-        <a href="/admin/system-settings" class="sidebar-link" data-label="System Settings">
-          <span class="material-symbols-outlined sidebar-icon">settings</span>
-          <span class="sidebar-label">System Settings</span>
-        </a>
-        <a href="mailto:hauers.app@gmail.com" class="sidebar-link" data-label="Help & Support">
-          <span class="material-symbols-outlined sidebar-icon">help</span>
-          <span class="sidebar-label">Help & Support</span>
-        </a>
-      </div>
       <p class="sidebar-footer-note">CSPC ACCESS x Hauers<br>&copy; 2026. All rights reserved.</p>
     </div>
 
   </div>
 
-  <button class="sidebar-collapse-handle" id="sidebar-collapse-handle" type="button" aria-label="Toggle sidebar">
-    <span class="material-symbols-outlined nav-hamburger-icon">menu</span>
+  <button class="sidebar-collapse-handle" id="sidebar-collapse-handle" type="button" aria-expanded="true" aria-controls="app-sidebar" aria-label="Collapse sidebar">
+    <span class="material-symbols-outlined sidebar-collapse-icon" id="sidebar-collapse-icon" aria-hidden="true">chevron_left</span>
   </button>
 
 </aside>
+
+<script>
+  (function() {
+    const currentPath = window.location.pathname;
+    const sidebarLinks = document.querySelectorAll('.sidebar-link');
+    sidebarLinks.forEach(link => {
+      // Check for exact match or if it's the home
+      if (link.getAttribute('href') === currentPath) {
+        link.classList.add('active');
+      }
+    });
+  })();
+</script>

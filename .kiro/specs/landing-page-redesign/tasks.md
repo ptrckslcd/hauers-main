@@ -110,7 +110,7 @@ This implementation plan transforms the CSPC ACCESS Hauers landing page from a g
     - Add blue background panel behind score card
     - _Requirements: 3.5, 3.6, 4.4_
 
-- [~] 5.6 Write integration tests for hero section
+- [ ] 5.6 Write integration tests for hero section
   - Test grid layout at all breakpoints
   - Verify score card renders correctly
   - Test ledger data display
@@ -129,7 +129,7 @@ This implementation plan transforms the CSPC ACCESS Hauers landing page from a g
     - Ensure proper spacing and padding
     - _Requirements: 1.1, 1.4, 6.2_
 
-- [~] 6.3 Write unit tests for briefing section
+- [ ] 6.3 Write unit tests for briefing section
   - Test grid layout responsiveness
   - Verify color contrast in blue card
   - _Requirements: 9.2, 2.4_
@@ -160,7 +160,7 @@ This implementation plan transforms the CSPC ACCESS Hauers landing page from a g
     - Add aria-hidden for decorative icons
     - _Requirements: 4.1, 4.2, 4.5, 4.6, 10.5_
 
-- [~] 7.5 Write integration tests for features section
+- [ ] 7.5 Write integration tests for features section
   - Test sticky sidebar behavior on desktop
   - Verify responsive layout changes
   - Test icon rendering and accessibility
@@ -186,7 +186,7 @@ This implementation plan transforms the CSPC ACCESS Hauers landing page from a g
     - Ensure proper spacing and borders
     - _Requirements: 6.1, 1.1, 6.3_
 
-- [~] 8.4 Write unit tests for coverage section
+- [ ] 8.4 Write unit tests for coverage section
   - Test card rendering with correct colors
   - Verify badge styling and contrast
   - _Requirements: 2.4, 6.4_
@@ -210,7 +210,7 @@ This implementation plan transforms the CSPC ACCESS Hauers landing page from a g
     - Style vertical line connector
     - _Requirements: 4.1, 2.2, 2.3_
 
-- [~] 9.4 Write integration tests for steps section
+- [ ] 9.4 Write integration tests for steps section
   - Test timeline layout at all breakpoints
   - Verify active state styling
   - _Requirements: 9.2, 2.1_
@@ -234,7 +234,7 @@ This implementation plan transforms the CSPC ACCESS Hauers landing page from a g
     - Ensure proper spacing and alignment
     - _Requirements: 7.3, 7.4, 7.5_
 
-- [~] 10.4 Write integration tests for CTA section
+- [ ] 10.4 Write integration tests for CTA section
   - Test layout responsiveness
   - Verify button contrast on blue background
   - _Requirements: 9.2, 2.4_
@@ -280,7 +280,7 @@ This implementation plan transforms the CSPC ACCESS Hauers landing page from a g
     - Ensure proper semantic structure
     - _Requirements: 3.2, 3.4, 7.4, 10.5_
 
-- [~] 12.7 Write accessibility tests for HTML structure
+- [ ] 12.7 Write accessibility tests for HTML structure
   - Test semantic HTML elements are used correctly
   - Verify heading hierarchy (h1 → h2 → h3)
   - Test ARIA labels are present where required
@@ -306,7 +306,7 @@ This implementation plan transforms the CSPC ACCESS Hauers landing page from a g
     - Disable all transitions and animations
     - _Requirements: 10.6_
 
-- [~] 13.4 Write integration tests for scroll animations
+- [ ] 13.4 Write integration tests for scroll animations
   - Test Intersection Observer triggers correctly
   - Verify reduced motion preference is respected
   - _Requirements: 10.6_
@@ -326,7 +326,7 @@ This implementation plan transforms the CSPC ACCESS Hauers landing page from a g
     - Add transition delay (0.25s - 0.45s)
     - _Requirements: 11.3_
 
-- [~] 14.3 Write unit tests for bar animations
+- [ ] 14.3 Write unit tests for bar animations
   - Test data-width attributes are read correctly
   - Verify animation timing and easing
   - _Requirements: 11.3_
@@ -363,7 +363,7 @@ This implementation plan transforms the CSPC ACCESS Hauers landing page from a g
     - Use academic tone for call-to-action
     - _Requirements: 3.2, 3.3, 3.4, 5.6_
 
-- [~] 15.6 Write content validation tests
+- [ ] 15.6 Write content validation tests
   - Test for presence of required terminology
   - Verify institutional references are correct
   - Check for absence of marketing language
@@ -388,7 +388,7 @@ This implementation plan transforms the CSPC ACCESS Hauers landing page from a g
     - Ensure all sections render correctly in dark mode
     - _Requirements: 12.5, 12.6_
 
-- [~] 16.4 Write dark mode integration tests
+- [ ] 16.4 Write dark mode integration tests
   - Test theme toggle switches correctly
   - Verify dark mode colors meet contrast standards
   - Test theme persistence across page reloads
@@ -418,7 +418,7 @@ This implementation plan transforms the CSPC ACCESS Hauers landing page from a g
     - Verify interactive elements are accessible
     - _Requirements: 9.4, 7.6_
 
-- [~] 17.4 Write responsive design tests
+- [ ] 17.4 Write responsive design tests
   - Test layout at 1920px, 1280px, 1024px, 768px, 375px
   - Verify no horizontal scroll at any breakpoint
   - Test touch target sizes on mobile viewport
@@ -448,7 +448,7 @@ This implementation plan transforms the CSPC ACCESS Hauers landing page from a g
     - Add aria-label to live regions if applicable
     - _Requirements: 10.5_
 
-- [~] 18.5 Run axe-core accessibility audit
+- [ ] 18.5 Run axe-core accessibility audit
   - Test for color contrast violations
   - Test for missing alt text
   - Test for heading hierarchy issues
@@ -478,7 +478,7 @@ This implementation plan transforms the CSPC ACCESS Hauers landing page from a g
     - Minimize SVG code
     - _Requirements: 11.4, 11.5_
 
-- [~] 19.5 Run Lighthouse performance audit
+- [ ] 19.5 Run Lighthouse performance audit
   - Test First Contentful Paint < 1.8s
   - Test Largest Contentful Paint < 2.5s
   - Test Total Blocking Time < 200ms

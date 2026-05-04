@@ -8,6 +8,8 @@
   <link rel="stylesheet" href="/css/base.css">
   <link rel="stylesheet" href="/css/dashboard.css">
   <script src="/js/theme-toggle.js"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block">
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
 </head>
 <body data-role="admin">
 
@@ -19,83 +21,119 @@
 
     <main class="page-content">
 
-      <!-- ── Page header ── -->
-      <header class="page-header">
+      <header class="page-header an-page-header">
         <div>
           <h1 class="page-title">Announcements</h1>
-
+          <p class="pf-sub">Publish global or batch-specific updates to reviewees. Drafts can be scheduled for the future.</p>
         </div>
-        <button class="cta-pill" id="an-add-btn" type="button">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:0.45rem;flex-shrink:0">
-            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-          New Announcement
+        <button type="button" class="bat-btn-create" id="an-add-btn">
+          <span class="material-symbols-outlined">add</span>
+          Create announcement
         </button>
       </header>
 
-      <div class="dash-grid dash-grid--split21">
-        
-        <!-- Live Announcements -->
-        <div class="dash-card">
-          <span class="card-label">Active Broadcasts</span>
-          <div id="an-list" style="margin-top:1rem; display:flex; flex-direction:column; gap:1rem">
-            <!-- Populated by JS -->
+      <div class="dash-card an-table-card">
+        <div class="an-table-head">
+          <p class="pgx-section-label pgx-section-label--flush" id="an-summary">Loading…</p>
+          <div class="an-head-actions">
+            <select class="qk-filter-select" id="an-filter-status">
+              <option value="">All statuses</option>
+              <option value="published">Published</option>
+              <option value="draft">Draft</option>
+            </select>
+            <select class="qk-filter-select" id="an-filter-cat">
+              <option value="">All categories</option>
+              <option value="general">General</option>
+              <option value="schedule">Schedule</option>
+              <option value="important">Important</option>
+            </select>
           </div>
         </div>
-
-        <!-- Stats/Tips -->
-        <div class="dash-card">
-          <span class="card-label">Broadcast Guidelines</span>
-          <p class="card-sub" style="margin-top:0.5rem">Announcements appear at the top of the reviewee dashboard.</p>
-          <ul style="font-size:0.82rem; color:var(--text-subdued); margin-top:1rem; display:flex; flex-direction:column; gap:0.5rem; padding-left:1rem">
-            <li>Keep titles short and punchy.</li>
-            <li>Use "Urgent" for exam date resets or system maintenance.</li>
-            <li>Action links should start with <code>/reviewee/</code> or <code>https://</code>.</li>
-          </ul>
+        <div style="overflow-x:auto">
+          <table class="admin-table an-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Target</th>
+                <th>Publish time</th>
+                <th>Status</th>
+                <th style="width:160px">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="an-tbody"></tbody>
+          </table>
         </div>
-
       </div>
 
     </main>
   </div>
 
-  <!-- ══════════════════════════════════════════════════════
-       NEW ANNOUNCEMENT MODAL
-  ══════════════════════════════════════════════════════ -->
-  <div class="ep-overlay" id="an-overlay" hidden>
-    <div class="ep-modal" style="max-width:500px;width:100%">
-      <div class="ep-modal-header">
-        <h3 class="ep-modal-title">Broadcast Announcement</h3>
-        <button class="ep-close" id="an-close" type="button">×</button>
+  <!-- Add / edit modal -->
+  <div class="bat-modal-overlay" id="an-modal" hidden>
+    <div class="bat-modal an-modal" role="dialog" aria-modal="true" aria-labelledby="an-modal-title">
+      <div class="bat-modal-head">
+        <h2 class="bat-modal-title" id="an-modal-title">Create announcement</h2>
+        <button type="button" class="bat-modal-x" id="an-modal-close" aria-label="Close"><span class="material-symbols-outlined">close</span></button>
       </div>
-      <form id="an-form" class="ep-form">
-        <div class="ep-field">
-          <label class="ep-label">Announcement Title <span style="color:var(--fs-pink)">*</span></label>
-          <input type="text" id="an-title" class="ep-input" placeholder="e.g. Schedule Update for April Exam" required>
-        </div>
-        
-        <div class="ep-field">
-          <label class="ep-label">Message Content <span style="color:var(--fs-pink)">*</span></label>
-          <textarea id="an-content" class="ep-input" rows="3" placeholder="Write your message here..." required></textarea>
+      <form id="an-form" class="bat-modal-form" autocomplete="off" novalidate>
+        <input type="hidden" id="an-id">
+
+        <div class="bat-field bat-field--full" style="margin-bottom:.9rem">
+          <label class="bat-field-lbl" for="an-title">Title <span class="qk-req">*</span></label>
+          <input class="bat-input" id="an-title" type="text" required maxlength="255" placeholder="e.g. System maintenance on May 10">
         </div>
 
-        <div class="ep-form-row">
-          <div class="ep-field">
-            <label class="ep-label">Action Link (Optional)</label>
-            <input type="text" id="an-link" class="ep-input" placeholder="e.g. /reviewee/study-plan">
+        <div class="bat-field bat-field--full" style="margin-bottom:.9rem">
+          <label class="bat-field-lbl">Body <span class="qk-req">*</span></label>
+          <div class="an-rt-toolbar" role="toolbar" aria-label="Formatting">
+            <button type="button" class="an-rt-btn" data-cmd="bold"><span class="material-symbols-outlined">format_bold</span></button>
+            <button type="button" class="an-rt-btn" data-cmd="italic"><span class="material-symbols-outlined">format_italic</span></button>
+            <button type="button" class="an-rt-btn" data-cmd="insertUnorderedList"><span class="material-symbols-outlined">format_list_bulleted</span></button>
+            <button type="button" class="an-rt-btn" data-cmd="createLink"><span class="material-symbols-outlined">link</span></button>
+            <button type="button" class="an-rt-btn" data-cmd="removeFormat"><span class="material-symbols-outlined">format_clear</span></button>
           </div>
-          <div class="ep-field">
-            <label class="ep-label">Priority</label>
-            <select id="an-priority" class="ep-input ep-select">
-              <option value="normal">Normal Information</option>
-              <option value="urgent">Urgent Alert</option>
+          <div id="an-body" class="an-rt-editor" contenteditable="true" aria-label="Announcement body"></div>
+          <textarea id="an-body-hidden" hidden required></textarea>
+          <p class="bat-field-hint">Rich text is saved as HTML. Keep it short; links should be absolute or start with <code>/reviewee/</code>.</p>
+        </div>
+
+        <div class="bat-form-grid" style="margin-bottom:.9rem">
+          <div class="bat-field">
+            <label class="bat-field-lbl" for="an-category">Category</label>
+            <select class="bat-input bat-select" id="an-category">
+              <option value="general">General</option>
+              <option value="schedule">Schedule</option>
+              <option value="important">Important</option>
             </select>
           </div>
+          <div class="bat-field">
+            <label class="bat-field-lbl" for="an-status">Status</label>
+            <select class="bat-input bat-select" id="an-status">
+              <option value="published">Published</option>
+              <option value="draft">Draft</option>
+            </select>
+          </div>
+          <div class="bat-field">
+            <label class="bat-field-lbl" for="an-target-type">Target</label>
+            <select class="bat-input bat-select" id="an-target-type">
+              <option value="all">All reviewees</option>
+              <option value="batch">Specific batch</option>
+            </select>
+          </div>
+          <div class="bat-field" id="an-batch-wrap" hidden>
+            <label class="bat-field-lbl" for="an-batch">Batch</label>
+            <select class="bat-input bat-select" id="an-batch"></select>
+          </div>
+          <div class="bat-field bat-field--full">
+            <label class="bat-field-lbl" for="an-publish-at">Schedule publish time</label>
+            <input class="bat-input" id="an-publish-at" type="datetime-local">
+            <p class="bat-field-hint">If empty, it publishes immediately when status is Published.</p>
+          </div>
         </div>
 
-        <div class="ep-form-actions">
-          <button type="button" class="ep-btn-cancel" id="an-cancel">Cancel</button>
-          <button type="submit" class="cta-pill" id="an-submit">Post to Dashboard</button>
+        <div class="bat-modal-actions">
+          <button type="button" class="home-btn home-btn--ghost" id="an-cancel">Cancel</button>
+          <button type="submit" class="home-btn home-btn--primary" id="an-submit">Save</button>
         </div>
       </form>
     </div>
@@ -103,68 +141,205 @@
 
   <script src="/js/admin-shell.js"></script>
   <script>
-    (async () => {
-      // Mock storage for simulation
-      const STORAGE_KEY = 'hauers_broadcasts';
-      let broadcasts = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[{"id":1,"title":"Civil Service Exam Update","content":"Please check the updated pointers for the Numerical Ability domain in your study plan.","link":"/reviewee/study-plan","priority":"normal","at":"2026-03-15T10:00:00Z"}]');
+    (function () {
+      const CAT_LABEL = { general: 'General', schedule: 'Schedule', important: 'Important' };
+      const tbody = document.getElementById('an-tbody');
+      const summary = document.getElementById('an-summary');
+      const fStatus = document.getElementById('an-filter-status');
+      const fCat = document.getElementById('an-filter-cat');
 
-      const listEl = document.getElementById('an-list');
-      const overlay = document.getElementById('an-overlay');
+      const modal = document.getElementById('an-modal');
       const form = document.getElementById('an-form');
+      const idEl = document.getElementById('an-id');
+      const titleEl = document.getElementById('an-title');
+      const bodyEl = document.getElementById('an-body');
+      const bodyHidden = document.getElementById('an-body-hidden');
+      const catEl = document.getElementById('an-category');
+      const statusEl = document.getElementById('an-status');
+      const tgtEl = document.getElementById('an-target-type');
+      const batchWrap = document.getElementById('an-batch-wrap');
+      const batchEl = document.getElementById('an-batch');
+      const publishAtEl = document.getElementById('an-publish-at');
 
-      function saveAndRender() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(broadcasts));
-        render();
+      let batches = [];
+      let announcements = [];
+
+      function esc(s) {
+        return String(s == null ? '' : s)
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;');
+      }
+
+      function fmtTarget(a) {
+        if (a.target_type === 'batch') return a.batch_name ? `Batch: ${a.batch_name}` : `Batch #${a.target_batch_id}`;
+        return 'Global';
+      }
+
+      function fmtDt(d) {
+        if (!d) return '—';
+        try { return new Date(d).toLocaleString(undefined, { dateStyle:'medium', timeStyle:'short' }); }
+        catch { return String(d); }
+      }
+
+      function statusBadge(a) {
+        const s = a.status;
+        const cls = s === 'published' ? 'status-badge--verified' : 'status-badge--pending';
+        return `<span class=\"status-badge ${cls}\">${esc(s)}</span>`;
       }
 
       function render() {
-        if (!broadcasts.length) {
-          listEl.innerHTML = '<div style="text-align:center; padding:2rem; color:var(--text-subdued); font-size:0.85rem">No active announcements.</div>';
+        const st = fStatus.value;
+        const cat = fCat.value;
+        const rows = announcements.filter(a => (!st || a.status === st) && (!cat || a.category === cat));
+
+        summary.textContent = rows.length + ' announcement' + (rows.length === 1 ? '' : 's');
+        if (!rows.length) {
+          tbody.innerHTML = `<tr><td colspan=\"5\" class=\"pf-empty-cell\">No announcements found.</td></tr>`;
           return;
         }
-        listEl.innerHTML = broadcasts.map(b => `
-          <div class="dash-card" style="padding:1rem; border-color:${b.priority === 'urgent' ? 'rgba(239,68,68,0.3)' : 'var(--border-subdued)'}">
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.5rem">
-              <span class="status-badge ${b.priority === 'urgent' ? 'status-badge--pending' : 'status-badge--verified'}" style="font-size:0.65rem">
-                ${b.priority.toUpperCase()}
-              </span>
-              <button onclick="deleteBroadcast(${b.id})" style="background:none; border:none; color:var(--text-subdued); cursor:pointer">
-                <span class="material-symbols-outlined" style="font-size:16px">delete</span>
-              </button>
-            </div>
-            <div style="font-weight:700; font-size:0.9rem; color:var(--text-main); margin-bottom:0.25rem">${b.title}</div>
-            <div style="font-size:0.82rem; color:var(--text-subdued); line-height:1.4">${b.content}</div>
-            ${b.link ? `<div style="margin-top:0.75rem; font-size:0.75rem; font-weight:600; color:var(--fs-orange)">Link: ${b.link}</div>` : ''}
-          </div>
+
+        tbody.innerHTML = rows.map(a => `
+          <tr>
+            <td class=\"an-title-cell\">
+              <div class=\"an-title\">${esc(a.title)}</div>
+              <div class=\"an-sub\">${esc(CAT_LABEL[a.category] || a.category)} · by ${esc((a.authorFirstName||'') + ' ' + (a.authorLastName||'')).trim()}</div>
+            </td>
+            <td>${esc(fmtTarget(a))}</td>
+            <td>${esc(fmtDt(a.publish_at))}</td>
+            <td>${statusBadge(a)}</td>
+            <td>
+              <button type=\"button\" class=\"qk-filter-clear an-act\" data-act=\"edit\" data-id=\"${a.id}\">Edit</button>
+            </td>
+          </tr>
         `).join('');
+
+        tbody.querySelectorAll('[data-act=\"edit\"]').forEach(btn => {
+          btn.addEventListener('click', () => openModal(Number(btn.dataset.id)));
+        });
       }
 
-      window.deleteBroadcast = (id) => {
-        broadcasts = broadcasts.filter(b => b.id !== id);
-        saveAndRender();
-      };
-
-      document.getElementById('an-add-btn').onclick = () => overlay.hidden = false;
-      document.getElementById('an-close').onclick = () => overlay.hidden = true;
-      document.getElementById('an-cancel').onclick = () => overlay.hidden = true;
-
-      form.onsubmit = e => {
-        e.preventDefault();
-        const newB = {
-          id: Date.now(),
-          title: document.getElementById('an-title').value,
-          content: document.getElementById('an-content').value,
-          link: document.getElementById('an-link').value,
-          priority: document.getElementById('an-priority').value,
-          at: new Date().toISOString()
-        };
-        broadcasts.unshift(newB);
-        saveAndRender();
-        overlay.hidden = true;
+      function openModal(editId) {
         form.reset();
-      };
+        idEl.value = '';
+        bodyEl.innerHTML = '';
+        publishAtEl.value = '';
+        statusEl.value = 'published';
+        catEl.value = 'general';
+        tgtEl.value = 'all';
+        batchWrap.hidden = true;
+        document.getElementById('an-modal-title').textContent = editId ? 'Edit announcement' : 'Create announcement';
 
-      render();
+        if (!batches.length) {
+          batchEl.innerHTML = '<option value=\"\" disabled selected>No batches</option>';
+        } else {
+          batchEl.innerHTML = '<option value=\"\" disabled selected>Select batch…</option>' + batches.map(b => `<option value=\"${b.id}\">${esc(b.name)}</option>`).join('');
+        }
+
+        if (editId) {
+          const a = announcements.find(x => x.id === editId);
+          if (a) {
+            idEl.value = String(a.id);
+            titleEl.value = a.title || '';
+            bodyEl.innerHTML = a.body || '';
+            catEl.value = a.category || 'general';
+            statusEl.value = a.status || 'draft';
+            tgtEl.value = a.target_type || 'all';
+            if (a.target_type === 'batch') {
+              batchWrap.hidden = false;
+              batchEl.value = String(a.target_batch_id || '');
+            }
+            if (a.publish_at) {
+              const d = new Date(a.publish_at);
+              if (!Number.isNaN(d.getTime())) {
+                const pad = (n) => String(n).padStart(2,'0');
+                publishAtEl.value = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+              }
+            }
+          }
+        }
+
+        modal.hidden = false;
+        titleEl.focus();
+      }
+
+      function closeModal() { modal.hidden = true; }
+
+      document.getElementById('an-add-btn').addEventListener('click', () => openModal(null));
+      document.getElementById('an-modal-close').addEventListener('click', closeModal);
+      document.getElementById('an-cancel').addEventListener('click', closeModal);
+      modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+      function syncTargetUI() {
+        batchWrap.hidden = tgtEl.value !== 'batch';
+      }
+      tgtEl.addEventListener('change', syncTargetUI);
+
+      // rich text toolbar (minimal)
+      document.querySelectorAll('.an-rt-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const cmd = btn.dataset.cmd;
+          if (cmd === 'createLink') {
+            const url = prompt('Paste link URL');
+            if (!url) return;
+            document.execCommand('createLink', false, url);
+            return;
+          }
+          document.execCommand(cmd, false, null);
+        });
+      });
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        bodyHidden.value = bodyEl.innerHTML.trim();
+        if (!titleEl.value.trim() || !bodyHidden.value.trim()) return;
+
+        const payload = {
+          title: titleEl.value.trim(),
+          body: bodyHidden.value.trim(),
+          category: catEl.value,
+          status: statusEl.value,
+          target_type: tgtEl.value,
+          target_batch_id: tgtEl.value === 'batch' ? batchEl.value : null,
+          publish_at: publishAtEl.value ? new Date(publishAtEl.value).toISOString() : null,
+        };
+
+        const id = idEl.value ? Number(idEl.value) : null;
+        const url = id ? `/admin/api/announcements/${id}` : '/admin/api/announcements';
+        const method = id ? 'PUT' : 'POST';
+
+        const r = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify(payload),
+        });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok) {
+          alert(j.error || 'Save failed');
+          return;
+        }
+        closeModal();
+        await loadAll();
+      });
+
+      async function loadAll() {
+        summary.textContent = 'Loading…';
+        const [ar, br] = await Promise.all([
+          fetch('/admin/api/announcements', { credentials: 'same-origin' }),
+          fetch('/admin/api/batches', { credentials: 'same-origin' }),
+        ]);
+        const aj = await ar.json().catch(() => ({}));
+        const bj = await br.json().catch(() => ({}));
+        announcements = Array.isArray(aj.announcements) ? aj.announcements : [];
+        batches = Array.isArray(bj.batches) ? bj.batches.map(b => ({ id: b.id, name: b.name })) : [];
+        render();
+      }
+
+      fStatus.addEventListener('change', render);
+      fCat.addEventListener('change', render);
+
+      loadAll().catch(() => {
+        summary.textContent = 'Failed to load announcements.';
+      });
     })();
   </script>
 </body>

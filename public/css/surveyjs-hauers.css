@@ -1,0 +1,198 @@
+/**
+ * SurveyJS Form Library + Creator — Hauers / ACCESS token alignment
+ * Loaded with survey-core (defaultV2) + creator surfaces.
+ */
+
+/* ── Runtime form (sd-) ───────────────────────────────────────── */
+.sd-root-modern,
+.sd-container-modern {
+  --sd-base-padding: 12px;
+  --sd-base-vertical-padding: 12px;
+  --sjs-font-family: inherit;
+  --sjs-font-editorfont-family: inherit;
+  --sjs-primary-background-500: #2563eb;
+  --sjs-primary-background-10: rgba(37, 99, 235, 0.09);
+  --sjs-border-default: var(--border-default, #e2e8f0);
+  --sjs-border-inside: var(--border-subdued, #e9edf2);
+  --sjs-general-backcolor: var(--card-bg, #fff);
+  --sjs-general-backcolor-dim: var(--bg-base, #f8fafc);
+  --sjs-general-forecolor: var(--text-main, #0f172a);
+  --sjs-general-forecolor-light: var(--text-subdued, #64748b);
+  --sjs-shadow-small: none;
+  --sjs-shadow-inner-reset: none;
+  --sjs-shadow-medium: none;
+}
+
+.sd-body,
+.sd-root-modern {
+  background: transparent !important;
+  color: var(--text-main);
+}
+
+.sd-page {
+  padding: 0 !important;
+}
+
+.sd-title.sd-container-modern__title {
+  display: none;
+}
+
+.sd-question__title,
+.sd-element__title .sv-title-actions__title {
+  color: var(--text-main);
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.sd-question__required-text {
+  color: #dc2626;
+}
+
+.sd-input.sd-text,
+.sd-input.sd-dropdown,
+.sd-input.sd-comment,
+.sd-checkbox__decorator,
+.sd-radio__decorator {
+  border-radius: 10px;
+  border: 1.5px solid var(--border-default);
+  background: var(--card-bg);
+  color: var(--text-main);
+  box-shadow: none;
+}
+
+.sd-input.sd-text:focus,
+.sd-input.sd-dropdown:focus,
+.sd-input.sd-comment:focus,
+.sd-checkbox--checked .sd-checkbox__decorator,
+.sd-radio--checked .sd-radio__decorator {
+  border-color: #2563eb;
+}
+
+.sd-item {
+  padding: 0.2rem 0;
+}
+
+.sd-btn {
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.sd-btn--action.sd-navigation__complete-btn {
+  background: linear-gradient(120deg, #ff3366, #ff9933);
+  border: none;
+  color: #fff;
+}
+
+.sd-error {
+  color: #dc2626;
+  font-size: 0.82rem;
+}
+
+/* Onboarding embedding */
+.ob-survey-root {
+  margin-top: 1rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid var(--border-subdued);
+}
+
+.ob-survey-host .sd-body {
+  padding-top: 0;
+}
+
+/* ── Creator (svc-, tab-, toolbox) ──────────────────────────── */
+.svc-creator,
+.svc-full-container,
+.svc-flex-row,
+.svc-flex-column.svc-vertical-tabs,
+.svc-creator-tab {
+  background: var(--card-bg) !important;
+  color: var(--text-main) !important;
+}
+
+.svc-toolbox,
+.svc-toolbox__container,
+.svc-tabbed-menu,
+.svc-flex-row.svc-plugin-tab__content {
+  border-color: var(--border-subdued) !important;
+}
+
+.svc-tabbed-menu-item {
+  color: var(--text-subdued) !important;
+  font-weight: 600;
+}
+
+.svc-tabbed-menu-item--selected,
+.svc-tabbed-menu-item:hover {
+  color: var(--text-main) !important;
+  background: var(--bg-base) !important;
+}
+
+.svc-toolbox__item {
+  border-radius: 8px;
+  border: 1px solid var(--border-subdued) !important;
+  color: var(--text-main) !important;
+}
+
+.svc-toolbox__item:hover {
+  border-color: #2563eb !important;
+  background: rgba(37, 99, 235, 0.06) !important;
+}
+
+.svc-question__content,
+.sd-page.sd-page--design-mode,
+.sd-row--multiple {
+  border-radius: 10px;
+  border-color: var(--border-subdued) !important;
+}
+
+.spg-input,
+.spg-comment,
+.spg-dropdown,
+.svc-string-editor__input {
+  border-radius: 8px !important;
+  border: 1.5px solid var(--border-default) !important;
+  background: var(--card-bg) !important;
+  color: var(--text-main) !important;
+}
+
+.svc-action-button {
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+}
+
+.pf-creator-host .svc-creator {
+  min-height: 680px;
+}
+
+/* Creator layout: let the container own sizing */
+.pf-creator-host,
+.pf-creator-host .svc-creator,
+.pf-creator-host .svc-full-container,
+.pf-creator-host .svc-creator__content-holder,
+.pf-creator-host .svc-side-bar,
+.pf-creator-host .svc-tabbed-menu {
+  height: 100%;
+}
+
+.pf-creator-host .svc-full-container {
+  border: none !important;
+}
+
+/* Prevent base.css/table styles from bleeding in */
+.pf-creator-host .sd-root-modern,
+.pf-creator-host .sd-container-modern {
+  max-width: 100% !important;
+}
+
+[data-theme="dark"] .sd-input.sd-text,
+[data-theme="dark"] .sd-input.sd-dropdown,
+[data-theme="dark"] .sd-input.sd-comment {
+  background: var(--bg-base);
+}
+
+[data-theme="dark"] .spg-input,
+[data-theme="dark"] .spg-comment,
+[data-theme="dark"] .svc-string-editor__input {
+  background: var(--bg-base) !important;
+}

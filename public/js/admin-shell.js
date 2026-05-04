@@ -38,6 +38,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   const COLLAPSED_KEY = 'hauers_admin_sidebar_collapsed';
   const isCollapsed   = () => localStorage.getItem(COLLAPSED_KEY) === '1';
 
+  function syncCollapseHandleUI(collapsed) {
+    const handle = document.getElementById('sidebar-collapse-handle');
+    const icon = document.getElementById('sidebar-collapse-icon');
+    if (handle) {
+      handle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+      handle.setAttribute('aria-label', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
+    }
+    if (icon) {
+      icon.textContent = collapsed ? 'chevron_right' : 'chevron_left';
+    }
+  }
+
   function applyCollapsedState(animate) {
     if (!sidebar || !shell) return;
     if (animate) {
@@ -48,6 +60,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     sidebar.classList.toggle('collapsed', collapsed);
     shell.classList.toggle('sidebar-collapsed', collapsed);
     document.body.classList.toggle('sidebar-collapsed', collapsed);
+    syncCollapseHandleUI(collapsed);
   }
 
   applyCollapsedState(false);
@@ -257,10 +270,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   };
 
   /* KPI tiles */
-  setVal('stat-total-users',      data.totalUsers);
-  setVal('stat-active-reviewees', data.activeReviewees);
-  setVal('stat-avg-readiness',    data.avgReadiness + '%');
-  setVal('stat-new-signups',      '+' + data.recentSignups);
+  setVal('stat-total-users',        data.totalUsers);
+  setVal('stat-active-reviewees',   data.activeReviewees);
+  setVal('stat-avg-rating',         data.avgReadiness + '%');
+  setVal('stat-pretest-completion', data.pretestCompleted);
+  setVal('stat-new-signups',        '+' + data.recentSignups);
 
   /* Domain performance bars */
   const domainsContainer = document.getElementById('domain-bars');

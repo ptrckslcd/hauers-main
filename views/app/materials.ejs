@@ -19,224 +19,478 @@
 
     <main class="page-content">
 
-      <!-- ── Page header ── -->
       <header class="page-header">
-        <div>
-          <h1 class="page-title">Learning Materials</h1>
-          <p class="page-subtitle">Curated study resources for your exam preparation</p>
-        </div>
-        <div class="sp-header-chips">
-          <span class="sp-chip sp-chip--week" id="rm-level-chip">Professional</span>
-        </div>
+        <h1 class="page-title">Learning Materials</h1>
       </header>
 
-      <!-- ── Priority: Recommended for you ── -->
-      <section class="rm-priority-section" id="rm-priority">
-        <div class="rm-priority-header">
-          <span class="rm-priority-badge">
-            <span class="material-symbols-outlined" style="font-size:15px">bolt</span>
-            Priority for You
-          </span>
-          <p style="font-size:0.83rem;color:var(--text-subdued)" id="rm-priority-sub">Based on your weakest domains</p>
+      <!-- 7.5.1 Recommended -->
+      <div class="dash-card mlx-section">
+        <div class="mlx-section-top">
+          <p class="pgx-section-label pgx-section-label--flush">Recommended for you</p>
+          <span class="mlx-rec-tag" id="mlx-rec-hint"></span>
         </div>
-        <div class="rm-priority-grid" id="rm-priority-grid">
-          <!-- Populated by JS -->
-        </div>
-      </section>
-
-      <!-- ── Domain tabs + type filter ── -->
-      <div class="rm-tabs-bar">
-        <div class="rm-tabs" id="rm-domain-tabs">
-          <button class="rm-tab active" data-domain="all">All</button>
-          <button class="rm-tab" data-domain="Verbal Ability">Verbal</button>
-          <button class="rm-tab" data-domain="Numerical Ability">Numerical</button>
-          <button class="rm-tab" data-domain="Analytical Ability">Analytical</button>
-          <button class="rm-tab" data-domain="Clerical Ability">Clerical</button>
-          <button class="rm-tab" data-domain="General Information">General Info</button>
-        </div>
-        <div class="rm-type-filter" id="rm-type-chips">
-          <button class="rm-filter-chip active" data-type="all">All Types</button>
-          <button class="rm-filter-chip" data-type="Reference">Reading</button>
-          <button class="rm-filter-chip" data-type="Video">Video</button>
-          <button class="rm-filter-chip" data-type="Drill Set">Drills</button>
+        <div class="pgx-chart-shell mlx-shell">
+          <div class="mlx-grid mlx-grid--rec" id="mlx-rec-grid">
+            <div class="mlx-loading">Loading recommendations…</div>
+          </div>
         </div>
       </div>
 
-      <!-- ── Result count ── -->
-      <p class="rm-result-msg" id="rm-result-msg"></p>
+      <!-- 7.5.2 Browse -->
+      <div class="dash-card mlx-section mlx-browse">
+        <div class="mlx-section-top">
+          <p class="pgx-section-label pgx-section-label--flush">Browse all materials</p>
+        </div>
 
-      <!-- ── Materials grid ── -->
-      <div class="rm-grid" id="rm-grid">
-        <div style="grid-column:1/-1;text-align:center;padding:3rem 0;color:var(--text-subdued)">Loading materials…</div>
+        <div class="mlx-toolbar-compact">
+          <label class="mlx-search mlx-search--flex">
+            <span class="material-symbols-outlined mlx-search-ic" aria-hidden="true">search</span>
+            <input type="search" id="mlx-search" class="mlx-search-input" placeholder="Search title or description" autocomplete="off" />
+          </label>
+          <div class="mlx-select-group" role="group" aria-label="Filters">
+            <label class="mlx-field">
+              <span class="mlx-field-lbl">Domain</span>
+              <select id="mlx-sel-domain" class="mlx-select">
+                <option value="all">All domains</option>
+                <option value="Verbal Ability">Verbal</option>
+                <option value="Numerical Ability">Numerical</option>
+                <option value="Analytical Ability">Analytical</option>
+                <option value="Clerical Ability">Clerical</option>
+                <option value="General Information">General Info</option>
+              </select>
+            </label>
+            <label class="mlx-field">
+              <span class="mlx-field-lbl">Type</span>
+              <select id="mlx-sel-type" class="mlx-select">
+                <option value="all">All types</option>
+                <option value="lesson_module">Lesson Module</option>
+                <option value="practice_set">Practice Set</option>
+                <option value="mock_exam">Mock Exam</option>
+                <option value="reference_sheet">Reference Sheet</option>
+              </select>
+            </label>
+            <label class="mlx-field">
+              <span class="mlx-field-lbl">Difficulty</span>
+              <select id="mlx-sel-diff" class="mlx-select">
+                <option value="all">All levels</option>
+                <option value="basic">Basic</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <p class="mlx-result-count" id="mlx-count" aria-live="polite"></p>
+        <div class="mlx-grid" id="mlx-grid"></div>
       </div>
 
     </main>
   </div>
 
+  <!-- 7.5.3 Viewer modal (placeholder viewer + timer) -->
+  <div class="mlx-modal" id="mlx-modal" hidden>
+    <div class="mlx-modal-backdrop" id="mlx-modal-bg"></div>
+    <div class="mlx-modal-panel" role="dialog" aria-modal="true" aria-labelledby="mlx-modal-title">
+
+      <div class="mlx-modal-head">
+        <div class="mlx-modal-head-main">
+          <p class="mlx-modal-eyebrow" id="mlx-modal-type"></p>
+          <h2 class="mlx-modal-title" id="mlx-modal-title"></h2>
+        </div>
+        <div class="mlx-modal-head-actions">
+          <div class="mlx-timer" id="mlx-timer" title="Time spent on this material">
+            <span class="material-symbols-outlined mlx-timer-ic" aria-hidden="true">timer</span>
+            <span class="mlx-timer-digits" id="mlx-timer-digits">00:00</span>
+            <span class="mlx-timer-suggest" id="mlx-timer-suggest"></span>
+          </div>
+          <button type="button" class="mlx-modal-icon-btn" id="mlx-sum-toggle" aria-label="Toggle summary panel">
+            <span class="material-symbols-outlined" id="mlx-sum-toggle-ic">dock_to_right</span>
+          </button>
+          <button type="button" class="mlx-modal-icon-btn" id="mlx-modal-fs" aria-label="Toggle full screen">
+            <span class="material-symbols-outlined" id="mlx-fs-icon">open_in_full</span>
+          </button>
+          <button type="button" class="mlx-modal-icon-btn mlx-modal-icon-btn--close" id="mlx-modal-close" aria-label="Close">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="mlx-modal-split" id="mlx-modal-split" data-sum-open="true">
+        <div class="mlx-modal-maincol">
+          <div class="mlx-placeholder-banner">
+            <span class="material-symbols-outlined">construction</span>
+            <span>Preview mode — full viewer coming soon</span>
+          </div>
+          <div class="mlx-modal-main" id="mlx-modal-main"></div>
+        </div>
+
+        <aside class="mlx-modal-summary" id="mlx-modal-summary" aria-label="Material summary">
+          <p class="mlx-sum-label">Summary</p>
+          <div class="mlx-sum-body" id="mlx-sum-body"></div>
+        </aside>
+      </div>
+
+      <div class="mlx-modal-foot" id="mlx-modal-foot"></div>
+    </div>
+  </div>
+
   <script src="/js/app-shell.js"></script>
   <script>
   (async () => {
-
-    /* ── User level chip ──────────────────────────────── */
-    try {
-      const ur = await fetch('/reviewee/api/user');
-      if (ur.ok) {
-        const u = await ur.json();
-        const chip = document.getElementById('rm-level-chip');
-        if (chip && u.examLevel) chip.textContent = u.examLevel;
-      }
-    } catch (_) {}
-
-    /* ── Fetch data ──────────────────────────────────── */
-    let data;
-    try {
-      const r = await fetch('/reviewee/api/materials');
-      if (!r.ok) return;
-      data = await r.json();
-    } catch (_) { return; }
-
-    const materials    = data.materials    || [];
-    const recDomains   = data.recommendedDomains || [];
-
-    /* ── Update priority sub ── */
-    const subEl = document.getElementById('rm-priority-sub');
-    if (subEl && recDomains.length) {
-      subEl.textContent = `Based on: ${recDomains.slice(0, 2).map(d => d.replace(' Ability', '')).join(', ')}`;
-    }
-
-    /* ── Mock progress/status ── */
-    materials.forEach((m, idx) => {
-      if (idx % 7 === 0)      { m.status = 'mastered';     m.progress = 100; }
-      else if (idx % 3 === 0) { m.status = 'in-progress';  m.progress = Math.floor(Math.random() * 70) + 15; }
-      else                    { m.status = 'new';           m.progress = 0; }
-    });
-
-    /* ── Helpers ─────────────────────────────────────── */
-    const DOMAIN_COLORS = {
-      'Verbal Ability':      '#818cf8',
-      'Numerical Ability':   '#ff9933',
-      'Analytical Ability':  '#2dd4bf',
-      'Clerical Ability':    '#f472b6',
-      'General Information': '#60a5fa',
-    };
     const TYPE_ICONS = {
-      'Drill Set':     'fitness_center',
-      'Practice Exam': 'assignment',
-      'Video':         'play_circle',
-      'Reference':     'article',
-      'Manual':        'book',
+      'Lesson Module':    'school',
+      'Practice Set':     'quiz',
+      'Mock Exam':        'assignment',
+      'Reference Sheet':  'article',
     };
-    function domainClass(d) {
-      if (d === 'Verbal Ability')    return 'verbal';
-      if (d === 'Numerical Ability') return 'numerical';
-      if (d === 'Analytical Ability') return 'analytical';
-      if (d === 'Clerical Ability')  return 'clerical';
-      return 'general';
+    const DOMAIN_SLUG = {
+      'Verbal Ability':      'verbal',
+      'Numerical Ability':   'numerical',
+      'Analytical Ability':  'analytical',
+      'Clerical Ability':    'clerical',
+      'General Information': 'general',
+    };
+    const COVER_MAP = {
+      verbal:     'mlx-cover--verbal',
+      numerical:  'mlx-cover--numerical',
+      analytical: 'mlx-cover--analytical',
+      clerical:   'mlx-cover--clerical',
+      general:    'mlx-cover--general',
+    };
+
+    function slugDom(d) {
+      return DOMAIN_SLUG[d] || 'general';
     }
     function fmtMins(m) {
-      const h = Math.floor(m / 60);
-      const r = m % 60;
-      return h > 0 ? `${h}h ${r}m` : `${r}m`;
+      if (m == null) return '—';
+      const n = Number(m);
+      if (!n) return '—';
+      if (n < 60) return `${n} min`;
+      const h = Math.floor(n / 60);
+      const r = n % 60;
+      return r ? `${h}h ${r}m` : `${h}h`;
+    }
+    function escapeHtml(s) {
+      const d = document.createElement('div');
+      d.textContent = s;
+      return d.innerHTML;
+    }
+    function isExternal(url) {
+      return /^https?:\/\//i.test(url || '');
+    }
+    function isPdf(url) {
+      return /\.pdf(\?|#|$)/i.test(url || '');
+    }
+    function resolveUrl(url) {
+      if (!url) return '';
+      if (isExternal(url)) return url;
+      if (url.startsWith('/')) return url;
+      return '/' + url;
     }
 
-    /* ── Card HTML ───────────────────────────────────── */
-    function cardHtml(m) {
-      const icon      = TYPE_ICONS[m.type] || 'description';
-      const color     = DOMAIN_COLORS[m.domain] || '#888';
-      const statusMap = { mastered: { cls: 'rm-status--mastered', label: 'Mastered' }, 'in-progress': { cls: 'rm-status--progress', label: 'In Progress' }, new: { cls: 'rm-status--new', label: 'New' } };
-      const status    = statusMap[m.status] || statusMap.new;
-      return `<div class="rm-card${m.recommended ? ' rm-card--recommended' : ''}" data-domain="${m.domain}" data-type="${m.type}">
-        <div class="rm-card-top">
-          <span class="rm-status-badge ${status.cls}">${status.label}</span>
-          <span class="rm-type-pill">
-            <span class="material-symbols-outlined" style="font-size:13px;vertical-align:-2px">${icon}</span>
-            ${m.type || 'Material'}
-          </span>
-        </div>
-        <span class="q-domain-badge ${domainClass(m.domain)}" style="margin-bottom:0.5rem">${(m.domain || '').replace(' Ability','')}</span>
-        <p class="rm-card-title">${m.title || 'Untitled'}</p>
-        <p class="rm-card-desc">${m.desc || ''}</p>
-        ${m.progress > 0 ? `<div class="rm-card-progress-wrap">
-          <div class="rm-card-progress-label"><span>Progress</span><span>${m.progress}%</span></div>
-          <div class="rm-card-progress-track"><div class="rm-card-progress-fill" style="width:${m.progress}%;background:${color}"></div></div>
-        </div>` : ''}
-        <div class="rm-card-footer">
-          ${m.estMinutes ? `<span class="rm-card-time"><span class="material-symbols-outlined" style="font-size:13px;vertical-align:-2px">schedule</span> ${fmtMins(m.estMinutes)}</span>` : ''}
-          <a href="#" class="rm-open-btn">Open</a>
-        </div>
-      </div>`;
+    let allMaterials = [];
+
+    function diffCls(key) {
+      const k = (key || '').toLowerCase();
+      if (k === 'basic') return 'mlx-diff mlx-diff--basic';
+      if (k === 'advanced') return 'mlx-diff mlx-diff--adv';
+      return 'mlx-diff mlx-diff--mid';
     }
 
-    /* ── Render grids ────────────────────────────────── */
-    const grid      = document.getElementById('rm-grid');
-    const priGrid   = document.getElementById('rm-priority-grid');
-    const resultMsg = document.getElementById('rm-result-msg');
-
-    // Priority: recommended materials, preferring weak domains
-    const prioritized = materials
-      .filter(m => recDomains.length ? recDomains.includes(m.domain) : m.recommended)
-      .slice(0, 3);
-    if (priGrid) {
-      priGrid.innerHTML = prioritized.length
-        ? prioritized.map(cardHtml).join('')
-        : materials.filter(m => m.recommended).slice(0, 3).map(cardHtml).join('');
-    }
-    const priSection = document.getElementById('rm-priority');
-    if (priSection && !prioritized.length && !materials.some(m => m.recommended)) {
-      priSection.style.display = 'none';
+    function actionLabel(m) {
+      if ((m.contentHtml || '').trim()) return 'Read';
+      const url = (m.contentUrl || '').trim();
+      if (!url) return 'View details';
+      if (isExternal(url)) return 'Open link';
+      if (isPdf(url) && m.typeKey === 'reference_sheet') return 'Download';
+      if (isPdf(url)) return 'Open';
+      return 'Start';
     }
 
-    let activeDomain = 'all';
-    let activeType   = 'all';
+    function catalogCard(m, recHighlight) {
+      const slug = slugDom(m.domain);
+      const cover = COVER_MAP[slug] || 'mlx-cover--general';
+      const icon  = TYPE_ICONS[m.type] || 'menu_book';
+      const rec   = recHighlight && m.isRecommended ? '<span class="mlx-rec-star" title="Recommended">★</span>' : '';
+      return `
+        <article class="mlx-card${recHighlight && m.isRecommended ? ' mlx-card--rec' : ''}" data-id="${m.id}">
+          <div class="mlx-cover ${cover}">
+            ${rec}
+            <span class="material-symbols-outlined mlx-cover-ic">${icon}</span>
+          </div>
+          <div class="mlx-card-body">
+            <span class="mlx-type-tag">${escapeHtml(m.type)}</span>
+            <h3 class="mlx-card-title">${escapeHtml(m.title || 'Untitled')}</h3>
+            <p class="mlx-card-desc">${escapeHtml((m.desc || '').slice(0, 140))}${(m.desc || '').length > 140 ? '…' : ''}</p>
+            <div class="mlx-card-row">
+              <span class="q-domain-badge ${slug} mlx-card-badge">${escapeHtml((m.domain || '').replace(' Ability', ''))}</span>
+              <span class="${diffCls(m.difficultyKey)}">${escapeHtml(m.difficulty)}</span>
+            </div>
+            <div class="mlx-card-foot">
+              <span class="mlx-time"><span class="material-symbols-outlined" style="font-size:14px">schedule</span> ${fmtMins(m.estMinutes)}</span>
+              <button type="button" class="mlx-btn-primary mlx-open" data-id="${m.id}">${actionLabel(m)}</button>
+            </div>
+          </div>
+        </article>`;
+    }
 
-    function applyFilters() {
-      return materials.filter(m => {
-        const dm = activeDomain === 'all' || m.domain === activeDomain;
-        const tm = activeType === 'all' ||
-          (activeType === 'Reference' && (m.type === 'Reference' || m.type === 'Manual')) ||
-          (activeType === 'Video'     && m.type === 'Video') ||
-          (activeType === 'Drill Set' && (m.type === 'Drill Set' || m.type === 'Practice Exam'));
-        return dm && tm;
+    function bindOpen(root) {
+      root.querySelectorAll('.mlx-open').forEach(btn => {
+        btn.addEventListener('click', e => {
+          e.stopPropagation();
+          const id = Number(btn.dataset.id);
+          const m = allMaterials.find(x => x.id === id);
+          if (m) openMaterial(m);
+        });
       });
     }
 
-    function renderCards() {
-      const filtered = applyFilters();
-      if (!grid) return;
-      if (!filtered.length) {
-        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:3rem 0;color:var(--text-subdued)"><span class="material-symbols-outlined" style="font-size:2rem;display:block;margin-bottom:0.5rem">search_off</span>No materials match your filters.</div>';
-        if (resultMsg) resultMsg.textContent = '';
-        return;
-      }
-      grid.innerHTML = filtered.map(cardHtml).join('');
-      if (resultMsg) resultMsg.textContent = filtered.length < materials.length ? `Showing ${filtered.length} of ${materials.length} materials` : '';
+    let mlxTimerId = null;
+    let mlxTimerStarted = 0;
+    let mlxSuggestedSec = 25 * 60;
+
+    function fmtTimerSecs(sec) {
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
     }
 
-    renderCards();
+    function stopModalTimer() {
+      if (mlxTimerId) {
+        clearInterval(mlxTimerId);
+        mlxTimerId = null;
+      }
+      const t = document.getElementById('mlx-timer');
+      if (t) t.classList.remove('mlx-timer--over');
+    }
 
-    /* ── Domain tabs ─────────────────────────────────── */
-    document.getElementById('rm-domain-tabs').addEventListener('click', e => {
-      const tab = e.target.closest('.rm-tab');
-      if (!tab) return;
-      document.querySelectorAll('#rm-domain-tabs .rm-tab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      activeDomain = tab.dataset.domain;
-      const priSec = document.getElementById('rm-priority');
-      if (priSec) priSec.style.display = activeDomain === 'all' ? 'block' : 'none';
-      renderCards();
+    function startModalTimer(suggestedMins) {
+      stopModalTimer();
+      const mins = Number(suggestedMins);
+      mlxSuggestedSec = Math.max(5, (Number.isFinite(mins) && mins > 0 ? mins : 25)) * 60;
+      mlxTimerStarted = Date.now();
+      const sugg = document.getElementById('mlx-timer-suggest');
+      if (sugg) sugg.textContent = `Suggested \u2248 ${Math.round(mlxSuggestedSec / 60)} min`;
+      const digits = document.getElementById('mlx-timer-digits');
+      if (digits) digits.textContent = '00:00';
+      mlxTimerId = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - mlxTimerStarted) / 1000);
+        if (digits) digits.textContent = fmtTimerSecs(elapsed);
+        const timerEl = document.getElementById('mlx-timer');
+        if (timerEl) {
+          if (elapsed >= mlxSuggestedSec) timerEl.classList.add('mlx-timer--over');
+          else timerEl.classList.remove('mlx-timer--over');
+        }
+      }, 1000);
+    }
+
+    function openMaterial(m) {
+      const modal = document.getElementById('mlx-modal');
+      const url = (m.contentUrl || '').trim();
+      const html = (m.contentHtml || '').trim();
+      document.getElementById('mlx-modal-type').textContent = m.type;
+      document.getElementById('mlx-modal-title').textContent = m.title || 'Material';
+
+      startModalTimer(m.estMinutes);
+
+      const descSnippet = (m.desc || '').trim();
+      const descShow = descSnippet
+        ? escapeHtml(descSnippet.slice(0, 320)) + (descSnippet.length > 320 ? '…' : '')
+        : '<em class="mlx-ph-muted">No description on file yet.</em>';
+
+      let bodyInner = '';
+      if (html) {
+        bodyInner = `<div class="mlx-prose mlx-inline-html">${html}</div>`;
+      } else if (url && isPdf(url)) {
+        const src = escapeHtml(isExternal(url) ? url : resolveUrl(url));
+        bodyInner = `<iframe class="mlx-pdf-frame" src="${src}" title="PDF preview"></iframe>`;
+      } else {
+        bodyInner = `
+        <div class="mlx-ph-content">
+          <p class="mlx-ph-lead">Open the resource below or use the link in the footer when available.</p>
+          <ul class="mlx-ph-list">
+            <li>PDFs open in the viewer when linked from the library.</li>
+            <li>Word documents open via download.</li>
+            <li>Inline lessons appear in this column when authored by your coordinator.</li>
+          </ul>
+          <div class="mlx-ph-descwrap">
+            <span class="mlx-ph-desclbl">Catalog description</span>
+            <p class="mlx-ph-desc">${descShow}</p>
+          </div>
+        </div>`;
+      }
+
+      document.getElementById('mlx-modal-main').innerHTML = bodyInner;
+
+      document.getElementById('mlx-sum-body').innerHTML = `
+        <dl class="mlx-sum-dl">
+          <dt>Type</dt><dd>${escapeHtml(m.type)}</dd>
+          <dt>Domain</dt><dd>${escapeHtml((m.domain || '').replace(' Ability', ''))}</dd>
+          <dt>Level</dt><dd>${escapeHtml(m.difficulty)}</dd>
+          <dt>Time</dt><dd>${escapeHtml(fmtMins(m.estMinutes))}</dd>
+        </dl>
+        <div class="mlx-sum-box">
+          <p class="mlx-sum-box-title">Objectives</p>
+          <ul class="mlx-sum-ul">
+            <li>Strengthen recall for this topic.</li>
+            <li>Connect ideas to exam-style prompts.</li>
+            <li>Flag areas to revisit in Review.</li>
+          </ul>
+        </div>
+        <div class="mlx-sum-box">
+          <p class="mlx-sum-box-title">Key points</p>
+          <p class="mlx-sum-p">Short bullets and mnemonics will appear here once content is authored.</p>
+        </div>`;
+
+      const foot = document.getElementById('mlx-modal-foot');
+      foot.innerHTML = '';
+      if (url) {
+        const href = escapeHtml(isExternal(url) ? url : resolveUrl(url));
+        const isDoc = /\.(docx?)(\?|#|$)/i.test(url);
+        const label = isDoc ? 'Download document' : (isPdf(url) ? 'Open PDF in new tab' : 'Open original resource');
+        foot.innerHTML = `<a href="${href}" target="_blank" rel="noopener noreferrer" class="mlx-btn-secondary">${label}</a>`;
+      }
+
+      modal.removeAttribute('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      stopModalTimer();
+      const modal = document.getElementById('mlx-modal');
+      modal.setAttribute('hidden', '');
+      document.getElementById('mlx-modal-main').innerHTML = '';
+      document.getElementById('mlx-sum-body').innerHTML = '';
+      // Exit full-screen when closing
+      const panel = document.querySelector('.mlx-modal-panel');
+      if (panel.classList.contains('mlx-modal-panel--fs')) {
+        panel.classList.remove('mlx-modal-panel--fs');
+        modal.style.padding = '';
+        const fsIcon = document.getElementById('mlx-fs-icon');
+        if (fsIcon) fsIcon.textContent = 'open_in_full';
+      }
+      document.body.style.overflow = '';
+    }
+    document.getElementById('mlx-modal-close').addEventListener('click', closeModal);
+    document.getElementById('mlx-modal-bg').addEventListener('click', closeModal);
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+    // Full-screen toggle
+    document.getElementById('mlx-modal-fs').addEventListener('click', () => {
+      const modal  = document.getElementById('mlx-modal');
+      const panel  = document.querySelector('.mlx-modal-panel');
+      const fsIcon = document.getElementById('mlx-fs-icon');
+      const isFs   = panel.classList.toggle('mlx-modal-panel--fs');
+      modal.style.padding = isFs ? '0' : '';
+      fsIcon.textContent = isFs ? 'close_fullscreen' : 'open_in_full';
     });
 
-    /* ── Type filter chips ───────────────────────────── */
-    document.getElementById('rm-type-chips').addEventListener('click', e => {
-      const chip = e.target.closest('.rm-filter-chip');
-      if (!chip) return;
-      document.querySelectorAll('#rm-type-chips .rm-filter-chip').forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      activeType = chip.dataset.type;
-      renderCards();
+    // Summary collapse toggle
+    document.getElementById('mlx-sum-toggle').addEventListener('click', () => {
+      const split    = document.getElementById('mlx-modal-split');
+      const toggleIc = document.getElementById('mlx-sum-toggle-ic');
+      const isOpen   = split.getAttribute('data-sum-open') !== 'false';
+      split.setAttribute('data-sum-open', isOpen ? 'false' : 'true');
+      toggleIc.textContent = isOpen ? 'dock_to_right' : 'dock_to_right';
+      document.getElementById('mlx-sum-toggle').setAttribute('aria-pressed', isOpen ? 'false' : 'true');
     });
 
+    let domFilter = 'all';
+    let typeFilter = 'all';
+    let diffFilter = 'all';
+    let searchQ = '';
+
+    function matches(m) {
+      if (domFilter !== 'all' && m.domain !== domFilter) return false;
+      if (typeFilter !== 'all' && m.typeKey !== typeFilter) return false;
+      if (diffFilter !== 'all' && (m.difficultyKey || '').toLowerCase() !== diffFilter) return false;
+      if (searchQ) {
+        const t = (m.title + ' ' + (m.desc || '')).toLowerCase();
+        if (!t.includes(searchQ)) return false;
+      }
+      return true;
+    }
+
+    function renderBrowse() {
+      const grid = document.getElementById('mlx-grid');
+      const filtered = allMaterials.filter(matches);
+      const el = document.getElementById('mlx-count');
+      if (!allMaterials.length) {
+        grid.innerHTML = `<div class="mlx-empty">
+          <span class="material-symbols-outlined">inventory_2</span>
+          <p>No published materials for your exam level yet. Check back soon.</p>
+        </div>`;
+        el.textContent = '';
+        return;
+      }
+      el.textContent = filtered.length === allMaterials.length
+        ? `${filtered.length} materials`
+        : `Showing ${filtered.length} of ${allMaterials.length}`;
+      if (!filtered.length) {
+        grid.innerHTML = `<div class="mlx-empty">
+          <span class="material-symbols-outlined">search_off</span>
+          <p>No materials match these filters.</p>
+        </div>`;
+        return;
+      }
+      grid.innerHTML = filtered.map(m => catalogCard(m, false)).join('');
+      bindOpen(grid);
+    }
+
+    try {
+      const r = await fetch('/reviewee/api/materials');
+      if (!r.ok) throw new Error('load');
+      const data = await r.json();
+      allMaterials = data.materials || [];
+      const recDom = data.recommendedDomains || [];
+
+      const hint = document.getElementById('mlx-rec-hint');
+      if (recDom.length) {
+        hint.textContent = 'Weighted toward: ' + recDom.slice(0, 3).map(d => d.replace(' Ability', '')).join(', ');
+      } else {
+        hint.textContent = 'Balanced picks across the library';
+      }
+
+      const recGrid = document.getElementById('mlx-rec-grid');
+      const recs = allMaterials.filter(m => m.isRecommended).slice(0, 5);
+      if (!recs.length) {
+        recGrid.innerHTML = `<div class="mlx-empty mlx-empty--soft">
+          <span class="material-symbols-outlined">auto_awesome</span>
+          <p>No recommendations yet. Complete your diagnostic so we can suggest materials by domain.</p>
+        </div>`;
+      } else {
+        recGrid.innerHTML = recs.map(m => catalogCard(m, true)).join('');
+        bindOpen(recGrid);
+      }
+
+      renderBrowse();
+    } catch (e) {
+      console.error(e);
+      document.getElementById('mlx-rec-grid').innerHTML = `<div class="mlx-empty"><p>Could not load materials.</p></div>`;
+    }
+
+    document.getElementById('mlx-search').addEventListener('input', e => {
+      searchQ = (e.target.value || '').toLowerCase().trim();
+      renderBrowse();
+    });
+
+    document.getElementById('mlx-sel-domain').addEventListener('change', e => {
+      domFilter = e.target.value;
+      renderBrowse();
+    });
+    document.getElementById('mlx-sel-type').addEventListener('change', e => {
+      typeFilter = e.target.value;
+      renderBrowse();
+    });
+    document.getElementById('mlx-sel-diff').addEventListener('change', e => {
+      diffFilter = e.target.value;
+      renderBrowse();
+    });
   })();
   </script>
+
+  <%- include('../partials/enrollment-code-modal') %>
+  <script src="/js/toast-notifications.js"></script>
 </body>
 </html>

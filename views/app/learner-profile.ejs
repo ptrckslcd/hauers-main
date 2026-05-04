@@ -11,17 +11,6 @@
 </head>
 <body data-role="reviewee">
 
-  <!-- SVG gradient defs for readiness ring -->
-  <svg width="0" height="0" style="position:absolute">
-    <defs>
-      <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%"   stop-color="#FFD633"/>
-        <stop offset="50%"  stop-color="#FF9933"/>
-        <stop offset="100%" stop-color="#FF3366"/>
-      </linearGradient>
-    </defs>
-  </svg>
-
   <div id="navbar-placeholder"><%- include('../partials/navbar') %></div>
 
   <div class="app-shell">
@@ -30,671 +19,451 @@
 
     <main class="page-content">
 
-      <!-- ── Page header ── -->
       <header class="page-header">
-        <div>
-          <h1 class="page-title">My Profile</h1>
-          <p class="page-subtitle">
-            <span class="badge" id="ph-level-badge">Professional</span>
-            &nbsp;CSE Reviewee
-          </p>
-        </div>
-        <button
-          id="btn-edit-profile"
-          class="cta-pill"
-          style="background:var(--card-bg);color:var(--text-main);border-color:var(--border-subdued)"
-        >
-          <span class="material-symbols-outlined" style="font-size:18px;margin-right:0.4rem">edit_note</span>
-          Edit Profile
-        </button>
+        <h1 class="page-title">My Profile</h1>
       </header>
 
-      <!-- ── Row 1: Profile hero (2fr) · Exam countdown (1fr) ── -->
-      <div class="dash-grid" style="grid-template-columns:2fr 1fr">
+      <!-- Row 1: Identity + Exam Summary — equal columns -->
+      <div class="prf-row-hero">
 
-        <!-- Profile hero -->
-        <div class="dash-card">
-          <span class="card-label">My Profile</span>
-
-          <div class="profile-hero">
-            <div class="profile-avatar-lg" id="profile-avatar">D</div>
-            <div class="profile-info">
-              <p class="profile-name" id="profile-name">Demo Reviewee</p>
-              <p class="profile-email" id="profile-email">reviewee@hauers.com</p>
-              <div class="profile-chips">
-                <span class="profile-chip orange" id="profile-level-chip">Professional</span>
-                <span class="profile-chip green"  id="profile-streak-chip">5-day streak 🔥</span>
-                <span class="profile-chip purple">CSE 2026</span>
+        <!-- Identity card -->
+        <div class="dash-card prf-identity-card">
+          <div class="prf-identity-hero">
+            <div class="prf-avatar" id="prf-avatar">U</div>
+            <div class="prf-identity-body">
+              <p class="prf-name" id="prf-name">—</p>
+              <p class="prf-email-sub" id="prf-email-sub">—</p>
+              <div class="prf-chips">
+                <span class="prf-chip prf-chip--level" id="prf-level-chip">—</span>
+                <span class="prf-chip prf-chip--batch" id="prf-batch-chip" hidden>—</span>
+                <span class="prf-chip prf-chip--streak" id="prf-streak-chip" hidden>—</span>
               </div>
             </div>
           </div>
 
-          <div class="profile-section-title">Account Details</div>
+          <div class="prf-divider"></div>
 
-          <div class="profile-field-row">
-            <span class="profile-field-label">Full Name</span>
-            <span class="profile-field-value" id="pf-fullname">—</span>
-          </div>
-          <div class="profile-field-row">
-            <span class="profile-field-label">Email Address</span>
-            <span class="profile-field-value" id="pf-email">—</span>
-          </div>
-          <div class="profile-field-row">
-            <span class="profile-field-label">Exam Level</span>
-            <span class="profile-field-value" id="pf-level">—</span>
-          </div>
-          <div class="profile-field-row">
-            <span class="profile-field-label">Member Since</span>
-            <span class="profile-field-value">January 15, 2026</span>
-          </div>
-          <div class="profile-field-row">
-            <span class="profile-field-label">Account Status</span>
-            <span class="profile-field-value">
-              <span class="profile-chip green" style="font-size:0.7rem;padding:0.18rem 0.6rem">Active ✓</span>
-            </span>
-          </div>
-        </div>
-
-        <!-- Exam countdown -->
-        <div class="dash-card dash-card--countdown">
-          <span class="card-label">Target Exam</span>
-          <p style="font-size:0.95rem;font-weight:700;color:var(--text-main);margin-top:0.1rem">Civil Service Exam</p>
-
-          <div class="dash-countdown" style="margin-top:0.35rem;margin-bottom:0.4rem">
-            <span class="countdown-num" id="pf-days-num">—</span>
-            <span class="countdown-unit">days</span>
-          </div>
-
-          <span class="exam-date-chip" style="margin-bottom:0.6rem">
-            <span class="material-symbols-outlined" style="font-size:16px;margin-right:0.25rem">calendar_today</span>
-            April 27, 2026
-          </span>
-
-          <div class="profile-section-title">Exam Details</div>
-
-          <div class="profile-field-row">
-            <span class="profile-field-label">Level</span>
-            <span class="profile-field-value" id="pf-exam-level">Professional</span>
-          </div>
-          <div class="profile-field-row">
-            <span class="profile-field-label">Passing Score</span>
-            <span class="profile-field-value">80%</span>
-          </div>
-          <div class="profile-field-row">
-            <span class="profile-field-label">Format</span>
-            <span class="profile-field-value">Paper &amp; Pen</span>
-          </div>
-          <div class="profile-field-row">
-            <span class="profile-field-label">Total Items</span>
-            <span class="profile-field-value">170 items</span>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- ── Row 2: Readiness ring · Study stats · Diagnostic ── -->
-      <div class="dash-grid">
-
-        <!-- Readiness ring -->
-        <div class="dash-card" style="align-items:center">
-          <span class="card-label">Readiness Score</span>
-          <div class="dash-ring-wrap" style="width:130px;height:130px">
-            <svg viewBox="0 0 130 130" class="ring-svg" style="width:100%;height:100%">
-              <circle cx="65" cy="65" r="54" class="ring-track"/>
-              <circle cx="65" cy="65" r="54" class="ring-prog" id="profile-ring-prog" data-pct="0"/>
-            </svg>
-            <div class="ring-center">
-              <div class="ring-value-row">
-                <span class="ring-pct" id="profile-readiness">—</span>
-                <span class="ring-unit">%</span>
-              </div>
-              <span class="ring-note">Readiness</span>
+          <div class="prf-identity-meta">
+            <div class="prf-meta-tile">
+              <span class="material-symbols-outlined prf-meta-tile-ic">history_edu</span>
+              <p class="prf-meta-tile-lbl">Member since</p>
+              <p class="prf-meta-tile-val" id="pf-since">—</p>
             </div>
-          </div>
-          <p class="card-footnote" style="text-align:center">Based on quiz performance</p>
-        </div>
-
-        <!-- Study stats -->
-        <div class="dash-card">
-          <span class="card-label">Study Stats</span>
-          <div class="result-stats-list">
-            <div class="result-stat-row">
-              <span>Current Streak</span>
-              <strong id="pf-streak" style="color:var(--fs-orange)">— 🔥</strong>
+            <div class="prf-meta-tile">
+              <span class="material-symbols-outlined prf-meta-tile-ic">schedule</span>
+              <p class="prf-meta-tile-lbl">Study hrs / wk</p>
+              <p class="prf-meta-tile-val" id="pf-id-hours">—</p>
             </div>
-            <div class="result-stat-row">
-              <span>Tasks Completed</span>
-              <strong id="pf-tasks" style="color:#4ade80">—</strong>
+            <div class="prf-meta-tile">
+              <span class="material-symbols-outlined prf-meta-tile-ic">wb_sunny</span>
+              <p class="prf-meta-tile-lbl">Preferred time</p>
+              <p class="prf-meta-tile-val" id="pf-id-time">—</p>
             </div>
-            <div class="result-stat-row">
-              <span>Pending Tasks</span>
-              <strong id="pf-pending" style="color:var(--fs-pink)">—</strong>
-            </div>
-            <div class="result-stat-row">
-              <span>Latest Diagnostic</span>
-              <strong id="pf-diag-stat">—</strong>
-            </div>
-            <div class="result-stat-row">
-              <span>Weak Domains</span>
-              <strong id="pf-weak-count" style="color:var(--fs-pink)">—</strong>
-            </div>
-          </div>
-        </div>
-
-        <!-- Diagnostic score -->
-        <div class="dash-card">
-          <span class="card-label">Latest Diagnostic</span>
-          <div class="dash-countdown" style="margin-top:0.1rem;margin-bottom:0.3rem">
-            <span class="countdown-num" id="pf-diag-score" style="font-size:3rem">—</span>
-            <span class="countdown-unit">/ 100</span>
-          </div>
-          <div class="score-gap-bar-wrap">
-            <div class="score-gap-bar">
-              <div class="score-gap-fill" id="pf-gap-fill" style="width:0%"></div>
-              <div class="score-gap-marker"></div>
-            </div>
-            <div class="score-gap-labels">
-              <span>0</span><span>Pass: 80%</span><span>100</span>
-            </div>
-          </div>
-          <span class="score-gap-badge" id="pf-gap-badge" style="margin-top:0.1rem">—</span>
-          <a href="/reviewee/diagnostic-result" class="card-link" style="margin-top:auto">View Full Results →</a>
-        </div>
-
-      </div>
-
-      <!-- ── Domain coverage ── -->
-      <div class="dash-card" style="margin-bottom:1.25rem">
-        <span class="card-label">Domain Coverage</span>
-        <div class="msc-bars" style="margin-top:0.65rem">
-
-          <div class="msc-bar-item">
-            <div class="msc-bar-label">
-              <span>Verbal Ability</span>
-              <span class="mbar-val" data-domain="Verbal Ability">—</span>
-            </div>
-            <div class="msc-bar-track">
-              <div class="msc-bar-fill" data-domain="Verbal Ability" style="width:0%"></div>
+            <div class="prf-meta-tile">
+              <span class="material-symbols-outlined prf-meta-tile-ic">devices</span>
+              <p class="prf-meta-tile-lbl">Primary device</p>
+              <p class="prf-meta-tile-val" id="pf-id-device">—</p>
             </div>
           </div>
 
-          <div class="msc-bar-item">
-            <div class="msc-bar-label">
-              <span>Numerical Ability</span>
-              <span class="mbar-val" data-domain="Numerical Ability">—</span>
-            </div>
-            <div class="msc-bar-track">
-              <div class="msc-bar-fill" data-domain="Numerical Ability" style="width:0%"></div>
-            </div>
-          </div>
-
-          <div class="msc-bar-item">
-            <div class="msc-bar-label">
-              <span>Clerical Ability</span>
-              <span class="mbar-val" data-domain="Clerical Ability">—</span>
-            </div>
-            <div class="msc-bar-track">
-              <div class="msc-bar-fill" data-domain="Clerical Ability" style="width:0%"></div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- ── Row 3: Weak areas · Quick actions ── -->
-      <div class="dash-grid dash-grid--2col">
-
-        <!-- Weak areas + recommended focus -->
-        <div class="dash-card">
-          <span class="card-label">Weak Areas</span>
-          <div class="weak-tags" id="pf-weak-tags" style="margin-bottom:0.75rem">
-            <span style="font-size:0.82rem;color:var(--text-subdued)">Loading…</span>
-          </div>
-          <span class="card-label">Recommended Focus</span>
-          <div class="focus-block" style="margin-top:0.35rem">
-            <p class="focus-text" id="pf-recommended-focus">Loading recommendations…</p>
-          </div>
-        </div>
-
-        <!-- Quick actions -->
-        <div class="dash-card">
-          <span class="card-label">Quick Actions</span>
-          <div class="quick-actions">
-
-            <a href="/reviewee/diagnostic" class="qa-btn">
-              <span class="qa-icon" style="background:rgba(129,140,248,0.1);color:#818cf8">
-                <span class="material-symbols-outlined">monitor_heart</span>
-              </span>
-              <span class="qa-label">Take Diagnostic</span>
-              <span class="material-symbols-outlined qa-arrow">chevron_right</span>
-            </a>
-
-            <a href="/reviewee/review" class="qa-btn">
-              <span class="qa-icon" style="background:rgba(45,212,191,0.1);color:#2dd4bf">
-                <span class="material-symbols-outlined">menu_book</span>
-              </span>
-              <span class="qa-label">Practice Session</span>
-              <span class="material-symbols-outlined qa-arrow">chevron_right</span>
-            </a>
-
-            <a href="/reviewee/progress" class="qa-btn">
-              <span class="qa-icon" style="background:rgba(255,153,51,0.1);color:var(--fs-orange)">
-                <span class="material-symbols-outlined">insights</span>
-              </span>
-              <span class="qa-label">View Progress</span>
-              <span class="material-symbols-outlined qa-arrow">chevron_right</span>
-            </a>
-
-            <a href="/reviewee/settings" class="qa-btn">
-              <span class="qa-icon" style="background:rgba(167,139,250,0.1);color:#a78bfa">
-                <span class="material-symbols-outlined">settings</span>
-              </span>
-              <span class="qa-label">Account Settings</span>
-              <span class="material-symbols-outlined qa-arrow">chevron_right</span>
-            </a>
-
-          </div>
-        </div>
-
-      </div>
-
-      <!-- ── Domain Performance Detail ── -->
-      <div class="dash-card profile-domain-detail" id="pf-domain-detail" style="display:none">
-        <span class="card-label">Domain Performance</span>
-        <p class="card-sub">Baseline, current score, and target across all domains</p>
-        <div class="pf-domain-rows" id="pf-domain-rows" style="margin-top:0.75rem"></div>
-      </div>
-
-      <!-- ── Weekly Study Schedule ── -->
-      <div class="dash-card profile-schedule-card" id="pf-schedule-card" style="display:none">
-        <span class="card-label">Weekly Study Schedule</span>
-        <p class="card-sub" id="pf-schedule-sub">Generated from your study plan</p>
-        <div class="pf-schedule-grid" id="pf-schedule-grid" style="margin-top:0.85rem"></div>
-      </div>
-
-      <!-- CTA Banner -->
-      <div class="dash-cta">
-        <div class="dash-cta-text">
-          <h3>Keep the momentum going — you're making progress.</h3>
-          <p>Maintain your daily study streak and focus on weak domains to close the gap to passing score.</p>
-        </div>
-        <a href="/reviewee/review" class="cta-pill">Start Practice Session</a>
-      </div>
-
-      <!-- ── Edit Profile Modal ── -->
-      <div class="ep-overlay" id="ep-overlay" hidden>
-        <div class="ep-modal" role="dialog" aria-modal="true" aria-labelledby="ep-modal-title">
-          <div class="ep-modal-header">
-            <h2 class="ep-modal-title" id="ep-modal-title">Edit Profile</h2>
-            <button class="ep-close" id="ep-close" type="button" aria-label="Close">
-              <span class="material-symbols-outlined">close</span>
+          <div class="prf-identity-actions">
+            <button id="btn-edit-profile" class="prf-edit-btn" type="button">
+              <span class="material-symbols-outlined">edit_note</span>
+              Edit Profile
             </button>
           </div>
+        </div>
 
-          <div class="ep-modal-avatar-wrap">
-            <div class="ep-modal-avatar" id="ep-modal-avatar">D</div>
+        <!-- Exam Summary card -->
+        <div class="dash-card prf-exam-card">
+          <p class="pgx-section-label pgx-section-label--flush" style="margin-bottom:0.75rem">Exam Overview</p>
+
+          <div class="prf-countdown-block">
+            <div>
+              <span class="prf-countdown-num" id="prf-days">—</span>
+              <span class="prf-countdown-unit">days</span>
+            </div>
+            <p class="prf-countdown-label">until your exam</p>
           </div>
 
-          <form class="ep-form" id="ep-form" autocomplete="off">
+          <div class="prf-exam-tiles">
+            <div class="prf-meta-tile">
+              <span class="material-symbols-outlined prf-meta-tile-ic">calendar_today</span>
+              <p class="prf-meta-tile-lbl">Exam date</p>
+              <p class="prf-meta-tile-val" id="pf-exam-date">—</p>
+            </div>
+            <div class="prf-meta-tile">
+              <span class="material-symbols-outlined prf-meta-tile-ic">school</span>
+              <p class="prf-meta-tile-lbl">Level</p>
+              <p class="prf-meta-tile-val" id="pf-exam-level">—</p>
+            </div>
+            <div class="prf-meta-tile">
+              <span class="material-symbols-outlined prf-meta-tile-ic">format_list_numbered</span>
+              <p class="prf-meta-tile-lbl">Items</p>
+              <p class="prf-meta-tile-val">170 &middot; Paper &amp; Pen</p>
+            </div>
+            <div class="prf-meta-tile">
+              <span class="material-symbols-outlined prf-meta-tile-ic">flag</span>
+              <p class="prf-meta-tile-lbl">Passing score</p>
+              <p class="prf-meta-tile-val">80%</p>
+            </div>
+          </div>
 
-            <div class="ep-form-row">
-              <div class="ep-field">
-                <label class="ep-label" for="ep-firstname">First Name</label>
-                <input class="ep-input" type="text" id="ep-firstname" name="firstName" required placeholder="First name">
+          <p class="pgx-section-label pgx-section-label--flush" style="margin-bottom:0.6rem">Readiness</p>
+          <div class="prf-readiness-row">
+            <div class="prf-readiness-gauge">
+              <canvas id="prf-gauge-chart"></canvas>
+              <div class="prf-gauge-overlay">
+                <span class="prf-gauge-pct" id="prf-gauge-val">0</span>
+                <span class="prf-gauge-unit">%</span>
               </div>
-              <div class="ep-field">
-                <label class="ep-label" for="ep-lastname">Last Name</label>
-                <input class="ep-input" type="text" id="ep-lastname" name="lastName" required placeholder="Last name">
-              </div>
             </div>
-
-            <div class="ep-field">
-              <label class="ep-label" for="ep-email">Email Address</label>
-              <input class="ep-input" type="email" id="ep-email" name="email" required placeholder="you@example.com">
+            <div class="prf-readiness-info">
+              <p class="prf-readiness-status" id="prf-readiness-status">—</p>
+              <p class="prf-readiness-sub">Based on quiz performance</p>
             </div>
-
-            <div class="ep-field">
-              <label class="ep-label" for="ep-level">Exam Level</label>
-              <select class="ep-input ep-select" id="ep-level" name="examLevel">
-                <option value="Professional">Professional</option>
-                <option value="Sub-Professional">Sub-Professional</option>
-              </select>
-            </div>
-
-            <div class="ep-form-actions">
-              <button type="button" class="ep-btn-cancel" id="ep-cancel">Cancel</button>
-              <button type="submit" class="cta-pill" id="ep-save">
-                <span id="ep-save-text">Save Changes</span>
-                <span id="ep-save-spinner" hidden style="opacity:0.7">Saving…</span>
-              </button>
-            </div>
-
-          </form>
+          </div>
         </div>
-      </div>
 
-      <!-- Toast -->
-      <div class="ep-toast" id="ep-toast" hidden>
-        <span class="material-symbols-outlined" style="color:#4ade80;flex-shrink:0">check_circle</span>
-        <span id="ep-toast-msg">Profile updated successfully!</span>
+      </div><!-- /.prf-row-hero -->
+
+      <!-- Domain Self-Rating vs M-Elo -->
+      <div class="dash-card prf-ratings-card">
+        <p class="pgx-section-label pgx-section-label--flush" style="margin-bottom:0.85rem">Domain Self-Rating vs Performance</p>
+        <div class="prf-ratings-table" id="prf-ratings-table">
+          <div class="prf-ratings-loading">
+            <span class="material-symbols-outlined">bar_chart</span>
+            <p>Loading domain data…</p>
+          </div>
+        </div>
       </div>
 
     </main>
   </div>
 
+  <!-- Edit Profile Modal -->
+  <div class="prf-modal-overlay" id="prf-modal-overlay" hidden>
+    <div class="prf-modal" role="dialog" aria-modal="true" aria-labelledby="prf-modal-title">
+      <div class="prf-modal-head">
+        <h2 class="prf-modal-title" id="prf-modal-title">Edit Profile</h2>
+        <button type="button" class="prf-modal-close" id="prf-modal-close" aria-label="Close">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <form class="prf-modal-form" id="prf-modal-form" autocomplete="off">
+        <!-- Locked fields -->
+        <div class="prf-modal-locked-row">
+          <div class="prf-modal-locked-field">
+            <span class="prf-form-label">Email Address</span>
+            <span class="prf-locked-value" id="ep-email-locked">—</span>
+            <span class="prf-locked-badge">
+              <span class="material-symbols-outlined" style="font-size:12px">lock</span>
+              Not editable
+            </span>
+          </div>
+          <div class="prf-modal-locked-field">
+            <span class="prf-form-label">Exam Level</span>
+            <span class="prf-locked-value" id="ep-level-locked">—</span>
+            <span class="prf-locked-badge">
+              <span class="material-symbols-outlined" style="font-size:12px">lock</span>
+              Set by enrollment
+            </span>
+          </div>
+        </div>
+
+        <div class="prf-modal-divider"></div>
+
+        <div class="prf-form-row">
+          <div class="prf-form-field">
+            <label class="prf-form-label" for="ep-firstname">First Name</label>
+            <input class="prf-form-input" type="text" id="ep-firstname" name="firstName" required placeholder="First name">
+          </div>
+          <div class="prf-form-field">
+            <label class="prf-form-label" for="ep-lastname">Last Name</label>
+            <input class="prf-form-input" type="text" id="ep-lastname" name="lastName" required placeholder="Last name">
+          </div>
+        </div>
+
+        <div class="prf-modal-divider"></div>
+
+        <p class="prf-form-section-label">Study Preferences</p>
+
+        <div class="prf-form-row">
+          <div class="prf-form-field">
+            <label class="prf-form-label" for="ep-hours">Study Hours / Week</label>
+            <input class="prf-form-input" type="number" id="ep-hours" name="studyHours" min="1" max="80" placeholder="e.g. 10">
+          </div>
+          <div class="prf-form-field">
+            <label class="prf-form-label" for="ep-time">Preferred Study Time</label>
+            <select class="prf-form-input prf-form-select" id="ep-time" name="preferredStudyTime">
+              <option value="">Not specified</option>
+              <option value="morning">Morning</option>
+              <option value="afternoon">Afternoon</option>
+              <option value="evening">Evening</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="prf-form-field">
+          <label class="prf-form-label" for="ep-device">Primary Device</label>
+          <select class="prf-form-input prf-form-select" id="ep-device" name="primaryDevice">
+            <option value="">Not specified</option>
+            <option value="desktop">Desktop / Laptop</option>
+            <option value="mobile">Mobile Phone</option>
+            <option value="tablet">Tablet</option>
+          </select>
+        </div>
+
+        <div class="prf-modal-actions">
+          <button type="button" class="prf-modal-cancel" id="prf-modal-cancel">Cancel</button>
+          <button type="submit" class="prf-save-btn" id="ep-save">
+            <span id="ep-save-text">Save Changes</span>
+            <span id="ep-save-spin" hidden style="opacity:0.7">Saving…</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="prf-toast" id="prf-toast" hidden>
+    <span class="material-symbols-outlined prf-toast-icon" id="prf-toast-icon">check_circle</span>
+    <span id="prf-toast-msg">Saved successfully.</span>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
   <script src="/js/app-shell.js"></script>
   <script>
-  (async function () {
-    const set = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+  (async () => {
+    const $ = id => document.getElementById(id);
+    const set = (id, v) => { const e = $(id); if (e) e.textContent = v; };
 
-    let data;
-    try {
-      const r = await fetch('/reviewee/api/profile');
-      if (!r.ok) return;
-      data = await r.json();
-    } catch (_) { return; }
-
-    /* ── User info ── */
-    if (data.user) {
-      const initial  = data.user.firstName[0].toUpperCase();
-      const fullName = data.user.firstName + ' ' + data.user.lastName;
-
-      const pfAvatar = document.getElementById('profile-avatar');
-      if (pfAvatar) pfAvatar.textContent = initial;
-
-      set('profile-name',    fullName);
-      set('profile-email',   data.user.email);
-      set('pf-fullname',     fullName);
-      set('pf-email',        data.user.email);
-      set('pf-level',        data.user.examLevel || 'Professional');
-      set('pf-exam-level',   data.user.examLevel || 'Professional');
-
-      const lvlChip  = document.getElementById('profile-level-chip');
-      const lvlBadge = document.getElementById('ph-level-badge');
-      if (lvlChip)  lvlChip.textContent  = data.user.examLevel || 'Professional';
-      if (lvlBadge) lvlBadge.textContent = data.user.examLevel || 'Professional';
-
-      /* Hand user object to the edit-profile modal */
-      if (typeof window.__setProfileCache === 'function') window.__setProfileCache(data.user);
+    function fmtDate(ts) {
+      if (!ts) return '—';
+      return new Date(ts).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' });
+    }
+    function capitalize(s) {
+      if (!s) return '—';
+      return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
     }
 
-    /* ── Exam countdown ── */
-    const examDate = new Date('2026-04-27');
-    const days = Math.max(0, Math.ceil((examDate - new Date()) / (1000 * 60 * 60 * 24)));
-    set('pf-days-num', days);
-
-    /* ── Readiness ring ── */
-    if (data.readinessScore != null) {
-      const pct = data.readinessScore;
-      set('profile-readiness', pct);
-      const ringEl = document.getElementById('profile-ring-prog');
-      if (ringEl) {
-        const r = 54, circ = 2 * Math.PI * r;
-        ringEl.style.strokeDasharray  = circ;
-        ringEl.style.strokeDashoffset = circ;
-        setTimeout(() => {
-          ringEl.style.transition      = 'stroke-dashoffset 1.4s cubic-bezier(0.4,0,0.2,1)';
-          ringEl.style.strokeDashoffset = circ * (1 - pct / 100);
-        }, 200);
-      }
-    }
-
-    /* ── Study stats ── */
-    if (data.streak != null) {
-      set('pf-streak', data.streak + ' days 🔥');
-      const streakChip = document.getElementById('profile-streak-chip');
-      if (streakChip) streakChip.textContent = data.streak + '-day streak 🔥';
-    }
-    if (data.completedTasks != null) set('pf-tasks',   data.completedTasks);
-    if (data.pendingTasks   != null) set('pf-pending', data.pendingTasks);
-
-    /* ── Weak domains ── */
-    if (data.weakDomains) {
-      set('pf-weak-count', data.weakDomains.length + ' domain' + (data.weakDomains.length !== 1 ? 's' : ''));
-      const weakTagsEl = document.getElementById('pf-weak-tags');
-      if (weakTagsEl) {
-        weakTagsEl.innerHTML = data.weakDomains.length
-          ? data.weakDomains.map(d => `<span class="weak-tag">${d}</span>`).join('')
-          : '<span style="font-size:0.82rem;color:var(--text-subdued)">No weak areas — great job!</span>';
-      }
-    }
-
-    if (data.recommendedFocus) set('pf-recommended-focus', data.recommendedFocus);
-
-    /* ── Domain performance detail ── */
-    if (data.domainProgress && data.domainProgress.length) {
-      const detailCard = document.getElementById('pf-domain-detail');
-      const rowsEl     = document.getElementById('pf-domain-rows');
-      if (detailCard) detailCard.style.display = '';
-      if (rowsEl) {
-        rowsEl.innerHTML = data.domainProgress.map(dp => {
-          const delta   = dp.current - dp.baseline;
-          const sign    = delta > 0 ? '+' : '';
-          const warn    = dp.current < 70;
-          const fillW   = Math.min(100, Math.round((dp.current / dp.target) * 100));
-          const deltaClass = delta > 0 ? 'good' : delta < 0 ? 'bad' : '';
-          return `<div class="pg-domain-row">
-            <div class="pg-domain-header">
-              <span class="pg-domain-dot" style="background:${dp.color || '#888'}"></span>
-              <span class="pg-domain-name">${dp.domain}</span>
-              <span class="pg-domain-score-label${warn ? ' warn' : ''}">${dp.current}%</span>
-              ${delta !== 0 ? `<span class="pg-domain-delta ${deltaClass}">${sign}${delta}</span>` : ''}
-            </div>
-            <div class="sp-domain-track">
-              <div class="sp-domain-fill${warn ? ' warn' : ''}" style="background:${dp.color || '#888'};width:${fillW}%"></div>
-            </div>
-            <div class="pg-domain-sub">
-              <span>Baseline: ${dp.baseline}%</span>
-              <span>Target: ${dp.target}%</span>
-            </div>
-          </div>`;
-        }).join('');
-      }
-    }
-
-    /* ── Diagnostic score ── */
-    if (data.diagnostic && data.diagnostic.latestScore != null) {
-      const score = data.diagnostic.latestScore;
-      set('pf-diag-score', score);
-      set('pf-diag-stat',  score + '%');
-
-      const gapFill = document.getElementById('pf-gap-fill');
-      if (gapFill) setTimeout(() => { gapFill.style.width = score + '%'; }, 350);
-
-      const gapBadge = document.getElementById('pf-gap-badge');
-      if (gapBadge) {
-        const gap = 80 - score;
-        if (gap > 0) {
-          gapBadge.textContent = gap + ' pts to passing';
-        } else {
-          gapBadge.textContent          = 'Passing score achieved \uD83C\uDF89';
-          gapBadge.style.background     = 'rgba(74,222,128,0.1)';
-          gapBadge.style.color          = '#4ade80';
-          gapBadge.style.borderColor    = 'rgba(74,222,128,0.3)';
-        }
-      }
-
-      /* Domain bars */
-      if (data.diagnostic.domainScores) {
-        data.diagnostic.domainScores.forEach(({ domain, score: s }) => {
-          const bar   = document.querySelector(`.msc-bar-fill[data-domain="${domain}"]`);
-          const label = document.querySelector(`.mbar-val[data-domain="${domain}"]`);
-          if (bar) {
-            bar.classList.toggle('warn', s < 70);
-            setTimeout(() => { bar.style.width = s + '%'; }, 350);
-          }
-          if (label) {
-            label.textContent = s + '%';
-            label.classList.toggle('warn', s < 70);
-            label.classList.toggle('good', s >= 70);
-          }
-        });
-      }
-    }
-    /* ── Weekly study schedule from study plan ── */
-    try {
-      const sr = await fetch('/reviewee/api/study-plan');
-      if (sr.ok) {
-        const sp = await sr.json();
-        const schedCard = document.getElementById('pf-schedule-card');
-        const schedGrid = document.getElementById('pf-schedule-grid');
-        const schedSub  = document.getElementById('pf-schedule-sub');
-        if (sp && sp.dailyTasks && schedCard && schedGrid) {
-          schedCard.style.display = '';
-          const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-          const tasks = sp.dailyTasks;
-          if (schedSub && sp.examDate) {
-            const exam = new Date(sp.examDate);
-            schedSub.textContent = `Week ${sp.currentWeek || 1} of ${sp.totalWeeks || '—'} · Exam: ${exam.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })}`;
-          }
-          if (Array.isArray(tasks)) {
-            schedGrid.innerHTML = tasks.map((task, i) => {
-              const day = days[i] || `Day ${i + 1}`;
-              return `<div class="pf-sched-day">
-                <span class="pf-sched-day-label">${day}</span>
-                <div class="pf-sched-task">${Array.isArray(task) ? task.join(', ') : (task || '—')}</div>
-              </div>`;
-            }).join('');
-          } else if (typeof tasks === 'object') {
-            schedGrid.innerHTML = Object.entries(tasks).map(([k, v]) =>
-              `<div class="pf-sched-day">
-                <span class="pf-sched-day-label">${k}</span>
-                <div class="pf-sched-task">${Array.isArray(v) ? v.join(', ') : (v || '—')}</div>
-              </div>`
-            ).join('');
-          }
-        }
-      }
-    } catch (_) {}
-
-  })();
-  </script>
-
-  <script>
-  /* ── Edit Profile Modal ── */
-  (function () {
-    const overlay    = document.getElementById('ep-overlay');
-    const form       = document.getElementById('ep-form');
-    const inFN       = document.getElementById('ep-firstname');
-    const inLN       = document.getElementById('ep-lastname');
-    const inEmail    = document.getElementById('ep-email');
-    const inLevel    = document.getElementById('ep-level');
-    const saveText   = document.getElementById('ep-save-text');
-    const saveSpinner = document.getElementById('ep-save-spinner');
-    const toast      = document.getElementById('ep-toast');
-    const toastMsg   = document.getElementById('ep-toast-msg');
-    const toastIcon  = toast.querySelector('svg');
-
-    let _profileCache = null; // kept in sync after page load
-
-    /* Public method so the data-fetch IIFE can hand off the user object */
-    window.__setProfileCache = function (u) { _profileCache = u; };
-
-    function openModal () {
-      const u = _profileCache || {};
-      inFN.value    = u.firstName || '';
-      inLN.value    = u.lastName  || '';
-      inEmail.value = u.email     || '';
-      inLevel.value = u.examLevel || 'Professional';
-      const epAv = document.getElementById('ep-modal-avatar');
-      if (epAv) epAv.textContent = (u.firstName ? u.firstName[0] : 'U').toUpperCase();
-      overlay.removeAttribute('hidden');
-      setTimeout(() => inFN.focus(), 50);
-    }
-
-    function closeModal () { overlay.setAttribute('hidden', ''); }
-
-    function showToast (msg, isError) {
-      toastMsg.textContent  = msg;
-      toastIcon.style.color = isError ? 'var(--fs-pink)' : '#4ade80';
+    /* ── Toast ── */
+    function showToast(msg, isError) {
+      const toast = $('prf-toast');
+      const icon  = $('prf-toast-icon');
+      $('prf-toast-msg').textContent = msg;
+      if (icon) { icon.textContent = isError ? 'error' : 'check_circle'; icon.style.color = isError ? '#ef4444' : '#4ade80'; }
       toast.removeAttribute('hidden');
       requestAnimationFrame(() => {
-        toast.classList.add('show');
+        toast.classList.add('prf-toast--show');
         setTimeout(() => {
-          toast.classList.remove('show');
+          toast.classList.remove('prf-toast--show');
           setTimeout(() => toast.setAttribute('hidden', ''), 300);
-        }, 3200);
+        }, 3000);
       });
     }
 
-    document.getElementById('btn-edit-profile').addEventListener('click', openModal);
-    document.getElementById('ep-close').addEventListener('click', closeModal);
-    document.getElementById('ep-cancel').addEventListener('click', closeModal);
-    const navUserEl = document.getElementById('nav-user');
-    if (navUserEl) navUserEl.addEventListener('click', openModal);
+    /* ── Load ── */
+    let profileData = {};
+    try {
+      const r = await fetch('/reviewee/api/profile');
+      if (!r.ok) throw new Error('load');
+      profileData = await r.json();
+    } catch { return; }
+
+    const { user, batchName, learnerProfile: lp, selfRatings = [], domainThetas = [],
+            readinessScore = 0, streak = 0, examDate } = profileData;
+
+    /* ── Identity ── */
+    if (user) {
+      const initial  = (user.firstName || 'U')[0].toUpperCase();
+      const fullName = user.firstName + ' ' + user.lastName;
+
+      $('prf-avatar').textContent    = initial;
+      $('prf-name').textContent      = fullName;
+      $('prf-email-sub').textContent = user.email;
+
+      set('pf-since',      fmtDate(user.createdAt));
+      set('pf-exam-level', capitalize(user.examLevel));
+      if (lp) {
+        set('pf-id-hours',  lp.study_hours_per_week != null ? lp.study_hours_per_week + ' hrs' : 'Not set');
+        set('pf-id-time',   capitalize(lp.preferred_study_time));
+        set('pf-id-device', capitalize(lp.primary_device));
+      }
+
+      const lvlChip = $('prf-level-chip');
+      if (lvlChip) lvlChip.textContent = capitalize(user.examLevel);
+
+      const batchChip = $('prf-batch-chip');
+      if (batchChip && batchName) { batchChip.textContent = batchName; batchChip.removeAttribute('hidden'); }
+
+      if (streak > 0) {
+        const sc = $('prf-streak-chip');
+        if (sc) { sc.textContent = streak + '-day streak'; sc.removeAttribute('hidden'); }
+      }
+
+      window.__prfCache = { ...user, batchName, lp };
+    }
+
+    /* ── Exam countdown ── */
+    if (examDate) {
+      const d = Math.max(0, Math.ceil((new Date(examDate) - Date.now()) / 86400000));
+      set('prf-days', d);
+      set('pf-exam-date', fmtDate(examDate));
+    }
+
+    /* ── Readiness gauge ── */
+    const gaugeEl = $('prf-gauge-chart');
+    if (gaugeEl) {
+      const pct   = readinessScore;
+      const isDark = () => document.documentElement.dataset.theme === 'dark';
+      const color = pct >= 80 ? '#4ade80' : pct >= 60 ? '#fb923c' : '#f87171';
+      const track = isDark() ? 'rgba(255,255,255,0.07)' : 'rgba(15,23,42,0.07)';
+      new Chart(gaugeEl, {
+        type: 'doughnut',
+        data: { datasets: [{ data: [Math.max(pct,0), Math.max(100-pct,0)], backgroundColor: [color, track], borderWidth: 0, hoverOffset: 0 }] },
+        options: { rotation: -90, circumference: 360, cutout: '76%', responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false }, tooltip: { enabled: false } }, animation: { duration: 1200, easing: 'easeInOutQuart' } },
+      });
+      const valEl = $('prf-gauge-val');
+      if (valEl && pct > 0) {
+        let v = 0;
+        const step = () => { v = Math.min(v + Math.max(1, Math.ceil((pct - v) / 12)), pct); valEl.textContent = v; if (v < pct) requestAnimationFrame(step); };
+        requestAnimationFrame(step);
+      }
+      const statusEl = $('prf-readiness-status');
+      if (statusEl) {
+        if (pct === 0)      statusEl.textContent = 'Complete the diagnostic to see your score.';
+        else if (pct >= 80) { statusEl.textContent = 'Above passing threshold'; statusEl.style.color = '#4ade80'; }
+        else if (pct >= 60) statusEl.textContent = `${80 - pct} pts below passing`;
+        else                statusEl.textContent = `${80 - pct} pts to reach 80%`;
+      }
+    }
+
+
+    /* ── Domain ratings table ── */
+    const ratingsTable = $('prf-ratings-table');
+    if (ratingsTable) {
+      const thetaMap  = Object.fromEntries(domainThetas.map(t => [t.domain, t.theta]));
+      const ratingMap = Object.fromEntries(selfRatings.map(r => [r.domain, r.rating]));
+      const allDomains = [...new Set([...selfRatings.map(r => r.domain), ...domainThetas.map(t => t.domain)])];
+
+      if (!allDomains.length) {
+        ratingsTable.innerHTML = `<div class="prf-ratings-empty"><span class="material-symbols-outlined">bar_chart</span><p>Complete the onboarding to see your domain ratings and performance data.</p></div>`;
+      } else {
+        const thetaToPercent = t => Math.max(0, Math.min(100, Math.round((t - 800) / 8)));
+        const DOMAIN_COLOR = { 'Verbal Ability':'#818cf8','Numerical Ability':'#fb923c','Analytical Ability':'#2dd4bf','Clerical Ability':'#f472b6','General Information':'#60a5fa' };
+
+        ratingsTable.innerHTML = `
+          <div class="prf-rt-head">
+            <span>Domain</span>
+            <span>Self-Rating</span>
+            <span>M-Elo Performance</span>
+            <span>Status</span>
+          </div>
+          ${allDomains.map(domain => {
+            const rating = ratingMap[domain] || 0;
+            const theta  = thetaMap[domain]  || null;
+            const eloPct = theta ? thetaToPercent(theta) : null;
+            const color  = DOMAIN_COLOR[domain] || '#888';
+            const short  = domain.replace(' Ability','');
+            const stars  = Array.from({length:5},(_,i)=>`<span class="prf-star${i<rating?' prf-star--on':''}">★</span>`).join('');
+            let statusTxt='No data', statusCls='muted';
+            if (eloPct !== null) {
+              if (eloPct >= 80)      { statusTxt='Strong';     statusCls='good'; }
+              else if (eloPct >= 60) { statusTxt='On track';   statusCls='ok';   }
+              else                   { statusTxt='Needs work'; statusCls='warn'; }
+            }
+            return `<div class="prf-rt-row">
+              <div class="prf-rt-domain"><span class="prf-rt-dot" style="background:${color}"></span><span>${short}</span></div>
+              <div class="prf-rt-stars" aria-label="${rating} out of 5">${stars}</div>
+              <div class="prf-rt-elo">
+                ${eloPct!==null?`<div class="prf-elo-bar-wrap"><div class="prf-elo-bar-fill" style="width:${eloPct}%;background:${color}"></div></div><span class="prf-elo-pct">${eloPct}%</span>`:'<span class="prf-rt-none">—</span>'}
+              </div>
+              <span class="prf-rt-status prf-rt-status--${statusCls}">${statusTxt}</span>
+            </div>`;
+          }).join('')}`;
+      }
+    }
+
+
+    /* ═══ EDIT MODAL ═══ */
+    const overlay = $('prf-modal-overlay');
+    const form    = $('prf-modal-form');
+
+    function openModal() {
+      const c = window.__prfCache || {};
+      const lpr = c.lp || {};
+      $('ep-firstname').value        = c.firstName || '';
+      $('ep-lastname').value         = c.lastName  || '';
+      $('ep-email-locked').textContent = c.email   || '—';
+      $('ep-level-locked').textContent = capitalize(c.examLevel) || '—';
+      $('ep-hours').value  = lpr.study_hours_per_week != null ? lpr.study_hours_per_week : '';
+      $('ep-time').value   = lpr.preferred_study_time || '';
+      $('ep-device').value = lpr.primary_device       || '';
+      overlay.removeAttribute('hidden');
+      setTimeout(() => $('ep-firstname').focus(), 50);
+    }
+    function closeModal() { overlay.setAttribute('hidden', ''); }
+
+    $('btn-edit-profile').addEventListener('click', openModal);
+    $('prf-modal-close').addEventListener('click',  closeModal);
+    $('prf-modal-cancel').addEventListener('click', closeModal);
     overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !overlay.hidden) closeModal(); });
 
     form.addEventListener('submit', async e => {
       e.preventDefault();
-      saveText.hidden    = true;
-      saveSpinner.hidden = false;
+      $('ep-save-text').hidden = true;
+      $('ep-save-spin').removeAttribute('hidden');
 
       const payload = {
-        firstName: inFN.value.trim(),
-        lastName:  inLN.value.trim(),
-        email:     inEmail.value.trim(),
-        examLevel: inLevel.value,
+        firstName:          $('ep-firstname').value.trim(),
+        lastName:           $('ep-lastname').value.trim(),
+        studyHours:         $('ep-hours').value ? Number($('ep-hours').value) : null,
+        preferredStudyTime: $('ep-time').value  || null,
+        primaryDevice:      $('ep-device').value || null,
       };
 
       try {
         const r = await fetch('/reviewee/api/profile/update', {
-          method:  'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify(payload),
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
         });
-
         const result = await r.json();
+        if (!r.ok) { showToast(result.error || 'Update failed.', true); return; }
 
-        if (!r.ok) {
-          showToast(result.error || 'Update failed.', true);
-          return;
-        }
-
-        const u        = result.user;
+        const u = result.user;
         const fullName = u.firstName + ' ' + u.lastName;
         const initial  = u.firstName[0].toUpperCase();
 
-        /* Update profile card */
-        const setEl = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-        const pfAvatar      = document.getElementById('profile-avatar');
-        const epModalAvatar = document.getElementById('ep-modal-avatar');
-        if (pfAvatar)      pfAvatar.textContent      = initial;
-        if (epModalAvatar) epModalAvatar.textContent = initial;
-        setEl('profile-name',    fullName);
-        setEl('profile-email',   u.email);
-        setEl('pf-fullname',     fullName);
-        setEl('pf-email',        u.email);
-        setEl('pf-level',        u.examLevel);
-        setEl('pf-exam-level',   u.examLevel);
-        const lvlChip  = document.getElementById('profile-level-chip');
-        const lvlBadge = document.getElementById('ph-level-badge');
-        if (lvlChip)  lvlChip.textContent  = u.examLevel;
-        if (lvlBadge) lvlBadge.textContent = u.examLevel;
+        $('prf-avatar').textContent    = initial;
+        $('prf-name').textContent      = fullName;
 
-        /* Update navbar */
+        const h = payload.studyHours;
+        set('pf-id-hours',  h != null ? h + ' hrs' : 'Not set');
+        set('pf-id-time',   capitalize(payload.preferredStudyTime));
+        set('pf-id-device', capitalize(payload.primaryDevice));
+
         const navName   = document.getElementById('nav-user-name');
-        const navEmail  = document.getElementById('nav-user-email');
         const navAvatar = document.getElementById('nav-avatar');
         if (navName)   navName.textContent   = fullName;
-        if (navEmail)  navEmail.textContent  = u.email;
         if (navAvatar) navAvatar.textContent = initial;
 
-        /* Sync cache so re-opening the modal shows fresh values */
-        _profileCache = u;
+        window.__prfCache = { ...window.__prfCache, ...u, lp: { ...((window.__prfCache||{}).lp||{}), study_hours_per_week: payload.studyHours, preferred_study_time: payload.preferredStudyTime, primary_device: payload.primaryDevice } };
 
         closeModal();
-        showToast('Profile updated successfully!');
-
-      } catch (_) {
-        showToast('Network error. Please try again.', true);
-      } finally {
-        saveText.hidden    = false;
-        saveSpinner.hidden = true;
+        showToast('Profile updated successfully.');
+      } catch { showToast('Network error. Please try again.', true); }
+      finally {
+        $('ep-save-text').hidden = false;
+        $('ep-save-spin').setAttribute('hidden', '');
       }
     });
+
   })();
   </script>
 
+  <%- include('../partials/enrollment-code-modal') %>
+  <script src="/js/toast-notifications.js"></script>
 </body>
 </html>

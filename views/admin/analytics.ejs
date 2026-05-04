@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Analytics | Hauers Admin</title>
+  <title>Reports &amp; Analytics | Hauers Admin</title>
   <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
   <link rel="stylesheet" href="/css/base.css">
   <link rel="stylesheet" href="/css/dashboard.css">
   <script src="/js/theme-toggle.js"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block">
 </head>
 <body data-role="admin">
 
@@ -17,171 +18,182 @@
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
     <div id="sidebar-placeholder"><%- include('../partials/admin-sidebar') %></div>
 
-    <main class="page-content">
+    <main class="page-content home-page">
 
-      <!-- ── Page header ── -->
-      <header class="page-header">
+      <header class="page-header ra-page-header">
         <div>
-          <h1 class="page-title">Analytics</h1>
-
+          <h1 class="page-title">Reports &amp; analytics</h1>
+          <p class="pf-sub">Privacy-safe cohort insights. This page shows aggregates only — no individual identities.</p>
+        </div>
+        <div class="ra-header-actions">
+          <button type="button" class="home-btn home-btn--ghost" id="ra-refresh">
+            <span class="material-symbols-outlined" aria-hidden="true">refresh</span>
+            Refresh
+          </button>
         </div>
       </header>
 
-      <!-- ── KPI tiles ── -->
-      <div class="dash-grid dash-grid--4col">
-
-        <div class="dash-card admin-kpi-card">
-          <div class="admin-kpi-header">
-            <span class="card-label">Total Users</span>
-            <span class="admin-kpi-icon admin-kpi-icon--blue">
-              <span class="material-symbols-outlined">group</span>
-            </span>
-          </div>
-          <div class="admin-kpi-val" id="an-total-users">—</div>
-          <span class="admin-kpi-delta admin-kpi-delta--up">
-            <span class="material-symbols-outlined" style="font-size:14px">trending_up</span>
-            ↑ 3 new this week
-          </span>
-          <p class="card-sub">registered learners</p>
-        </div>
-
-        <div class="dash-card admin-kpi-card">
-          <div class="admin-kpi-header">
-            <span class="card-label">Active Reviewees</span>
-            <span class="admin-kpi-icon admin-kpi-icon--green">
-              <span class="material-symbols-outlined">person_play</span>
-            </span>
-          </div>
-          <div class="admin-kpi-val" id="an-active">—</div>
-          <span class="admin-kpi-delta admin-kpi-delta--up">
-            <span class="material-symbols-outlined" style="font-size:14px">stat_up</span>
-            ↑ 5 vs last week
-          </span>
-          <p class="card-sub">active this week</p>
-        </div>
-
-        <div class="dash-card admin-kpi-card">
-          <div class="admin-kpi-header">
-            <span class="card-label">Avg Readiness</span>
-            <span class="admin-kpi-icon admin-kpi-icon--orange">
-              <span class="material-symbols-outlined">speed</span>
-            </span>
-          </div>
-          <div class="admin-kpi-val" id="an-readiness">—</div>
-          <span class="admin-kpi-delta admin-kpi-delta--up">
-            <span class="material-symbols-outlined" style="font-size:14px">trending_up</span>
-            ↑ 2pts vs last month
-          </span>
-          <p class="card-sub">platform average</p>
-        </div>
-
-        <div class="dash-card admin-kpi-card">
-          <div class="admin-kpi-header">
-            <span class="card-label">Pass Rate</span>
-            <span class="admin-kpi-icon admin-kpi-icon--pink">
-              <span class="material-symbols-outlined">check_circle</span>
-            </span>
-          </div>
-          <div class="admin-kpi-val" id="an-pass-rate">—</div>
-          <span class="admin-kpi-delta admin-kpi-delta--warn">
-            <span class="material-symbols-outlined" style="font-size:14px">trending_down</span>
-            ↓ 2pts vs last month
-          </span>
-          <p class="card-sub">mock exam passing</p>
-        </div>
-
-      </div>
-
-      <!-- ── Row 2: Domain bars + Radar chart ── -->
-      <div class="dash-grid dash-grid--split21">
-
-        <!-- Domain performance bars -->
-        <div class="dash-card">
-          <span class="card-label">Domain Performance</span>
-          <p class="card-sub">Platform average score per subject area</p>
-          <div id="an-domain-bars" style="margin-top:1rem"></div>
-        </div>
-
-        <!-- Radar chart -->
-        <div class="dash-card analytics-chart-card" style="display:flex;flex-direction:column">
-          <span class="card-label">Domain Radar</span>
-          <p class="card-sub">Comparative coverage across all domains</p>
-          <div class="analytics-chart-wrap" style="flex:1;min-height:240px">
-            <canvas id="radar-chart"></canvas>
+      <div class="home-stats-row ra-kpis" style="margin-bottom: 1.5rem;">
+        <div class="dash-card home-stat-card">
+          <div class="home-stat-ico-wrap home-stat-ico-wrap--blue"><span class="material-symbols-outlined">groups</span></div>
+          <div class="home-stat-copy">
+            <span class="home-stat-value" id="ra-kpi-total">—</span>
+            <span class="home-stat-label">Total reviewees (all batches)</span>
           </div>
         </div>
-
-      </div>
-
-      <!-- ── Row 3: Signup trend (full width) ── -->
-      <div class="dash-card analytics-chart-card" style="display:flex;flex-direction:column;margin-bottom:1.25rem">
-        <span class="card-label">New Signups — Last 6 Months</span>
-        <p class="card-sub">Growth in registered learners month over month</p>
-        <div class="analytics-chart-wrap" style="min-height:220px">
-          <canvas id="signups-chart"></canvas>
+        <div class="dash-card home-stat-card">
+          <div class="home-stat-ico-wrap home-stat-ico-wrap--green"><span class="material-symbols-outlined">task_alt</span></div>
+          <div class="home-stat-copy">
+            <span class="home-stat-value" id="ra-kpi-completion">—</span>
+            <span class="home-stat-label">Diagnostic completion (avg)</span>
+          </div>
+        </div>
+        <div class="dash-card home-stat-card">
+          <div class="home-stat-ico-wrap home-stat-ico-wrap--amber"><span class="material-symbols-outlined">bolt</span></div>
+          <div class="home-stat-copy">
+            <span class="home-stat-value" id="ra-kpi-active">—</span>
+            <span class="home-stat-label">Active rate (7d, avg)</span>
+          </div>
+        </div>
+        <div class="dash-card home-stat-card">
+          <div class="home-stat-ico-wrap"><span class="material-symbols-outlined">speed</span></div>
+          <div class="home-stat-copy">
+            <span class="home-stat-value" id="ra-kpi-readiness">—</span>
+            <span class="home-stat-label">Avg readiness (avg)</span>
+          </div>
         </div>
       </div>
 
-      <!-- ── Row 4: Users by Exam Level ── -->
-      <div class="dash-grid dash-grid--split21">
-
-        <!-- Level bars -->
-        <div class="dash-card">
-          <span class="card-label">Users by Exam Level</span>
-          <p class="card-sub">Distribution of learners across exam tracks</p>
-          <div id="an-level-bars" style="margin-top:1rem"></div>
+      <div class="dash-card pgx-card-history" style="margin-bottom: 2rem;">
+        <div class="pgx-history-top" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem; margin-bottom: 0;">
+          <p class="pgx-section-label pgx-section-label--flush">Cohort performance overview</p>
         </div>
+        <div class="pgx-table-scroll">
+          <table class="pgx-table ra-table">
+            <thead>
+              <tr>
+                <th class="pgx-th">Batch</th>
+                <th class="pgx-th">Exam level</th>
+                <th class="pgx-th pgx-th--r" style="text-align:right;">Total</th>
+                <th class="pgx-th pgx-th--r" style="text-align:right;">Avg readiness</th>
+                <th class="pgx-th pgx-th--r" style="text-align:right;">Completion rate</th>
+                <th class="pgx-th pgx-th--r" style="text-align:right;">Active rate (7d)</th>
+              </tr>
+            </thead>
+            <tbody id="ra-overview-tbody"></tbody>
+          </table>
+        </div>
+      </div>
 
-        <!-- Level doughnut -->
-        <div class="dash-card analytics-chart-card" style="display:flex;flex-direction:column">
-          <span class="card-label">Level Breakdown</span>
-          <p class="card-sub">Share of each exam track</p>
-          <div class="analytics-chart-wrap" style="flex:1;min-height:200px">
-            <canvas id="level-doughnut"></canvas>
+      <div class="pgx-grid-2" style="margin-bottom: 2rem;">
+        <div class="dash-card pgx-card-trend">
+          <div class="pgx-trend-top" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+            <p class="pgx-section-label pgx-section-label--flush">Domain weakness map</p>
+            <p class="pf-muted" style="margin: 0.25rem 0 0; font-size: 0.85rem;">Ranked weakest → strongest by theta</p>
+          </div>
+          <div class="pgx-chart-shell" style="position: relative; height: 300px; width: 100%;">
+            <canvas id="ra-domain-bar"></canvas>
+          </div>
+        </div>
+        <div class="dash-card pgx-card-history">
+          <div class="pgx-history-top" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem; margin-bottom: 0;">
+            <p class="pgx-section-label pgx-section-label--flush">Domain details</p>
+          </div>
+          <div class="pgx-table-scroll">
+            <table class="pgx-table ra-table">
+              <thead>
+                <tr>
+                  <th class="pgx-th">Domain</th>
+                  <th class="pgx-th pgx-th--r" style="text-align:right;">Avg theta</th>
+                  <th class="pgx-th pgx-th--r" style="text-align:right;">% below passing</th>
+                  <th class="pgx-th" style="width:100px;">Trend</th>
+                </tr>
+              </thead>
+              <tbody id="ra-domain-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="pgx-grid-2" style="margin-bottom: 2rem;">
+        <div class="dash-card pgx-card-trend">
+          <div class="pgx-trend-top" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+            <p class="pgx-section-label pgx-section-label--flush">Engagement</p>
+            <p class="pf-muted" style="margin: 0.25rem 0 0; font-size: 0.85rem;">Sessions per day (past 30 days)</p>
+          </div>
+          <div class="pgx-chart-shell" style="position: relative; height: 300px; width: 100%;">
+            <canvas id="ra-sessions-line"></canvas>
+          </div>
+        </div>
+        <div class="dash-card pgx-card-trend">
+          <div class="pgx-trend-top" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+            <p class="pgx-section-label pgx-section-label--flush">Usage patterns</p>
+            <p class="pf-muted" style="margin: 0.25rem 0 0; font-size: 0.85rem;">
+              Avg sessions / active reviewee / week: <strong id="ra-avg-sessions" style="color: var(--text-main);">—</strong>
+            </p>
+          </div>
+          <div class="pgx-chart-shell" style="position: relative; height: 300px; width: 100%;">
+            <canvas id="ra-peak-hours"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-card" style="margin-bottom: 2rem; padding: 1.5rem;">
+        <div class="pgx-history-top" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+          <p class="pgx-section-label pgx-section-label--flush">Diagnostic completion funnel</p>
+        </div>
+        <div class="ra-funnel" id="ra-funnel" style="max-width: 800px; margin: 0 auto;"></div>
+      </div>
+
+      <div class="dash-card" style="margin-bottom: 2rem; padding: 1.5rem;">
+        <div class="ra-compare-head" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+          <div>
+            <p class="pgx-section-label pgx-section-label--flush">Batch comparison</p>
+            <p class="pf-muted" style="margin: 0.25rem 0 0; font-size: 0.85rem;">Compare two batches side-by-side</p>
+          </div>
+          <div class="ra-compare-controls" style="display: flex; gap: 0.5rem; align-items: center;">
+            <select class="bat-input bat-select" id="ra-batch-a" style="min-width: 150px; font-size: 0.85rem; height: 36px; padding: 0 10px;"></select>
+            <select class="bat-input bat-select" id="ra-batch-b" style="min-width: 150px; font-size: 0.85rem; height: 36px; padding: 0 10px;"></select>
+            <button type="button" class="bat-btn-save" id="ra-run-compare" style="height: 36px; font-size: 0.85rem; padding: 0 16px;">Compare</button>
           </div>
         </div>
 
-      </div>
-
-      <!-- ── Row 5: Focus areas + Pass rate + Activity feed ── -->
-      <div class="dash-grid">
-
-        <!-- Weakest domains -->
-        <div class="dash-card">
-          <span class="card-label">Focus Areas</span>
-          <p class="card-sub">Domains where learners score below 65%</p>
-          <div id="an-weak-domains" style="margin-top:1rem;display:flex;flex-wrap:wrap;gap:0.5rem;align-content:flex-start"></div>
-          <p id="an-weak-tip" style="font-size:0.78rem;color:var(--text-subdued);margin-top:auto;padding-top:0.85rem;border-top:1px solid var(--border-subdued)"></p>
-        </div>
-
-        <!-- Pass rate progress -->
-        <div class="dash-card">
-          <span class="card-label">Mock Exam Pass Rate</span>
-          <p class="card-sub">Share of users scoring &ge; 70% on mock exams</p>
-          <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0.75rem 0">
-            <div style="position:relative;display:inline-flex;align-items:center;justify-content:center">
-              <svg width="130" height="130" viewBox="0 0 100 100" style="transform:rotate(-90deg)">
-                <circle cx="50" cy="50" r="40" fill="none" stroke="var(--border-subdued)" stroke-width="9"/>
-                <circle id="an-pass-ring" cx="50" cy="50" r="40" fill="none"
-                  stroke="#FF9933" stroke-width="9" stroke-linecap="round"
-                  stroke-dasharray="251.33" stroke-dashoffset="251.33"
-                  style="transition:stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1)"/>
-              </svg>
-              <div style="position:absolute;text-align:center">
-                <div id="an-pass-ring-val" style="font-size:1.75rem;font-weight:800;color:var(--text-main)">—</div>
-              </div>
+        <div class="pgx-grid-2" style="margin-bottom: 2rem; gap: 1.5rem;">
+          <div class="dash-card" style="background: var(--bg-inset); padding: 1.5rem; border: 1px solid var(--border-subtle); box-shadow: none;">
+            <p class="pgx-section-label" id="ra-a-title" style="margin-bottom: 1rem; font-size: 1.1rem; color: var(--text-main);">Batch A</p>
+            <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px dashed var(--border-subtle);">
+              <span style="color: var(--text-subdued); font-size: 0.9rem;">Avg readiness</span>
+              <b id="ra-a-readiness" style="font-size: 0.9rem;">—</b>
             </div>
-            <p style="margin-top:0.75rem;font-size:0.8rem;color:var(--text-subdued)" id="an-pass-label"></p>
+            <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px dashed var(--border-subtle);">
+              <span style="color: var(--text-subdued); font-size: 0.9rem;">Completion rate</span>
+              <b id="ra-a-completion" style="font-size: 0.9rem;">—</b>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 0.5rem 0;">
+              <span style="color: var(--text-subdued); font-size: 0.9rem;">Active (7d)</span>
+              <b id="ra-a-active" style="font-size: 0.9rem;">—</b>
+            </div>
+          </div>
+          <div class="dash-card" style="background: var(--bg-inset); padding: 1.5rem; border: 1px solid var(--border-subtle); box-shadow: none;">
+            <p class="pgx-section-label" id="ra-b-title" style="margin-bottom: 1rem; font-size: 1.1rem; color: var(--text-main);">Batch B</p>
+            <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px dashed var(--border-subtle);">
+              <span style="color: var(--text-subdued); font-size: 0.9rem;">Avg readiness</span>
+              <b id="ra-b-readiness" style="font-size: 0.9rem;">—</b>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px dashed var(--border-subtle);">
+              <span style="color: var(--text-subdued); font-size: 0.9rem;">Completion rate</span>
+              <b id="ra-b-completion" style="font-size: 0.9rem;">—</b>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 0.5rem 0;">
+              <span style="color: var(--text-subdued); font-size: 0.9rem;">Active (7d)</span>
+              <b id="ra-b-active" style="font-size: 0.9rem;">—</b>
+            </div>
           </div>
         </div>
 
-        <!-- Recent activity -->
-        <div class="dash-card">
-          <span class="card-label">Recent Activity</span>
-          <p class="card-sub">Latest platform events</p>
-          <div class="activity-feed" id="an-activity" style="margin-top:0.75rem"></div>
+        <div class="analytics-chart-wrap" style="position: relative; height: 350px; width: 100%;">
+          <canvas id="ra-compare-domains"></canvas>
         </div>
-
       </div>
 
     </main>
@@ -191,247 +203,232 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" crossorigin="anonymous"></script>
   <script src="/js/admin-shell.js"></script>
   <script>
-  (async () => {
-
-    /* ── Fetch dashboard data ────────────────────────────── */
-    let data;
-    try {
-      const r = await fetch('/admin/api/dashboard');
-      if (!r.ok) return;
-      data = await r.json();
-    } catch (_) { return; }
-
-    /* ── KPI tiles ───────────────────────────────────────── */
-    const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-    setVal('an-total-users', data.totalUsers);
-    setVal('an-active',      data.activeReviewees);
-    setVal('an-readiness',   data.avgReadiness + '%');
-    setVal('an-pass-rate',   data.passRate + '%');
-
-    /* ── Chart.js theme-aware colors ─────────────────────── */
+  (function () {
     const isDark  = () => document.documentElement.getAttribute('data-theme') !== 'light';
     const gridCol = () => isDark() ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)';
     const lblCol  = () => isDark() ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)';
 
-    /* ── Domain performance bars ─────────────────────────── */
-    const domainBarsEl = document.getElementById('an-domain-bars');
-    if (domainBarsEl && data.domainAverages) {
-      domainBarsEl.innerHTML = data.domainAverages.map(({ domain, avg }) => {
-        const valCls  = avg >= 70 ? ' good' : avg < 60 ? ' warn' : '';
-        const fillCls = avg < 60  ? ' warn' : '';
-        return `
-          <div class="msc-bar-item">
-            <div class="msc-bar-label">
-              <span>${domain}</span>
-              <span class="mbar-val${valCls}">${avg}%</span>
-            </div>
-            <div class="msc-bar-track">
-              <div class="msc-bar-fill${fillCls}" data-bw="${avg}"
-                style="width:0%;transition:width 1.1s cubic-bezier(0.4,0,0.2,1)"></div>
-            </div>
-          </div>`;
-      }).join('');
-      setTimeout(() => {
-        domainBarsEl.querySelectorAll('.msc-bar-fill[data-bw]').forEach(b => {
-          b.style.width = b.dataset.bw + '%';
-        });
-      }, 300);
-    }
+    let domainBar = null;
+    let sessionsLine = null;
+    let peakHours = null;
+    let compareDomains = null;
 
-    /* ── Radar chart ─────────────────────────────────────── */
-    const radarCanvas = document.getElementById('radar-chart');
-    if (radarCanvas && data.domainAverages) {
-      const labels = data.domainAverages.map(d => d.domain.replace(' Ability', ''));
-      const values = data.domainAverages.map(d => d.avg);
-      new Chart(radarCanvas, {
-        type: 'radar',
-        data: {
-          labels,
-          datasets: [{
-            label: 'Avg Score',
-            data: values,
-            fill: true,
-            backgroundColor: 'rgba(255,153,51,0.12)',
-            borderColor:     '#FF9933',
-            pointBackgroundColor: '#FF9933',
-            pointBorderColor:     '#fff',
-            pointHoverBackgroundColor: '#fff',
-            pointHoverBorderColor:     '#FF9933',
-            borderWidth: 2,
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            r: {
-              beginAtZero: true,
-              max: 100,
-              ticks:    { display: false, stepSize: 25 },
-              grid:     { color: gridCol() },
-              angleLines:{ color: gridCol() },
-              pointLabels: {
-                color:    lblCol(),
-                font:     { size: 11 },
-              },
-            }
-          },
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              callbacks: { label: ctx => ' ' + ctx.raw + '%' }
-            }
-          }
-        }
-      });
-    }
+    function setText(id, v) { const el = document.getElementById(id); if (el) el.textContent = v; }
+    function fmtPct(v) { return (v == null ? '—' : String(v) + '%'); }
+    function fmtTheta(v) { return v == null ? '—' : String(v); }
+    function esc(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;'); }
 
-    /* ── Signup trend (mock monthly data) ────────────────── */
-    const signupsCanvas = document.getElementById('signups-chart');
-    if (signupsCanvas) {
-      const months  = ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
-      const signups = [8, 14, 11, 19, 22, data.recentSignups || 14];
-      new Chart(signupsCanvas, {
-        type: 'bar',
-        data: {
-          labels: months,
-          datasets: [{
-            label: 'New Signups',
-            data: signups,
-            backgroundColor: 'rgba(255,153,51,0.75)',
-            borderRadius: 6,
-            borderSkipped: false,
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            x: { grid: { display: false }, ticks: { color: lblCol() } },
-            y: { grid: { color: gridCol() }, ticks: { color: lblCol(), precision: 0 }, beginAtZero: true },
-          },
-          plugins: {
-            legend: { display: false },
-          }
-        }
-      });
-    }
+    async function loadOverview() {
+      const r = await fetch('/admin/api/reports/overview');
+      if (!r.ok) throw new Error('overview');
+      const d = await r.json();
+      const batches = Array.isArray(d.batches) ? d.batches : [];
+      const total = batches.reduce((s, b) => s + (b.total_reviewees || 0), 0);
+      const avgCompletion = batches.length ? Math.round(batches.reduce((s, b) => s + (b.completion_rate || 0), 0) / batches.length) : 0;
+      const avgActive = batches.length ? Math.round(batches.reduce((s, b) => s + (b.active_rate_7d || 0), 0) / batches.length) : 0;
+      const avgReadiness = batches.length ? Math.round(batches.reduce((s, b) => s + (b.avg_readiness || 0), 0) / batches.length) : 0;
 
-    /* ── Level split bars ────────────────────────────────── */
-    const levelBarsEl = document.getElementById('an-level-bars');
-    if (levelBarsEl && data.usersByLevel) {
-      levelBarsEl.innerHTML = data.usersByLevel.map(({ level, count }) => {
-        const pct = Math.round((count / data.totalUsers) * 100);
-        return `
-          <div class="msc-bar-item">
-            <div class="msc-bar-label">
-              <span>${level}</span>
-              <span class="mbar-val">${count} <span style="opacity:0.5;font-weight:400">(${pct}%)</span></span>
-            </div>
-            <div class="msc-bar-track">
-              <div class="msc-bar-fill" data-bw="${pct}"
-                style="width:0%;transition:width 1.1s cubic-bezier(0.4,0,0.2,1)"></div>
-            </div>
-          </div>`;
-      }).join('');
-      setTimeout(() => {
-        levelBarsEl.querySelectorAll('.msc-bar-fill[data-bw]').forEach(b => {
-          b.style.width = b.dataset.bw + '%';
-        });
-      }, 350);
-    }
+      setText('ra-kpi-total', total);
+      setText('ra-kpi-completion', fmtPct(avgCompletion));
+      setText('ra-kpi-active', fmtPct(avgActive));
+      setText('ra-kpi-readiness', fmtPct(avgReadiness));
 
-    /* ── Level doughnut chart ────────────────────────────── */
-    const doughnutCanvas = document.getElementById('level-doughnut');
-    if (doughnutCanvas && data.usersByLevel) {
-      const labels = data.usersByLevel.map(d => d.level);
-      const values = data.usersByLevel.map(d => d.count);
-      new Chart(doughnutCanvas, {
-        type: 'doughnut',
-        data: {
-          labels,
-          datasets: [{
-            data: values,
-            backgroundColor: ['#FF9933', '#FF3366', '#818cf8'],
-            borderColor:     'transparent',
-            hoverOffset:     8,
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          cutout: '65%',
-          plugins: {
-            legend: {
-              position: 'bottom',
-              labels: {
-                color:     lblCol(),
-                boxWidth:  12,
-                padding:   14,
-                font:      { size: 12 },
-              }
-            },
-            tooltip: {
-              callbacks: {
-                label: ctx => ' ' + ctx.label + ': ' + ctx.raw + ' users',
-              }
-            }
-          }
-        }
-      });
-    }
+      const tb = document.getElementById('ra-overview-tbody');
+      tb.innerHTML = batches.length ? batches.map(b => `
+        <tr>
+          <td style="font-weight:600">${esc(b.batch_name || '—')}</td>
+          <td style="color:var(--text-subdued);font-size:0.85rem">${esc(b.exam_level || '—')}</td>
+          <td style="text-align:right">${b.total_reviewees || 0}</td>
+          <td style="text-align:right">${b.avg_readiness == null ? '—' : (Math.round(b.avg_readiness) + '%')}</td>
+          <td style="text-align:right">${Math.round(b.completion_rate || 0)}%</td>
+          <td style="text-align:right">${Math.round(b.active_rate_7d || 0)}%</td>
+        </tr>
+      `).join('') : `<tr><td colspan="6" class="bat-empty-cell" style="text-align:center; padding:2rem 0; color:var(--text-subdued)">No batches found.</td></tr>`;
 
-    /* ── Focus areas (weak domains) ───────────────── */
-    const weakEl = document.getElementById('an-weak-domains');
-    const weakTip = document.getElementById('an-weak-tip');
-    if (weakEl && data.domainAverages) {
-      const weak = data.domainAverages.filter(d => d.avg < 65);
-      if (weak.length) {
-        weakEl.innerHTML = weak.map(d => `
-          <span style="display:inline-flex;align-items:center;gap:0.35rem;padding:0.3rem 0.7rem;
-            background:rgba(255,51,102,0.08);border:1px solid rgba(255,51,102,0.2);
-            border-radius:99px;font-size:0.78rem;font-weight:600;color:var(--fs-pink)">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
-            ${d.domain.replace(' Ability','')}&nbsp;${d.avg}%
-          </span>`).join('');
-        if (weakTip) weakTip.textContent = 'These areas need more practice content and targeted exercises.';
-      } else {
-        weakEl.innerHTML = '<span style="font-size:0.85rem;color:var(--text-subdued)">All domains are performing well!</span>';
+      const ba = document.getElementById('ra-batch-a');
+      const bb = document.getElementById('ra-batch-b');
+      const opts = batches.map(b => `<option value="${b.batch_id}">${esc(b.batch_name)}</option>`).join('');
+      ba.innerHTML = opts || '<option value="">No batches</option>';
+      bb.innerHTML = opts || '<option value="">No batches</option>';
+      if (batches.length >= 2) {
+        ba.value = String(batches[0].batch_id);
+        bb.value = String(batches[1].batch_id);
       }
     }
 
-    /* ── Pass rate ring ──────────────────────── */
-    if (data.passRate != null) {
-      setVal('an-pass-ring-val', data.passRate + '%');
-      const passLabel = document.getElementById('an-pass-label');
-      if (passLabel) passLabel.textContent = Math.round(data.totalUsers * data.passRate / 100) + ' of ' + data.totalUsers + ' users passing';
-      setTimeout(() => {
-        const ring = document.getElementById('an-pass-ring');
-        if (ring) {
-          const offset = 251.33 - (data.passRate / 100) * 251.33;
-          ring.style.strokeDashoffset = offset;
-          const col = data.passRate >= 60 ? '#4ade80' : data.passRate >= 40 ? '#FF9933' : '#FF3366';
-          ring.style.stroke = col;
-        }
-      }, 400);
+    async function loadDomains() {
+      const r = await fetch('/admin/api/reports/domains');
+      if (!r.ok) throw new Error('domains');
+      const d = await r.json();
+      const rows = Array.isArray(d.domains) ? d.domains : [];
+
+      const ctx = document.getElementById('ra-domain-bar')?.getContext('2d');
+      if (ctx) {
+        if (domainBar) domainBar.destroy();
+        domainBar = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: rows.map(r => r.domain),
+            datasets: [{
+              data: rows.map(r => r.avg_theta || 0),
+              backgroundColor: rows.map((_, i) => i < 2 ? 'rgba(255,51,102,0.55)' : 'rgba(37,99,235,0.45)'),
+              borderRadius: 10,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { grid: { color: gridCol() }, ticks: { color: lblCol() } },
+              y: { grid: { color: gridCol() }, ticks: { color: lblCol() } },
+            }
+          }
+        });
+      }
+
+      const tb = document.getElementById('ra-domain-tbody');
+      const trendLabel = (t) => t === 'improving' ? 'Improving' : t === 'declining' ? 'Declining' : 'Flat';
+      tb.innerHTML = rows.length ? rows.map(r => `
+        <tr>
+          <td style="font-weight:600">${esc(r.domain)}</td>
+          <td style="text-align:right">${fmtTheta(r.avg_theta)}</td>
+          <td style="text-align:right">${r.below_passing_pct}%</td>
+          <td><span class="bat-status-pill ${r.trend==='improving'?'bat-st--active':r.trend==='declining'?'bat-st--closed':'bat-st--draft'}">${trendLabel(r.trend)}</span></td>
+        </tr>
+      `).join('') : `<tr><td colspan="4" class="bat-empty-cell" style="text-align:center; padding:2rem 0; color:var(--text-subdued)">No domain data.</td></tr>`;
     }
 
-    /* ── Recent activity feed ───────────────── */
-    const actEl = document.getElementById('an-activity');
-    if (actEl && data.recentActivity) {
-      const icons = { signup: 'person_add', diagnostic: 'monitor_heart', quiz: 'quiz' };
-      actEl.innerHTML = data.recentActivity.map(item => `
-        <div class="activity-item">
-          <span class="activity-icon activity-icon--${item.type}">
-            <span class="material-symbols-outlined" style="font-size:15px;line-height:1;font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 20">${icons[item.type] || 'info'}</span>
-          </span>
-          <div class="activity-body">
-            <p class="activity-text">${item.text}</p>
-            <span class="activity-time">${item.time}</span>
+    async function loadEngagement() {
+      const r = await fetch('/admin/api/reports/engagement');
+      if (!r.ok) throw new Error('engagement');
+      const d = await r.json();
+      const pts = Array.isArray(d.sessionsPerDay) ? d.sessionsPerDay : [];
+      const hours = Array.isArray(d.peakHours) ? d.peakHours : [];
+      setText('ra-avg-sessions', d.avgSessionsPerActivePerWeek != null ? String(d.avgSessionsPerActivePerWeek) : '—');
+
+      const ctx = document.getElementById('ra-sessions-line')?.getContext('2d');
+      if (ctx) {
+        if (sessionsLine) sessionsLine.destroy();
+        sessionsLine = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: pts.map(p => p.day),
+            datasets: [{
+              data: pts.map(p => p.sessions),
+              borderColor: '#2563eb',
+              backgroundColor: 'rgba(37,99,235,0.12)',
+              fill: true,
+              tension: 0.35,
+              pointRadius: 2,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { grid: { color: gridCol() }, ticks: { color: lblCol(), maxRotation: 0, autoSkip: true } },
+              y: { grid: { color: gridCol() }, ticks: { color: lblCol() } },
+            }
+          }
+        });
+      }
+
+      const hctx = document.getElementById('ra-peak-hours')?.getContext('2d');
+      if (hctx) {
+        if (peakHours) peakHours.destroy();
+        peakHours = new Chart(hctx, {
+          type: 'bar',
+          data: {
+            labels: hours.map(h => String(h.hour)),
+            datasets: [{ data: hours.map(h => h.sessions), backgroundColor: 'rgba(255,153,51,0.55)', borderRadius: 10 }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { grid: { color: gridCol() }, ticks: { color: lblCol() } },
+              y: { grid: { color: gridCol() }, ticks: { color: lblCol() } },
+            }
+          }
+        });
+      }
+    }
+
+    async function loadFunnel() {
+      const r = await fetch('/admin/api/reports/funnel');
+      if (!r.ok) throw new Error('funnel');
+      const d = await r.json();
+      const stages = Array.isArray(d.stages) ? d.stages : [];
+      const host = document.getElementById('ra-funnel');
+      host.innerHTML = stages.length ? stages.map((s, idx) => `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding: 0.75rem 1rem; border: 1px solid var(--border-subtle); margin-bottom: 0.5rem; border-radius: 6px; background: var(--bg-main);">
+          <div style="display:flex; align-items:center; gap: 1rem;">
+            <div style="background:var(--bg-inset); color:var(--text-subdued); width:28px; height:28px; display:flex; align-items:center; justify-content:center; border-radius:50%; font-weight:700; font-size:0.85rem;">${idx + 1}</div>
+            <span style="font-weight:600; color:var(--text-main);">${esc(s.label)}</span>
+            <span style="background: rgba(37,99,235,0.1); color: #2563eb; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: 700;">${s.count}</span>
           </div>
-        </div>`).join('');
+          <div>
+            ${idx === 0 ? '' : `<span style="color:var(--text-subdued); font-size: 0.85rem;">Drop-off: <strong style="color: #ef4444;">${s.dropOffPct}%</strong></span>`}
+          </div>
+        </div>
+      `).join('') : '<p class="bat-empty-cell" style="text-align:center; padding:2rem 0; color:var(--text-subdued)">No funnel data.</p>';
     }
 
+    async function runCompare() {
+      const a = document.getElementById('ra-batch-a').value;
+      const b = document.getElementById('ra-batch-b').value;
+      if (!a || !b || a === b) return;
+      const r = await fetch(`/admin/api/reports/compare?a=${encodeURIComponent(a)}&b=${encodeURIComponent(b)}`);
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) { alert(d.error || 'Compare failed'); return; }
+      document.getElementById('ra-a-title').textContent = d.a.name;
+      document.getElementById('ra-b-title').textContent = d.b.name;
+      setText('ra-a-readiness', fmtPct(d.a.metrics?.avg_readiness));
+      setText('ra-a-completion', fmtPct(d.a.metrics?.completion_rate));
+      setText('ra-a-active', fmtPct(d.a.metrics?.active_rate_7d));
+      setText('ra-b-readiness', fmtPct(d.b.metrics?.avg_readiness));
+      setText('ra-b-completion', fmtPct(d.b.metrics?.completion_rate));
+      setText('ra-b-active', fmtPct(d.b.metrics?.active_rate_7d));
+
+      const labels = Array.from(new Set([...(d.a.domains||[]).map(x=>x.domain), ...(d.b.domains||[]).map(x=>x.domain)]));
+      const aMap = new Map((d.a.domains||[]).map(x=>[x.domain,x.avg_theta||0]));
+      const bMap = new Map((d.b.domains||[]).map(x=>[x.domain,x.avg_theta||0]));
+      const ctx = document.getElementById('ra-compare-domains')?.getContext('2d');
+      if (ctx) {
+        if (compareDomains) compareDomains.destroy();
+        compareDomains = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [
+              { label: d.a.name, data: labels.map(l=>aMap.get(l)||0), backgroundColor:'rgba(37,99,235,0.45)', borderRadius: 10 },
+              { label: d.b.name, data: labels.map(l=>bMap.get(l)||0), backgroundColor:'rgba(45,212,191,0.45)', borderRadius: 10 },
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position:'bottom', labels: { color: lblCol(), boxWidth: 10 } } },
+            scales: {
+              x: { grid: { color: gridCol() }, ticks: { color: lblCol() } },
+              y: { grid: { color: gridCol() }, ticks: { color: lblCol() } },
+            }
+          }
+        });
+      }
+    }
+
+    async function loadAll() {
+      await loadOverview();
+      await Promise.all([loadDomains(), loadEngagement(), loadFunnel()]);
+    }
+
+    document.getElementById('ra-run-compare')?.addEventListener('click', runCompare);
+    document.getElementById('ra-refresh')?.addEventListener('click', () => loadAll().catch(()=>{}));
+    loadAll().catch(() => {});
   })();
   </script>
 

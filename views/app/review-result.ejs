@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session Result | Hauers</title>
+  <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <script src="/js/theme-toggle.js"></script>
+</head>
+<body data-role="reviewee">
+
+  <div id="navbar-placeholder"><%- include('../partials/navbar') %></div>
+
+  <div class="app-shell">
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div id="sidebar-placeholder"><%- include('../partials/sidebar') %></div>
+
+    <main class="page-content">
+
+      <!-- Loading -->
+      <div class="rr-loading" id="rr-loading">
+        <div class="rr-loading-spinner"></div>
+        <p>Loading results…</p>
+      </div>
+
+      <!-- Error -->
+      <div class="rr-error" id="rr-error" hidden>
+        <span class="material-symbols-outlined" style="font-size:2.5rem;color:var(--text-subdued)">error</span>
+        <p>Could not load session results.</p>
+        <a href="/reviewee/review" class="cta-pill" style="margin-top:1rem">Back to Review</a>
+      </div>
+
+      <!-- Results content -->
+      <div id="rr-content" hidden>
+
+        <header class="page-header">
+          <h1 class="page-title">Session Result</h1>
+        </header>
+
+        <!-- Score hero -->
+        <div class="dash-card rr-hero">
+          <div class="rr-hero-score-wrap">
+            <div class="rr-score-ring" id="rr-score-ring">
+              <svg viewBox="0 0 120 120" class="rr-ring-svg">
+                <circle class="rr-ring-track" cx="60" cy="60" r="50"/>
+                <circle class="rr-ring-fill" id="rr-ring-fill" cx="60" cy="60" r="50"
+                  stroke-dasharray="314.16" stroke-dashoffset="314.16"/>
+              </svg>
+              <div class="rr-score-center">
+                <span class="rr-score-pct" id="rr-score-pct">—%</span>
+                <span class="rr-score-label">Score</span>
+              </div>
+            </div>
+            <div class="rr-hero-stats">
+              <div class="rr-stat">
+                <span class="rr-stat-val" id="rr-stat-correct">—</span>
+                <span class="rr-stat-key">Correct</span>
+              </div>
+              <div class="rr-stat">
+                <span class="rr-stat-val" id="rr-stat-total">—</span>
+                <span class="rr-stat-key">Questions</span>
+              </div>
+              <div class="rr-stat">
+                <span class="rr-stat-val" id="rr-stat-time">—</span>
+                <span class="rr-stat-key">Duration</span>
+              </div>
+            </div>
+          </div>
+          <div class="rr-hero-verdict" id="rr-hero-verdict"></div>
+        </div>
+
+        <!-- Two-column bottom area -->
+        <div class="rr-grid">
+
+          <!-- Domain breakdown -->
+          <div class="dash-card rr-domain-card">
+            <span class="card-label">Domain Breakdown</span>
+            <div class="rr-domain-list" id="rr-domain-list">
+              <p class="rr-empty">No domain data available.</p>
+            </div>
+          </div>
+
+          <!-- Right column: Top mistakes + Next step -->
+          <div class="rr-right-col">
+
+            <!-- Top mistakes -->
+            <div class="dash-card rr-mistakes-card" id="rr-mistakes-section">
+              <span class="card-label">Top Mistakes</span>
+              <div id="rr-mistakes-list">
+                <p class="rr-empty">No mistakes — perfect session!</p>
+              </div>
+            </div>
+
+            <!-- Next step recommendation -->
+            <div class="dash-card rr-nextstep-card" id="rr-nextstep">
+              <div class="rr-nextstep-header">
+                <span class="material-symbols-outlined" style="font-size:18px;color:var(--fs-blue)">lightbulb</span>
+                <span class="card-label">Next Step</span>
+              </div>
+              <p class="rr-nextstep-body" id="rr-nextstep-body">Review your weakest domain and study the recommended materials.</p>
+              <div class="rr-nextstep-actions">
+                <a href="/reviewee/materials" class="sn-btn sn-btn--ghost">
+                  <span class="material-symbols-outlined" style="font-size:16px">library_books</span>
+                  View Materials
+                </a>
+                <a href="/reviewee/review" class="sn-btn sn-btn--primary" id="rr-start-again">
+                  <span class="material-symbols-outlined" style="font-size:16px">replay</span>
+                  Start Another Session
+                </a>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="rr-actions">
+          <a href="/reviewee/review" class="sn-btn sn-btn--ghost">
+            <span class="material-symbols-outlined" style="font-size:17px">arrow_back</span>
+            Back to Review
+          </a>
+          <a href="/reviewee/progress" class="sn-btn sn-btn--primary">
+            <span class="material-symbols-outlined" style="font-size:17px">bar_chart</span>
+            View Full Progress
+          </a>
+        </div>
+
+      </div><!-- /#rr-content -->
+
+    </main>
+  </div>
+
+  <script src="/js/app-shell.js"></script>
+  <script>
+  (async () => {
+    const params    = new URLSearchParams(window.location.search);
+    const sessionId = params.get('id');
+
+    const loadingEl = document.getElementById('rr-loading');
+    const errorEl   = document.getElementById('rr-error');
+    const contentEl = document.getElementById('rr-content');
+
+    if (!sessionId) {
+      loadingEl.setAttribute('hidden', '');
+      errorEl.removeAttribute('hidden');
+      return;
+    }
+
+    let data;
+    try {
+      const resp = await fetch(`/reviewee/api/session/result/${sessionId}`);
+      if (!resp.ok) throw new Error();
+      data = await resp.json();
+    } catch (_) {
+      loadingEl.setAttribute('hidden', '');
+      errorEl.removeAttribute('hidden');
+      return;
+    }
+
+    loadingEl.setAttribute('hidden', '');
+    contentEl.removeAttribute('hidden');
+
+    // ── Score ring ─────────────────────────────────────────
+    const pct = data.score || 0;
+    document.getElementById('rr-score-pct').textContent = `${pct}%`;
+
+    const circumference = 314.16;
+    const offset = circumference - (pct / 100) * circumference;
+    const ringFill = document.getElementById('rr-ring-fill');
+    ringFill.style.strokeDashoffset = offset;
+    const ringColor = pct >= 80 ? '#4ade80' : pct >= 60 ? '#ff9933' : '#f87171';
+    ringFill.style.stroke = ringColor;
+
+    // Stats
+    document.getElementById('rr-stat-correct').textContent = data.correct ?? '—';
+    document.getElementById('rr-stat-total').textContent   = data.total   ?? '—';
+    const mins = data.timeSecs ? Math.floor(data.timeSecs / 60) : null;
+    const secs = data.timeSecs ? data.timeSecs % 60 : null;
+    document.getElementById('rr-stat-time').textContent = mins !== null ? `${mins}m ${secs}s` : '—';
+
+    // Verdict
+    const grade = pct >= 90 ? 'Outstanding' : pct >= 80 ? 'Above Average' : pct >= 70 ? 'Average' : pct >= 60 ? 'Below Average' : 'Needs Improvement';
+    const gradeColor = pct >= 80 ? 'good' : pct >= 60 ? 'warn' : 'bad';
+    document.getElementById('rr-hero-verdict').innerHTML =
+      `<span class="rr-verdict-badge rr-verdict--${gradeColor}">${grade}</span>`;
+
+    // ── Domain breakdown ───────────────────────────────────
+    const DOMAIN_CLS = {
+      'Verbal Ability':      'verbal',
+      'Numerical Ability':   'numerical',
+      'Analytical Ability':  'analytical',
+      'Clerical Ability':    'clerical',
+      'General Information': 'general',
+    };
+
+    const domainList = document.getElementById('rr-domain-list');
+    if (data.domainBreakdown && data.domainBreakdown.length) {
+      domainList.innerHTML = data.domainBreakdown.map(d => {
+        const cls     = DOMAIN_CLS[d.domain] || '';
+        const dSign   = d.thetaDelta >= 0 ? '+' : '';
+        const dColor  = d.thetaDelta >= 0 ? 'rr-delta--pos' : 'rr-delta--neg';
+        const barPct  = d.score;
+        const barColor = barPct >= 80 ? '#4ade80' : barPct >= 60 ? '#ff9933' : '#f87171';
+        return `
+          <div class="rr-domain-row">
+            <div class="rr-domain-row-left">
+              <span class="q-domain-badge ${cls}">${d.domain.replace(' Ability','')}</span>
+              <div class="rr-domain-bar-wrap">
+                <div class="rr-domain-bar-track">
+                  <div class="rr-domain-bar-fill" style="width:${barPct}%;background:${barColor}"></div>
+                </div>
+                <span class="rr-domain-counts">${d.correct}/${d.total}</span>
+              </div>
+            </div>
+            <div class="rr-domain-row-right">
+              <span class="rr-domain-score">${d.score}%</span>
+              <span class="rr-delta-badge ${dColor}">${dSign}${d.thetaDelta}</span>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    // ── Top mistakes ───────────────────────────────────────
+    const mistakesList = document.getElementById('rr-mistakes-list');
+    if (data.wrongAnswers && data.wrongAnswers.length) {
+      const LETTER_LABEL = { a: 'A', b: 'B', c: 'C', d: 'D' };
+      mistakesList.innerHTML = data.wrongAnswers.map((w, i) => `
+        <div class="rr-mistake-item">
+          <div class="rr-mistake-q">
+            <span class="rr-mistake-num">Q${i + 1}</span>
+            <p class="rr-mistake-text">${w.question_text}</p>
+          </div>
+          <div class="rr-mistake-answers">
+            ${w.selected ? `<span class="rr-answer-chip rr-answer--wrong">
+              <span class="material-symbols-outlined" style="font-size:12px">close</span>
+              Your answer: ${w.selected}
+            </span>` : ''}
+            <span class="rr-answer-chip rr-answer--correct">
+              <span class="material-symbols-outlined" style="font-size:12px">check</span>
+              Correct: ${w.correct}
+            </span>
+          </div>
+          ${w.explanation ? `<p class="rr-mistake-expl">${w.explanation}</p>` : ''}
+        </div>`
+      ).join('');
+    }
+
+    // ── Next step ──────────────────────────────────────────
+    if (data.weakestDomain) {
+      const nextBody = document.getElementById('rr-nextstep-body');
+      nextBody.textContent = `Your weakest area is ${data.weakestDomain}. Review related materials and start a focused session to improve your score.`;
+
+      const startAgain = document.getElementById('rr-start-again');
+      const p = new URLSearchParams({ domain: data.weakestDomain, mode: 'practice', count: 15, type: 'recommended' });
+      startAgain.href = `/reviewee/review/session?${p}`;
+      startAgain.innerHTML = `<span class="material-symbols-outlined" style="font-size:16px">replay</span> Focus on ${data.weakestDomain.replace(' Ability','')}`;
+    }
+
+  })();
+  </script>
+
+  <%- include('../partials/enrollment-code-modal') %>
+  <script src="/js/toast-notifications.js"></script>
+</body>
+</html>

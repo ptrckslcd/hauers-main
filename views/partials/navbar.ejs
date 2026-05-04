@@ -67,32 +67,32 @@
 
     <!-- User profile (clickable → profile popup) -->
     <div class="nav-user nav-user--clickable" id="nav-user" role="button" tabindex="0" aria-haspopup="true" aria-expanded="false">
-      <div class="nav-avatar" id="nav-avatar">D</div>
+      <div class="nav-avatar" id="nav-avatar"><%= locals.user ? user.firstName[0] : 'U' %></div>
       <div class="nav-user-info">
-        <span class="nav-user-name" id="nav-user-name">Demo User</span>
-        <span class="nav-user-email" id="nav-user-email">demo@hauers.com</span>
+        <span class="nav-user-name" id="nav-user-name"><%= locals.user ? user.firstName + ' ' + user.lastName : 'User' %></span>
+        <span class="nav-user-email" id="nav-user-email"><%= locals.user ? user.email : 'user@hauers.com' %></span>
       </div>
 
       <!-- Profile popup dropdown -->
       <div class="nav-profile-popup" id="nav-profile-popup" hidden role="menu">
         <div class="npp-header">
-          <div class="npp-avatar" id="npp-avatar">D</div>
+          <div class="npp-avatar" id="npp-avatar"><%= locals.user ? user.firstName[0] : 'U' %></div>
           <div class="npp-info">
-            <strong class="npp-name" id="npp-name">Demo User</strong>
-            <span class="npp-email" id="npp-email">demo@hauers.com</span>
+            <strong class="npp-name" id="npp-name"><%= locals.user ? user.firstName + ' ' + user.lastName : 'User' %></strong>
+            <span class="npp-email" id="npp-email"><%= locals.user ? user.email : 'user@hauers.com' %></span>
             <div class="npp-role-wrap">
               <span class="material-symbols-outlined">badge</span>
-              <span class="npp-role" id="npp-role">Reviewee</span>
+              <span class="npp-role" id="npp-role"><%= locals.user ? (user.role === 'admin' ? 'Administrator' : 'Reviewee') : 'Role' %></span>
             </div>
           </div>
         </div>
         <div class="npp-divider"></div>
         <div class="npp-actions">
-          <a class="npp-link" id="npp-edit-link" href="/reviewee/learner-profile" role="menuitem">
+          <a class="npp-link" id="npp-edit-link" href="/<%= locals.user && user.role === 'admin' ? 'admin' : 'reviewee' %>/profile" role="menuitem">
             <span class="npp-icon material-symbols-outlined">person</span>
-            Learner Profile
+            My Profile
           </a>
-          <a class="npp-link" id="npp-settings-link" href="/reviewee/settings" role="menuitem">
+          <a class="npp-link" id="npp-settings-link" href="/<%= locals.user && user.role === 'admin' ? 'admin' : 'reviewee' %>/settings" role="menuitem">
             <span class="npp-icon material-symbols-outlined">settings</span>
             Account Settings
           </a>

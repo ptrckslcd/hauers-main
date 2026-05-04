@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Announcements | Hauers</title>
+  <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <script src="/js/theme-toggle.js"></script>
+</head>
+<body data-role="reviewee">
+
+  <div id="navbar-placeholder"><%- include('../partials/navbar') %></div>
+
+  <div class="app-shell">
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div id="sidebar-placeholder"><%- include('../partials/sidebar') %></div>
+
+    <main class="page-content">
+
+      <header class="page-header">
+        <h1 class="page-title">
+          Announcements
+          <span class="anx-unread-badge" id="anx-unread-badge" hidden></span>
+        </h1>
+      </header>
+
+      <div class="dash-card anx-card-feed">
+
+        <div class="anx-toolbar">
+          <p class="pgx-section-label pgx-section-label--flush">From ACCESS Staff</p>
+          <div class="anx-filter-pills" id="anx-pills" role="group" aria-label="Filter by category">
+            <button class="anx-pill active" data-cat="all">All</button>
+            <button class="anx-pill" data-cat="general">General</button>
+            <button class="anx-pill" data-cat="schedule">Schedule</button>
+            <button class="anx-pill" data-cat="important">Important</button>
+          </div>
+        </div>
+
+        <div id="anx-list">
+          <div class="anx-loading">
+            <div class="anx-skel-row">
+              <span class="anx-skeleton anx-skeleton--icon"></span>
+              <div class="anx-skel-lines">
+                <span class="anx-skeleton"></span>
+                <span class="anx-skeleton anx-skeleton--short"></span>
+              </div>
+            </div>
+            <div class="anx-skel-row">
+              <span class="anx-skeleton anx-skeleton--icon"></span>
+              <div class="anx-skel-lines">
+                <span class="anx-skeleton"></span>
+                <span class="anx-skeleton anx-skeleton--short"></span>
+              </div>
+            </div>
+            <div class="anx-skel-row">
+              <span class="anx-skeleton anx-skeleton--icon"></span>
+              <div class="anx-skel-lines">
+                <span class="anx-skeleton"></span>
+                <span class="anx-skeleton anx-skeleton--short"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+
+  <script src="/js/app-shell.js"></script>
+  <script>
+  (async () => {
+    const CAT_LABEL = { general: 'General', schedule: 'Schedule', important: 'Important' };
+    const CAT_ICON  = { general: 'campaign', schedule: 'event', important: 'priority_high' };
+
+    let all       = [];
+    let catFilter = 'all';
+
+    function fmtDate(ts) {
+      return new Date(ts).toLocaleDateString('en-PH', {
+        month: 'short', day: 'numeric', year: 'numeric',
+      });
+    }
+    function esc(s) {
+      const d = document.createElement('div');
+      d.textContent = s || '';
+      return d.innerHTML;
+    }
+
+    function renderList() {
+      const listEl   = document.getElementById('anx-list');
+      const filtered = catFilter === 'all' ? all : all.filter(a => a.category === catFilter);
+
+      if (!filtered.length) {
+        listEl.innerHTML = `
+          <div class="anx-empty">
+            <span class="material-symbols-outlined">inbox</span>
+            <p>${catFilter === 'all' ? 'No announcements posted yet.' : 'No ' + CAT_LABEL[catFilter] + ' announcements.'}</p>
+          </div>`;
+        return;
+      }
+
+      listEl.innerHTML = filtered.map(a => `
+        <div class="anx-item${a.isRead ? '' : ' anx-item--unread'}" data-id="${a.id}">
+          <div class="anx-item-head" role="button" tabindex="0" aria-expanded="false">
+            <div class="anx-item-icon anx-item-icon--${esc(a.category)}">
+              <span class="material-symbols-outlined">${CAT_ICON[a.category] || 'campaign'}</span>
+            </div>
+            <div class="anx-item-info">
+              <div class="anx-item-top">
+                <h3 class="anx-item-title">${esc(a.title)}</h3>
+                <div class="anx-item-badges">
+                  ${!a.isRead ? '<span class="anx-dot" aria-label="Unread"></span>' : ''}
+                  <span class="anx-cat-badge anx-cat-badge--${esc(a.category)}">${CAT_LABEL[a.category] || esc(a.category)}</span>
+                  ${a.target_type === 'batch' ? '<span class="anx-batch-badge">Batch Only</span>' : ''}
+                </div>
+              </div>
+              <p class="anx-item-meta">${esc(a.authorFirstName + ' ' + a.authorLastName)} &middot; ${fmtDate(a.publish_at)}</p>
+            </div>
+            <span class="material-symbols-outlined anx-chevron" aria-hidden="true">expand_more</span>
+          </div>
+          <div class="anx-item-body" hidden>
+            <p>${esc(a.body)}</p>
+          </div>
+        </div>`
+      ).join('');
+
+      listEl.querySelectorAll('.anx-item-head').forEach(head => {
+        head.addEventListener('click', () => toggleItem(head.closest('.anx-item')));
+        head.addEventListener('keydown', e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            toggleItem(head.closest('.anx-item'));
+          }
+        });
+      });
+    }
+
+    function toggleItem(item) {
+      const isOpen = item.classList.toggle('anx-item--open');
+      const head   = item.querySelector('.anx-item-head');
+      const body   = item.querySelector('.anx-item-body');
+      head.setAttribute('aria-expanded', isOpen);
+
+      // Show body with CSS-driven height animation via a display toggle + rAF trick
+      if (isOpen) {
+        body.removeAttribute('hidden');
+      } else {
+        body.addEventListener('transitionend', () => {
+          if (!item.classList.contains('anx-item--open')) body.setAttribute('hidden', '');
+        }, { once: true });
+      }
+
+      const id  = Number(item.dataset.id);
+      const ann = all.find(a => a.id === id);
+      if (ann && !ann.isRead) markRead(id, item, ann);
+    }
+
+    function markRead(id, itemEl, ann) {
+      ann.isRead = true;
+      itemEl.classList.remove('anx-item--unread');
+      const dot = itemEl.querySelector('.anx-dot');
+      if (dot) dot.remove();
+      updateBadge();
+      fetch(`/reviewee/api/announcements/${id}/read`, { method: 'POST' }).catch(() => {});
+    }
+
+    function updateBadge() {
+      const count = all.filter(a => !a.isRead).length;
+      const badge = document.getElementById('anx-unread-badge');
+      if (!badge) return;
+      if (count > 0) {
+        badge.textContent = count;
+        badge.removeAttribute('hidden');
+      } else {
+        badge.setAttribute('hidden', '');
+      }
+    }
+
+    try {
+      const r = await fetch('/reviewee/api/announcements');
+      if (!r.ok) throw new Error('load');
+      const data = await r.json();
+      all = data.announcements || [];
+      updateBadge();
+      renderList();
+    } catch {
+      document.getElementById('anx-list').innerHTML = `
+        <div class="anx-empty">
+          <span class="material-symbols-outlined">error_outline</span>
+          <p>Could not load announcements. Please try again later.</p>
+        </div>`;
+    }
+
+    document.getElementById('anx-pills').addEventListener('click', e => {
+      const pill = e.target.closest('.anx-pill');
+      if (!pill) return;
+      document.querySelectorAll('.anx-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      catFilter = pill.dataset.cat;
+      renderList();
+    });
+  })();
+  </script>
+
+  <%- include('../partials/enrollment-code-modal') %>
+  <script src="/js/toast-notifications.js"></script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Materials Library | Hauers Admin</title>
+  <title>Learning Materials | Hauers Admin</title>
   <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
   <link rel="stylesheet" href="/css/base.css">
   <link rel="stylesheet" href="/css/dashboard.css">
@@ -19,379 +19,499 @@
 
     <main class="page-content">
 
-      <!-- ── Page header ── -->
-      <header class="page-header">
-        <div>
-          <h1 class="page-title">Materials Library</h1>
-
-        </div>
-        <button class="cta-pill" id="am-add-btn" type="button">
-          <span class="material-symbols-outlined" style="font-size:18px;margin-right:0.45rem">add_circle</span>
-          Add Material
+      <header class="page-header mat-page-header">
+        <h1 class="page-title">Learning materials</h1>
+        <button type="button" class="bat-btn-create" id="mat-add-btn">
+          <span class="material-symbols-outlined">upload</span>
+          Upload material
         </button>
       </header>
 
-      <!-- ── KPI Tiles ── -->
-      <div class="dash-grid dash-grid--4col">
-        <div class="dash-card admin-kpi-card">
-          <div class="admin-kpi-header">
-            <span class="card-label">Total Resources</span>
-            <span class="admin-kpi-icon admin-kpi-icon--blue">
-              <span class="material-symbols-outlined">library_books</span>
-            </span>
+      <div class="home-stats-row bat-kpi">
+        <div class="dash-card home-stat-card">
+          <div class="home-stat-ico-wrap home-stat-ico-wrap--blue"><span class="material-symbols-outlined">folder_special</span></div>
+          <div class="home-stat-copy">
+            <span class="home-stat-value" id="mat-kpi-total">—</span>
+            <span class="home-stat-label">Total materials</span>
           </div>
-          <div class="admin-kpi-val" id="am-total">—</div>
-          <p class="card-sub">available to reviewees</p>
         </div>
-
-        <div class="dash-card admin-kpi-card">
-          <div class="admin-kpi-header">
-            <span class="card-label">Recommended</span>
-            <span class="admin-kpi-icon" style="background:rgba(255,153,51,0.12);color:var(--fs-orange)">
-              <span class="material-symbols-outlined">star</span>
-            </span>
+        <div class="dash-card home-stat-card">
+          <div class="home-stat-ico-wrap home-stat-ico-wrap--green"><span class="material-symbols-outlined">publish</span></div>
+          <div class="home-stat-copy">
+            <span class="home-stat-value" id="mat-kpi-pub">—</span>
+            <span class="home-stat-label">Published</span>
           </div>
-          <div class="admin-kpi-val" id="am-rec">—</div>
-          <p class="card-sub">priority items</p>
         </div>
-
-        <div class="dash-card admin-kpi-card">
-          <div class="admin-kpi-header">
-            <span class="card-label">Video Content</span>
-            <span class="admin-kpi-icon" style="background:rgba(239,68,68,0.12);color:#ef4444">
-              <span class="material-symbols-outlined">play_circle</span>
-            </span>
+        <div class="dash-card home-stat-card">
+          <div class="home-stat-ico-wrap home-stat-ico-wrap--amber"><span class="material-symbols-outlined">draft</span></div>
+          <div class="home-stat-copy">
+            <span class="home-stat-value" id="mat-kpi-draft">—</span>
+            <span class="home-stat-label">Drafts</span>
           </div>
-          <div class="admin-kpi-val" id="am-videos">—</div>
-          <p class="card-sub">lecture videos</p>
-        </div>
-
-        <div class="dash-card admin-kpi-card">
-          <div class="admin-kpi-header">
-            <span class="card-label">Avg. Study Time</span>
-            <span class="admin-kpi-icon admin-kpi-icon--green">
-              <span class="material-symbols-outlined">timer</span>
-            </span>
-          </div>
-          <div class="admin-kpi-val" id="am-time">— m</div>
-          <p class="card-sub">per resource</p>
         </div>
       </div>
 
-      <!-- ── Search & Filters ── -->
-      <div id="am-search"></div>
-
-      <div class="rm-filter-bar" id="am-filters">
-        <div class="rm-filter-row">
-          <span class="rm-filter-label">Domain</span>
-          <button class="rm-filter-chip active" data-filter="domain" data-val="all">All</button>
-          <button class="rm-filter-chip" data-filter="domain" data-val="Verbal Ability">Verbal</button>
-          <button class="rm-filter-chip" data-filter="domain" data-val="Numerical Ability">Numerical</button>
-          <button class="rm-filter-chip" data-filter="domain" data-val="Clerical Ability">Clerical</button>
-        </div>
-        <div class="rm-filter-row">
-          <span class="rm-filter-label">Type</span>
-          <button class="rm-filter-chip active" data-filter="type" data-val="all">All Types</button>
-          <button class="rm-filter-chip" data-filter="type" data-val="Reference">Reference</button>
-          <button class="rm-filter-chip" data-filter="type" data-val="Video">Video</button>
-          <button class="rm-filter-chip" data-filter="type" data-val="Drill Set">Practice Exam</button>
+      <div class="dash-card qk-toolbar mat-toolbar">
+        <p class="qk-toolbar-label">Search and filters</p>
+        <div class="qk-toolbar-inner">
+          <div class="qk-search-wrap">
+            <label class="qk-sr-only" for="mat-search">Search materials</label>
+            <span class="material-symbols-outlined qk-search-ic" aria-hidden="true">search</span>
+            <input type="search" class="qk-search-input" id="mat-search" placeholder="Search by title or description…" autocomplete="off">
+          </div>
+          <div class="qk-filters" role="group" aria-label="Filters">
+            <div class="qk-filter-group">
+              <label class="qk-filter-lbl" for="mat-f-domain">Domain</label>
+              <select class="qk-filter-select" id="mat-f-domain"><option value="">All domains</option></select>
+            </div>
+            <div class="qk-filter-group">
+              <label class="qk-filter-lbl" for="mat-f-type">Type</label>
+              <select class="qk-filter-select" id="mat-f-type">
+                <option value="">All types</option>
+                <option value="lesson_module">Lesson module</option>
+                <option value="practice_set">Practice set</option>
+                <option value="mock_exam">Mock exam</option>
+                <option value="reference_sheet">Reference sheet</option>
+              </select>
+            </div>
+            <div class="qk-filter-group">
+              <label class="qk-filter-lbl" for="mat-f-diff">Difficulty</label>
+              <select class="qk-filter-select" id="mat-f-diff">
+                <option value="">All</option>
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+            </div>
+            <div class="qk-filter-group">
+              <label class="qk-filter-lbl" for="mat-f-status">Status</label>
+              <select class="qk-filter-select" id="mat-f-status">
+                <option value="">All statuses</option>
+                <option value="published">Published</option>
+                <option value="draft">Draft</option>
+              </select>
+            </div>
+          </div>
         </div>
       </div>
 
-      <p class="sw-result-msg" id="am-result-msg" style="margin-bottom:0.75rem"></p>
-
-      <!-- ── Materials Table ── -->
-      <div class="dash-card" style="padding:0; overflow:hidden">
-        <div style="overflow-x: auto">
-          <table class="admin-table" id="am-table">
-            <thead>
-              <tr>
-                <th>Resource</th>
-                <th>Domain</th>
-                <th>Type</th>
-                <th>Est. Time</th>
-                <th>Priority</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="am-tbody">
-              <!-- Populated by JS -->
-            </tbody>
-          </table>
+      <div class="dash-card mat-library-card">
+        <div class="mat-library-head">
+          <p class="pgx-section-label pgx-section-label--flush qk-result-msg" id="mat-result-msg">Loading...</p>
+        </div>
+        <div class="mat-library-grid" id="mat-grid">
+          <div class="mat-library-empty">Loading...</div>
         </div>
       </div>
 
     </main>
   </div>
 
-  <!-- ══════════════════════════════════════════════════════
-       ADD / EDIT MATERIAL MODAL
-  ══════════════════════════════════════════════════════ -->
-  <div class="ep-overlay" id="am-overlay" hidden>
-    <div class="ep-modal" style="max-width:540px;width:100%">
-      <div class="ep-modal-header">
-        <h3 class="ep-modal-title" id="am-modal-title">Add New Material</h3>
-        <button class="ep-close" id="am-close" type="button">×</button>
+  <div class="bat-modal-overlay" id="mat-modal" hidden>
+    <div class="bat-modal mat-modal-wide" role="dialog" aria-modal="true" aria-labelledby="mat-modal-title">
+      <div class="bat-modal-head">
+        <h2 class="bat-modal-title" id="mat-modal-title">Upload material</h2>
+        <button type="button" class="bat-modal-x" id="mat-modal-x" aria-label="Close"><span class="material-symbols-outlined">close</span></button>
       </div>
-      <form id="am-form" class="ep-form">
-        <div class="ep-field">
-          <label class="ep-label">Title <span style="color:var(--fs-pink)">*</span></label>
-          <input type="text" id="am-title" class="ep-input" placeholder="e.g. Fractions Mastery Guide" required>
-        </div>
-        
-        <div class="ep-field">
-          <label class="ep-label">Description <span style="color:var(--fs-pink)">*</span></label>
-          <textarea id="am-desc" class="ep-input" rows="2" placeholder="Brief summary of the content…" required></textarea>
-        </div>
+      <form id="mat-form" class="bat-modal-form" novalidate>
+        <input type="hidden" id="mat-id">
 
-        <div class="ep-form-row">
-          <div class="ep-field">
-            <label class="ep-label">Domain <span style="color:var(--fs-pink)">*</span></label>
-            <select id="am-domain" class="ep-input ep-select">
-              <option value="Verbal Ability">Verbal Ability</option>
-              <option value="Numerical Ability">Numerical Ability</option>
-              <option value="Clerical Ability">Clerical Ability</option>
-              <option value="General Information">General Info</option>
+        <div class="bat-form-grid mat-form-grid">
+          <div class="bat-field bat-field--full">
+            <label class="bat-field-lbl" for="mat-title">Title <span class="qk-req">*</span></label>
+            <input class="bat-input" id="mat-title" required placeholder="e.g. Fractions mastery module">
+          </div>
+          <div class="bat-field">
+            <label class="bat-field-lbl" for="mat-domain">Domain <span class="qk-req">*</span></label>
+            <select class="bat-input bat-select" id="mat-domain" required></select>
+          </div>
+          <div class="bat-field">
+            <label class="bat-field-lbl" for="mat-type">Material type <span class="qk-req">*</span></label>
+            <select class="bat-input bat-select" id="mat-type" required>
+              <option value="lesson_module">Lesson module</option>
+              <option value="practice_set">Practice set</option>
+              <option value="mock_exam">Mock exam</option>
+              <option value="reference_sheet">Reference sheet</option>
             </select>
           </div>
-          <div class="ep-field">
-            <label class="ep-label">Resource Type <span style="color:var(--fs-pink)">*</span></label>
-            <select id="am-type" class="ep-input ep-select">
-              <option value="Reference">Reference (PDF/Text)</option>
-              <option value="Video">Video Lecture</option>
-              <option value="Drill Set">Practice Exam</option>
-              <option value="Manual">Training Manual</option>
+          <div class="bat-field">
+            <label class="bat-field-lbl" for="mat-diff">Difficulty <span class="qk-req">*</span></label>
+            <select class="bat-input bat-select" id="mat-diff" required>
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
             </select>
+          </div>
+          <div class="bat-field">
+            <label class="bat-field-lbl" for="mat-exam">Exam level <span class="qk-req">*</span></label>
+            <select class="bat-input bat-select" id="mat-exam" required>
+              <option value="both">Both</option>
+              <option value="professional">Professional</option>
+              <option value="subprofessional">Sub-professional</option>
+            </select>
+          </div>
+          <div class="bat-field">
+            <label class="bat-field-lbl" for="mat-mins">Est. completion (minutes)</label>
+            <input class="bat-input" type="number" id="mat-mins" min="0" step="1" placeholder="Optional">
+          </div>
+          <div class="bat-field">
+            <label class="bat-field-lbl" for="mat-status">Status <span class="qk-req">*</span></label>
+            <select class="bat-input bat-select" id="mat-status" required>
+              <option value="published">Published</option>
+              <option value="draft">Draft</option>
+            </select>
+          </div>
+          <div class="bat-field bat-field--full">
+            <label class="bat-field-lbl" for="mat-desc">Description</label>
+            <textarea class="bat-input qk-textarea" id="mat-desc" rows="2" placeholder="Short summary shown in the catalog…"></textarea>
           </div>
         </div>
 
-        <div class="ep-form-row">
-          <div class="ep-field">
-            <label class="ep-label">Est. Minutes</label>
-            <input type="number" id="am-mins" class="ep-input" placeholder="e.g. 15" min="1">
-          </div>
-          <div class="ep-field">
-            <label class="ep-label">Difficulty</label>
-            <select id="am-diff" class="ep-input ep-select">
-              <option value="Easy">Easy</option>
-              <option value="Medium">Medium</option>
-              <option value="Hard">Hard</option>
-            </select>
-          </div>
-        </div>
+        <p class="pgx-section-label pgx-section-label--flush mat-content-label">Content delivery</p>
+        <p class="mat-content-hint">Choose one: link to an external resource, upload a PDF or Word file, or paste HTML content for inline reading.</p>
 
-        <div class="ep-field" style="margin-top:0.5rem">
-          <label class="ob-day-chip" style="display:inline-flex">
-            <input type="checkbox" id="am-recommended">
-            <span>⭐ Recommended for Priority Study</span>
+        <div class="mat-mode-row" role="radiogroup" aria-label="Content type">
+          <label class="mat-mode-opt">
+            <input type="radio" name="mat-mode" value="url" class="mat-mode-radio" checked>
+            <span class="mat-mode-card">
+              <span class="material-symbols-outlined">link</span>
+              <span class="mat-mode-title">External URL</span>
+              <span class="mat-mode-sub">Drive, LMS, or public link</span>
+            </span>
+          </label>
+          <label class="mat-mode-opt">
+            <input type="radio" name="mat-mode" value="file" class="mat-mode-radio">
+            <span class="mat-mode-card">
+              <span class="material-symbols-outlined">upload_file</span>
+              <span class="mat-mode-title">Upload file</span>
+              <span class="mat-mode-sub">PDF or DOCX</span>
+            </span>
+          </label>
+          <label class="mat-mode-opt">
+            <input type="radio" name="mat-mode" value="inline" class="mat-mode-radio">
+            <span class="mat-mode-card">
+              <span class="material-symbols-outlined">article</span>
+              <span class="mat-mode-title">Inline content</span>
+              <span class="mat-mode-sub">HTML in the app viewer</span>
+            </span>
           </label>
         </div>
 
-        <div class="ep-form-actions">
-          <button type="button" class="ep-btn-cancel" id="am-cancel">Cancel</button>
-          <button type="submit" class="cta-pill" id="am-submit">Save Resource</button>
+        <div class="mat-mode-panel" id="mat-panel-url">
+          <label class="bat-field-lbl" for="mat-url">URL <span class="qk-req">*</span></label>
+          <input class="bat-input" type="url" id="mat-url" placeholder="https://…">
+        </div>
+        <div class="mat-mode-panel" id="mat-panel-file" hidden>
+          <label class="bat-field-lbl" for="mat-file">File</label>
+          <input class="mat-file-input" type="file" id="mat-file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+          <p class="bat-field-hint" id="mat-file-hint">Replacing a file removes the previous upload. Max 30 MB.</p>
+        </div>
+        <div class="mat-mode-panel" id="mat-panel-inline" hidden>
+          <label class="bat-field-lbl" for="mat-html">HTML content <span class="qk-req">*</span></label>
+          <textarea class="bat-input qk-textarea mat-html-area" id="mat-html" rows="8" placeholder="You may use simple HTML (headings, lists, links). Content is shown inside the reviewee viewer."></textarea>
+        </div>
+
+        <div id="mat-err" class="qk-form-err" hidden></div>
+
+        <div class="bat-modal-actions">
+          <button type="button" class="bat-btn-ghost" id="mat-cancel">Cancel</button>
+          <button type="submit" class="bat-btn-save" id="mat-submit">Save</button>
         </div>
       </form>
     </div>
   </div>
 
-  <script src="/js/search-widget.js"></script>
+  <div class="rxv-toast" id="mat-toast" hidden>
+    <span class="material-symbols-outlined" id="mat-toast-ic">check_circle</span>
+    <span id="mat-toast-msg"></span>
+  </div>
+
   <script src="/js/admin-shell.js"></script>
   <script>
-    (async () => {
-      let materials = [];
-      let editId = null; // Track which material is being edited
+  (function () {
+    const $ = id => document.getElementById(id);
+    const TYPE_LABELS = {
+      lesson_module: 'Lesson module',
+      practice_set: 'Practice set',
+      mock_exam: 'Mock exam',
+      reference_sheet: 'Reference sheet',
+    };
 
-      const tbody = document.getElementById('am-tbody');
-      const overlay = document.getElementById('am-overlay');
-      const form = document.getElementById('am-form');
-      const modalTitle = document.getElementById('am-modal-title');
+    function toast(msg, err) {
+      const t = $('mat-toast'), ic = $('mat-toast-ic'), m = $('mat-toast-msg');
+      if (ic) { ic.textContent = err ? 'error' : 'check_circle'; ic.style.color = err ? '#f87171' : '#4ade80'; }
+      if (m) m.textContent = msg;
+      t.removeAttribute('hidden');
+      t.classList.add('rxv-toast--show');
+      setTimeout(() => { t.classList.remove('rxv-toast--show'); setTimeout(() => t.setAttribute('hidden',''), 280); }, 3200);
+    }
+    function esc(s) { const d = document.createElement('div'); d.textContent = String(s||''); return d.innerHTML; }
 
-      /* ── Toast Utility ── */
-      function showToast(msg, isDelete = false) {
-        const t = document.createElement('div');
-        t.className = 'ep-toast show';
-        t.style.bottom = '2rem';
-        t.style.right = '2rem';
-        t.style.zIndex = '9999';
-        t.innerHTML = `
-          <div style="display:flex;align-items:center;gap:0.75rem">
-            <span class="material-symbols-outlined" style="color:${isDelete ? '#ff4d4d' : '#4ade80'}">
-              ${isDelete ? 'delete' : 'check_circle'}
-            </span>
-            <span>${msg}</span>
-          </div>
-        `;
-        document.body.appendChild(t);
-        setTimeout(() => {
-          t.classList.remove('show');
-          setTimeout(() => t.remove(), 400);
-        }, 3000);
-      }
+    function diffPill(d) {
+      const cls = d === 'hard' ? 'qk-diff--hard' : d === 'easy' ? 'qk-diff--easy' : 'qk-diff--med';
+      const lab = d === 'hard' ? 'Hard' : d === 'easy' ? 'Easy' : 'Medium';
+      return `<span class="qk-diff-badge ${cls}">${lab}</span>`;
+    }
+    function statusPill(s) {
+      const pub = s === 'published';
+      return `<span class="bat-status-pill ${pub ? 'bat-st--active' : 'bat-st--draft'}">${pub ? 'Published' : 'Draft'}</span>`;
+    }
+    function fmtMins(n) {
+      if (n == null || n === '') return '—';
+      const v = Number(n);
+      if (!v) return '—';
+      return v + ' min';
+    }
+    function domainSlug(name) {
+      const s = String(name || '').toLowerCase();
+      if (s.includes('verbal')) return 'verbal';
+      if (s.includes('numerical')) return 'numerical';
+      if (s.includes('analytical')) return 'analytical';
+      if (s.includes('clerical')) return 'clerical';
+      return 'general';
+    }
+    function typeIcon(type) {
+      return ({
+        lesson_module: 'school',
+        practice_set: 'quiz',
+        mock_exam: 'assignment',
+        reference_sheet: 'article',
+      })[type] || 'menu_book';
+    }
+    function modeLabel(m) {
+      if ((m.content_html || '').trim()) return 'Inline';
+      if ((m.content_url || '').includes('/uploads/materials/')) return 'File';
+      return 'Link';
+    }
 
-      /* ── Data ── */
-      async function loadData() {
-        try {
-          const r = await fetch('/reviewee/api/materials'); 
-          if (!r.ok) return;
-          const data = await r.json();
-          materials = data.materials || [];
-          renderTable(materials);
-          updateKpis();
-        } catch (_) {}
-      }
+    let allMaterials = [], allDomains = [], searchTimer = null;
 
-      function updateKpis() {
-        document.getElementById('am-total').textContent = materials.length;
-        document.getElementById('am-rec').textContent = materials.filter(m => m.recommended).length;
-        document.getElementById('am-videos').textContent = materials.filter(m => m.type === 'Video').length;
-        const avg = materials.length ? Math.round(materials.reduce((s, m) => s + (m.estMinutes || 0), 0) / materials.length) : 0;
-        document.getElementById('am-time').textContent = avg + ' m';
-      }
+    function getMode() {
+      const r = document.querySelector('input[name="mat-mode"]:checked');
+      return r ? r.value : 'url';
+    }
 
-      /* ── Table & Actions ── */
-      window.editMaterial = (id) => {
-        const m = materials.find(it => it.id === id);
-        if (!m) return;
-        editId = id;
-        modalTitle.textContent = 'Edit Material';
-        
-        document.getElementById('am-title').value = m.title;
-        document.getElementById('am-desc').value = m.desc;
-        document.getElementById('am-domain').value = m.domain;
-        document.getElementById('am-type').value = m.type;
-        document.getElementById('am-mins').value = m.estMinutes;
-        document.getElementById('am-diff').value = m.difficulty;
-        document.getElementById('am-recommended').checked = !!m.recommended;
-        
-        overlay.hidden = false;
-      };
+    function syncModePanels() {
+      const m = getMode();
+      $('mat-panel-url').toggleAttribute('hidden', m !== 'url');
+      $('mat-panel-file').toggleAttribute('hidden', m !== 'file');
+      $('mat-panel-inline').toggleAttribute('hidden', m !== 'inline');
+    }
+    document.querySelectorAll('.mat-mode-radio').forEach(r => r.addEventListener('change', syncModePanels));
 
-      window.deleteMaterial = (id) => {
-        if (!confirm('Are you sure you want to delete this resource? This cannot be undone.')) return;
-        materials = materials.filter(it => it.id !== id);
-        renderTable(materials);
-        updateKpis();
-        showToast('Resource deleted successfully', true);
-      };
+    function fillDomainSelects() {
+      const sel = $('mat-domain');
+      const fil = $('mat-f-domain');
+      sel.innerHTML = allDomains.map(d => `<option value="${d.id}">${esc(d.name)}</option>`).join('');
+      while (fil.options.length > 1) fil.remove(1);
+      allDomains.forEach(d => {
+        const o = document.createElement('option');
+        o.value = d.id;
+        o.textContent = d.name;
+        fil.appendChild(o);
+      });
+    }
 
-      function renderTable(list) {
-        if (!tbody) return;
-        if (!list.length) {
-          tbody.innerHTML = '<tr><td colspan="6" style="padding:4rem; text-align:center; color:var(--text-subdued)"><span class="material-symbols-outlined" style="font-size:3rem; display:block; margin-bottom:1rem; opacity:0.3">inventory_2</span>No resources found.</td></tr>';
+    async function loadList() {
+      const params = new URLSearchParams();
+      const q = $('mat-search').value.trim();
+      if (q) params.set('q', q);
+      if ($('mat-f-domain').value) params.set('domain_id', $('mat-f-domain').value);
+      if ($('mat-f-type').value) params.set('type', $('mat-f-type').value);
+      if ($('mat-f-diff').value) params.set('difficulty', $('mat-f-diff').value);
+      if ($('mat-f-status').value) params.set('status', $('mat-f-status').value);
+
+      const grid = $('mat-grid');
+      grid.innerHTML = '<div class="mat-library-empty">Loading...</div>';
+      try {
+        const r = await fetch('/admin/api/materials?' + params.toString());
+        if (!r.ok) throw new Error();
+        const data = await r.json();
+        allMaterials = data.materials || [];
+        allDomains = data.domains || allDomains;
+        if (allDomains.length) fillDomainSelects();
+
+        $('mat-kpi-total').textContent = data.total ?? '—';
+        $('mat-kpi-pub').textContent = data.published ?? '—';
+        $('mat-kpi-draft').textContent = data.draft ?? '—';
+
+        if (!allMaterials.length) {
+          grid.innerHTML = '<div class="mat-library-empty"><span class="material-symbols-outlined">inventory_2</span><p>No materials match the current filters.</p></div>';
+          $('mat-result-msg').textContent = '0 materials';
           return;
         }
-        tbody.innerHTML = list.map(m => `
-          <tr data-id="${m.id}">
-            <td>
-              <div style="display:flex;align-items:center;gap:0.75rem">
-                <span style="font-size:1.25rem">${m.icon || '📄'}</span>
-                <div>
-                  <div style="font-weight:600;color:var(--text-main)">${m.title}</div>
-                  <div style="font-size:0.75rem;color:var(--text-subdued)">${m.desc.substring(0, 45)}${m.desc.length > 45 ? '...' : ''}</div>
-                </div>
+        $('mat-result-msg').textContent = allMaterials.length + ' material' + (allMaterials.length !== 1 ? 's' : '');
+
+        grid.innerHTML = allMaterials.map(m => {
+          const slug = domainSlug(m.domain_name);
+          const prev = (m.description || '').length > 132 ? (m.description || '').slice(0, 132) + '...' : (m.description || '');
+          return `<article class="mat-lib-card">
+            <div class="mat-lib-cover mat-lib-cover--${slug}">
+              <span class="material-symbols-outlined mat-lib-icon">${typeIcon(m.type)}</span>
+              <span class="mat-lib-mode">${modeLabel(m)}</span>
+            </div>
+            <div class="mat-lib-body">
+              <div class="mat-lib-topline">
+                <span class="mat-lib-type">${TYPE_LABELS[m.type] || m.type}</span>
+                ${statusPill(m.status)}
               </div>
-            </td>
-            <td><span class="q-domain-badge ${m.domain.toLowerCase().split(' ')[0]}">${m.domain.replace(' Ability','')}</span></td>
-            <td><span class="rm-type">${m.type}</span></td>
-            <td><span style="font-weight:600">${m.estMinutes}m</span></td>
-            <td>${m.recommended ? '<span class="status-badge status-badge--verified"><span class="material-symbols-outlined" style="font-size:14px">star</span> Priority</span>' : '<span style="color:var(--text-subdued);font-size:0.75rem">—</span>'}</td>
-            <td>
-              <div style="display:flex;gap:0.4rem">
-                <button class="tbl-view-btn" onclick="editMaterial(${m.id})">Edit</button>
-                <button class="tbl-view-btn" style="color:#ff4d4d; background:rgba(255,77,77,0.08); border-color:rgba(255,77,77,0.2)" onclick="deleteMaterial(${m.id})">
-                  <span class="material-symbols-outlined" style="font-size:16px">delete</span>
-                </button>
+              <h3 class="mat-lib-title">${esc(m.title)}</h3>
+              <p class="mat-lib-desc">${prev ? esc(prev) : 'No description added yet.'}</p>
+              <div class="mat-lib-meta">
+                <span class="qk-domain-chip">${esc((m.domain_name || '').replace(' Ability',''))}</span>
+                ${diffPill(m.difficulty)}
+                <span class="mat-lib-time"><span class="material-symbols-outlined">schedule</span>${fmtMins(m.est_minutes)}</span>
               </div>
-            </td>
-          </tr>
-        `).join('');
-      }
+              <div class="mat-lib-actions">
+                <button type="button" class="qk-btn-edit" title="Edit" data-edit="${m.id}"><span class="material-symbols-outlined">edit</span></button>
+                <button type="button" class="qk-btn-delete" title="Delete" data-del="${m.id}"><span class="material-symbols-outlined">delete</span></button>
+              </div>
+            </div>
+          </article>`;
+        }).join('');
 
-      /* ── Filtering ── */
-      let activeDomain = 'all';
-      let activeType = 'all';
-      function filterData() {
-        const filtered = materials.filter(m => {
-          const d = activeDomain === 'all' || m.domain === activeDomain;
-          const t = activeType === 'all' || m.type === activeType;
-          return d && t;
+        grid.querySelectorAll('[data-edit]').forEach(btn => {
+          btn.addEventListener('click', () => openEdit(Number(btn.dataset.edit)));
         });
-        renderTable(filtered);
-      }
-
-      document.querySelectorAll('.rm-filter-chip').forEach(chip => {
-        chip.addEventListener('click', () => {
-          const filter = chip.dataset.filter;
-          document.querySelectorAll(`.rm-filter-chip[data-filter="${filter}"]`).forEach(c => c.classList.remove('active'));
-          chip.classList.add('active');
-          if (filter === 'domain') activeDomain = chip.dataset.val;
-          if (filter === 'type') activeType = chip.dataset.val;
-          filterData();
+        grid.querySelectorAll('[data-del]').forEach(btn => {
+          btn.addEventListener('click', () => delMaterial(Number(btn.dataset.del)));
         });
-      });
+      } catch {
+        grid.innerHTML = '<div class="mat-library-empty"><span class="material-symbols-outlined">error</span><p>Could not load materials.</p></div>';
+      }
+    }
 
-      /* ── Search ── */
-      new SearchWidget({
-        containerId: 'am-search',
-        placeholder: 'Search by title or topic...',
-        apiUrl: '/reviewee/api/search',
-        defaultParams: { scope: 'materials' },
-        onResults: results => renderTable(results),
-        onClear: () => filterData()
-      }).mount();
+    function openModal() { $('mat-modal').removeAttribute('hidden'); syncModePanels(); }
+    function closeModal() {
+      $('mat-modal').setAttribute('hidden', '');
+      $('mat-err').setAttribute('hidden', '');
+      $('mat-err').textContent = '';
+    }
 
-      /* ── Modal ── */
-      document.getElementById('am-add-btn').onclick = () => {
-        editId = null;
-        modalTitle.textContent = 'Add New Material';
-        form.reset();
-        overlay.hidden = false;
-      };
-      
-      const closeModal = () => {
-        overlay.hidden = true;
-        editId = null;
-      };
+    function openAdd() {
+      $('mat-modal-title').textContent = 'Upload material';
+      $('mat-submit').textContent = 'Save material';
+      $('mat-id').value = '';
+      $('mat-form').reset();
+      $('mat-diff').value = 'medium';
+      $('mat-exam').value = 'both';
+      $('mat-status').value = 'published';
+      document.querySelector('input[name="mat-mode"][value="url"]').checked = true;
+      $('mat-file').value = '';
+      $('mat-file-hint').textContent = 'PDF or Word, max 30 MB.';
+      syncModePanels();
+      openModal();
+      $('mat-title').focus();
+    }
 
-      document.getElementById('am-close').onclick = closeModal;
-      document.getElementById('am-cancel').onclick = closeModal;
-
-      form.onsubmit = e => {
-        e.preventDefault();
-        
-        const materialData = {
-          title: document.getElementById('am-title').value,
-          desc: document.getElementById('am-desc').value,
-          domain: document.getElementById('am-domain').value,
-          type: document.getElementById('am-type').value,
-          estMinutes: parseInt(document.getElementById('am-mins').value) || 0,
-          difficulty: document.getElementById('am-diff').value,
-          recommended: document.getElementById('am-recommended').checked,
-          icon: document.getElementById('am-type').value === 'Video' ? '🎬' : '📄'
-        };
-
-        if (editId) {
-          // Update existing
-          const idx = materials.findIndex(it => it.id === editId);
-          if (idx !== -1) {
-            materials[idx] = { ...materials[idx], ...materialData };
-            showToast('Material updated successfully');
-          }
+    async function openEdit(id) {
+      $('mat-modal-title').textContent = 'Edit material';
+      $('mat-submit').textContent = 'Save changes';
+      $('mat-err').setAttribute('hidden', '');
+      try {
+        const r = await fetch('/admin/api/materials/' + id);
+        if (!r.ok) throw new Error();
+        const { material: m } = await r.json();
+        $('mat-id').value = m.id;
+        $('mat-title').value = m.title;
+        $('mat-domain').value = m.domain_id;
+        $('mat-type').value = m.type;
+        $('mat-diff').value = m.difficulty;
+        $('mat-exam').value = m.exam_level;
+        $('mat-mins').value = m.est_minutes != null ? m.est_minutes : '';
+        $('mat-status').value = m.status;
+        $('mat-desc').value = m.description || '';
+        $('mat-url').value = m.content_mode === 'url' ? (m.content_url || '') : '';
+        $('mat-html').value = m.content_html || '';
+        $('mat-file').value = '';
+        const mode = m.content_mode || 'url';
+        const radio = document.querySelector(`input[name="mat-mode"][value="${mode}"]`);
+        if (radio) radio.checked = true;
+        if (m.content_mode === 'file' && m.content_url) {
+          $('mat-file-hint').textContent = 'Current file: ' + m.content_url.split('/').pop() + '. Choose a new file to replace.';
         } else {
-          // Add new
-          const newM = { id: Date.now(), ...materialData };
-          materials.unshift(newM);
-          showToast('New material added to library');
+          $('mat-file-hint').textContent = 'Replacing a file removes the previous upload. Max 30 MB.';
         }
+        syncModePanels();
+        openModal();
+      } catch {
+        toast('Could not load material.', true);
+      }
+    }
 
-        renderTable(materials);
-        updateKpis();
+    async function delMaterial(id) {
+      if (!confirm('Delete this material permanently? Reviewees will no longer see it.')) return;
+      try {
+        const r = await fetch('/admin/api/materials/' + id, { method: 'DELETE' });
+        if (!r.ok) throw new Error();
+        toast('Material deleted.');
+        loadList();
+      } catch { toast('Delete failed.', true); }
+    }
+
+    $('mat-add-btn').addEventListener('click', openAdd);
+    $('mat-modal-x').addEventListener('click', closeModal);
+    $('mat-cancel').addEventListener('click', closeModal);
+    $('mat-modal').addEventListener('click', e => { if (e.target.id === 'mat-modal') closeModal(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+    $('mat-search').addEventListener('input', () => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(loadList, 320);
+    });
+    ['mat-f-domain','mat-f-type','mat-f-diff','mat-f-status'].forEach(id => $(id).addEventListener('change', loadList));
+    $('mat-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      $('mat-err').setAttribute('hidden', '');
+      const mode = getMode();
+      const id = $('mat-id').value.trim();
+      const fd = new FormData();
+      fd.append('title', $('mat-title').value.trim());
+      fd.append('domain_id', $('mat-domain').value);
+      fd.append('type', $('mat-type').value);
+      fd.append('difficulty', $('mat-diff').value);
+      fd.append('exam_level', $('mat-exam').value);
+      fd.append('status', $('mat-status').value);
+      fd.append('description', $('mat-desc').value.trim());
+      const mins = $('mat-mins').value.trim();
+      fd.append('est_minutes', mins === '' ? '' : String(parseInt(mins, 10) || 0));
+      fd.append('content_mode', mode);
+
+      if (mode === 'url') {
+        fd.append('content_url', $('mat-url').value.trim());
+      } else if (mode === 'inline') {
+        fd.append('content_html', $('mat-html').value);
+      } else if (mode === 'file') {
+        const f = $('mat-file').files[0];
+        if (f) fd.append('file', f);
+      }
+
+      const btn = $('mat-submit');
+      btn.disabled = true;
+      try {
+        const url = id ? '/admin/api/materials/' + id : '/admin/api/materials';
+        const method = id ? 'PUT' : 'POST';
+        const r = await fetch(url, { method, body: fd });
+        const d = await r.json().catch(() => ({}));
+        if (!r.ok) {
+          $('mat-err').textContent = d.error || 'Save failed.';
+          $('mat-err').removeAttribute('hidden');
+          return;
+        }
         closeModal();
-      };
+        toast(id ? 'Material updated.' : 'Material saved.');
+        loadList();
+      } catch {
+        $('mat-err').textContent = 'Network error.';
+        $('mat-err').removeAttribute('hidden');
+      } finally {
+        btn.disabled = false;
+      }
+    });
 
-      await loadData();
-    })();
+    loadList();
+  })();
   </script>
+
 </body>
 </html>

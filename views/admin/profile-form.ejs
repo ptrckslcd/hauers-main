@@ -5,10 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Profile Form | Admin | Hauers</title>
   <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+  <% var _sv = '1.12.61'; %>
+  <link href="https://cdn.jsdelivr.net/npm/survey-core@<%= _sv %>/survey-core.min.css" type="text/css" rel="stylesheet">
   <link rel="stylesheet" href="/css/base.css">
   <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/surveyjs-hauers.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block">
   <script src="/js/theme-toggle.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/survey-core@<%= _sv %>/survey.core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/survey-js-ui@<%= _sv %>/survey-js-ui.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
 </head>
 <body data-role="admin">
 
@@ -20,130 +26,602 @@
 
     <main class="page-content home-page">
 
-      <header class="page-header">
+      <header class="page-header pf-page-header">
         <div>
-          <h1 class="page-title">Profile Form</h1>
+          <h1 class="page-title">Learner profile form</h1>
+          <p class="pf-sub">Build institutional questions for onboarding. Fixed profile inputs stay server-side.</p>
         </div>
-        <div style="display: flex; gap: 0.5rem;">
-          <button class="home-btn home-btn--ghost">
-            <span class="material-symbols-outlined" style="margin-right: 0.5rem; font-size: 18px;">download</span>
-            Export Responses
+        <div class="pf-header-actions">
+          <button type="button" class="home-btn home-btn--ghost" id="pf-reset-columns" hidden>
+            <span class="material-symbols-outlined">restart_alt</span>
+            Reset columns
           </button>
-          <button class="home-btn home-btn--primary">Publish Changes</button>
+          <a class="home-btn home-btn--ghost pf-export-link" id="pf-export-csv" href="/admin/api/profile-form/responses/export">
+            <span class="material-symbols-outlined" aria-hidden="true">download</span>
+            Export CSV
+          </a>
         </div>
       </header>
 
-      <!-- ── Builder Section ── -->
-      <h2 style="font-size: 1.25rem; margin-bottom: 1rem; color: var(--text-main);">Edit Form</h2>
-      <div class="dash-grid dash-grid--split21" style="margin-bottom: 3rem;">
-        <!-- Form Builder Canvas -->
-        <div class="dash-card" style="min-height: 500px;">
-          <span class="card-label">Form Canvas</span>
-          <p class="card-sub" style="margin-bottom: 2rem;">Drag and reorder fields here. Think Google Forms interface.</p>
-          <div style="padding: 2rem; border: 2px dashed var(--border-default); border-radius: 8px; text-align: center; color: var(--text-subdued);">
-            <span class="material-symbols-outlined" style="font-size: 48px; opacity: 0.5;">drag_indicator</span>
-            <p style="margin-top: 1rem;">Form fields will be displayed here.</p>
-            <p style="font-size: 0.8rem; margin-top: 0.5rem;">(e.g., Multiple Choice, Dropdown, Rating Scale, Date Picker, Text)</p>
-          </div>
-        </div>
+      <div class="pf-tabs" role="tablist" aria-label="Profile form sections">
+        <button type="button" class="pf-tab is-active" role="tab" aria-selected="true" id="pf-tab-editor" data-panel="editor">Form editor</button>
+        <button type="button" class="pf-tab" role="tab" aria-selected="false" id="pf-tab-responses" data-panel="responses">Responses</button>
+      </div>
 
-        <!-- Field Settings / Tools -->
-        <div class="dash-card">
-          <span class="card-label">Field Settings</span>
-          <p class="card-sub">Select a field to edit its properties.</p>
-          
-          <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
-            <button class="home-btn home-btn--ghost" style="width: 100%; justify-content: flex-start;">
-              <span class="material-symbols-outlined" style="margin-right: 0.5rem;">add_circle</span>
-              Add New Question
-            </button>
-            
-            <hr style="border: none; border-top: 1px solid var(--border-subdued); margin: 0.5rem 0;">
-            
+      <section id="pf-panel-editor" class="pf-panel" role="tabpanel" aria-labelledby="pf-tab-editor">
+        <p class="pf-fixed-note">
+          <strong>Protected fields:</strong>
+          Identity, enrollment, target exam date, study hours/week, preferred study time, struggling areas, confidence, and domain self-ratings are hard-coded on onboarding — they feed M‑Elo and are not editable here.
+        </p>
+        <div class="dash-card pf-card pf-span-2">
+          <div class="pf-custom-head" style="margin-bottom:0.75rem">
             <div>
-              <label class="card-label" style="font-size: 0.8rem;">Field Type</label>
-              <select class="msc-select" style="width: 100%; margin-top: 0.5rem; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border-default); background: var(--card-bg); color: var(--text-main);">
-                <option>Short Text</option>
-                <option>Multiple Choice</option>
-                <option>Dropdown</option>
-                <option>Rating Scale</option>
-                <option>Date Picker</option>
-              </select>
+              <p class="pgx-section-label pgx-section-label--flush pf-card-eyebrow">Custom questions</p>
+              <p class="pf-card-desc" style="margin:0">Drag to reorder. Add/edit questions. Save to publish onboarding.</p>
             </div>
-            
-            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-              <input type="checkbox">
-              <span style="font-size: 0.9rem; color: var(--text-main);">Required Field</span>
-            </label>
+            <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+              <button type="button" class="home-btn home-btn--ghost" id="pf-preview-toggle">
+                <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
+                Preview
+              </button>
+              <button type="button" class="bat-btn-create" id="pf-add-q">
+                <span class="material-symbols-outlined">add</span>
+                Add question
+              </button>
+              <button type="button" class="home-btn home-btn--primary" id="pf-save-form">
+                <span class="material-symbols-outlined" aria-hidden="true">save</span>
+                Save form
+              </button>
+            </div>
+          </div>
+          <span class="pf-hint" id="pf-save-hint"></span>
+          <p class="pf-empty" id="pf-empty-msg" style="margin-top:.75rem">No custom questions yet.</p>
+          <ul class="pf-sort-list" id="pf-q-list"></ul>
+
+          <div class="dash-card" id="pf-preview-card" hidden style="margin-top:1rem">
+            <p class="pgx-section-label pgx-section-label--flush pf-card-eyebrow">Survey preview</p>
+            <div id="pf-preview-host"></div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <!-- ── Responses Section ── -->
-      <h2 style="font-size: 1.25rem; margin-bottom: 1rem; color: var(--text-main);">Form Responses</h2>
-      <div class="dash-grid dash-grid--split21">
-        <!-- Main Charts -->
-        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-          
-          <div class="dash-card">
-            <span class="card-label">Exam Level Distribution</span>
-            <p class="card-sub">Pie chart of selected target examination levels.</p>
-            <div style="height: 250px; margin-top: 1.5rem; display: flex; align-items: center; justify-content: center; border: 1px dashed var(--border-subdued); border-radius: 8px;">
-              <span style="color: var(--text-muted);">[ Pie Chart Placeholder ]</span>
-            </div>
+      <section id="pf-panel-responses" class="pf-panel" role="tabpanel" aria-labelledby="pf-tab-responses" hidden>
+        <div class="dash-card pf-table-card">
+          <div class="pf-table-head">
+            <p class="pgx-section-label pgx-section-label--flush" id="pf-res-summary">Loading…</p>
           </div>
-
-          <div class="dash-card">
-            <span class="card-label">Self-Rated Domain Difficulty</span>
-            <p class="card-sub">Bar chart showing which domains reviewees feel least confident about before pretest.</p>
-            <div style="height: 300px; margin-top: 1.5rem; display: flex; align-items: center; justify-content: center; border: 1px dashed var(--border-subdued); border-radius: 8px;">
-              <span style="color: var(--text-muted);">[ Bar Chart Placeholder ]</span>
-            </div>
+          <div class="pf-table-scroll">
+            <table class="admin-table pf-table" id="pf-res-table">
+              <thead><tr id="pf-res-thead-row"></tr></thead>
+              <tbody id="pf-res-tbody"></tbody>
+            </table>
           </div>
-
         </div>
-
-        <!-- Meta / Text Responses -->
-        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-          
-          <div class="dash-card">
-            <span class="card-label">Submission Stats</span>
-            <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
-              <div style="display: flex; justify-content: space-between; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-subdued);">
-                <span style="color: var(--text-subdued);">Total Responses</span>
-                <strong style="color: var(--text-main);">142</strong>
-              </div>
-              <div style="display: flex; justify-content: space-between; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-subdued);">
-                <span style="color: var(--text-subdued);">Completion Rate</span>
-                <strong style="color: var(--text-main);">100%</strong>
-              </div>
-              <div style="display: flex; justify-content: space-between; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-subdued);">
-                <span style="color: var(--text-subdued);">Latest Response</span>
-                <strong style="color: var(--text-main);">Today, 10:45 AM</strong>
-              </div>
-            </div>
-          </div>
-
-          <div class="dash-card">
-            <span class="card-label">Recent Text Feedback</span>
-            <p class="card-sub">Latest qualitative answers.</p>
-            <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.75rem;">
-              <div style="padding: 0.75rem; background: var(--bg-base); border-radius: 6px; font-size: 0.85rem; color: var(--text-main);">
-                "I struggle most with the Philippine Constitution articles."
-              </div>
-              <div style="padding: 0.75rem; background: var(--bg-base); border-radius: 6px; font-size: 0.85rem; color: var(--text-main);">
-                "Need more examples on numerical reasoning."
-              </div>
-              <a href="#" style="font-size: 0.8rem; color: var(--fs-blue); margin-top: 0.5rem;">View all text responses →</a>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
+      </section>
     </main>
   </div>
 
+  <!-- Add / edit question -->
+  <div class="bat-modal-overlay" id="pf-q-modal" hidden>
+    <div class="bat-modal pf-modal-wide" role="dialog" aria-modal="true" aria-labelledby="pf-q-title">
+      <div class="bat-modal-head">
+        <h2 class="bat-modal-title" id="pf-q-title">Add question</h2>
+        <button type="button" class="bat-modal-x" id="pf-q-close" aria-label="Close"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <form class="bat-modal-form" id="pf-q-form" novalidate autocomplete="off">
+        <input type="hidden" id="pf-q-name">
+        <div class="bat-field bat-field--full" style="margin-bottom:.9rem">
+          <label class="bat-field-lbl" for="pf-q-label">Label <span class="qk-req">*</span></label>
+          <input type="text" class="bat-input" id="pf-q-label" required maxlength="255" placeholder="Type your question…">
+        </div>
+        <div class="bat-field bat-field--full" style="margin-bottom:.9rem">
+          <label class="bat-field-lbl" for="pf-q-type">Type</label>
+          <select class="bat-input bat-select" id="pf-q-type">
+            <option value="text">Text input</option>
+            <option value="number">Number input</option>
+            <option value="date">Date picker</option>
+            <option value="radio">Single select (radio)</option>
+            <option value="checkbox">Multiple select (checkbox)</option>
+            <option value="dropdown">Dropdown</option>
+            <option value="rating">Rating (1–5)</option>
+          </select>
+        </div>
+        <div class="bat-field bat-field--full" id="pf-q-choices-wrap" style="margin-bottom:.9rem" hidden>
+          <label class="bat-field-lbl" for="pf-q-choices">Options <span class="qk-req">*</span></label>
+          <p class="pf-small-print">One option per line.</p>
+          <textarea class="bat-input qk-textarea" id="pf-q-choices" rows="4" placeholder="Option A&#10;Option B"></textarea>
+        </div>
+        <div class="bat-field bat-field--full" style="margin-bottom:.9rem">
+          <label class="pf-check">
+            <input type="checkbox" id="pf-q-required">
+            <span>Required</span>
+          </label>
+        </div>
+        <div class="bat-modal-actions">
+          <button type="button" class="home-btn home-btn--ghost" id="pf-q-cancel">Cancel</button>
+          <button type="submit" class="home-btn home-btn--primary" id="pf-q-save">Save question</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Response detail -->
+  <div class="bat-modal-overlay" id="pf-detail-modal" hidden>
+    <div class="bat-modal pf-modal-detail" role="dialog" aria-modal="true" aria-labelledby="pf-detail-title">
+      <div class="bat-modal-head">
+        <h2 class="bat-modal-title" id="pf-detail-title">Response detail</h2>
+        <button type="button" class="bat-modal-x" id="pf-detail-close" aria-label="Close"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="pf-detail-body" id="pf-detail-body"></div>
+      <div class="bat-modal-actions" style="border-top:none;margin-top:0;padding-top:0">
+        <button type="button" class="home-btn home-btn--primary" id="pf-detail-done">Close</button>
+      </div>
+    </div>
+  </div>
+
   <script src="/js/admin-shell.js"></script>
+  <script>
+(function () {
+  const STORAGE_COL = 'pf:colOrder';
+  const theadRow = document.getElementById('pf-res-thead-row');
+  const resTbody = document.getElementById('pf-res-tbody');
+  const resSummary = document.getElementById('pf-res-summary');
+  const saveHint = document.getElementById('pf-save-hint');
+  const detailModal = document.getElementById('pf-detail-modal');
+  const detailBody = document.getElementById('pf-detail-body');
+  const detailTitle = document.getElementById('pf-detail-title');
+
+  let schema = { questions: [] };
+  let previewSurvey = null;
+
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function mergeColOrder(columns, savedOrder) {
+    const byKey = new Map(columns.map(c => [c.field_key, c]));
+    const used = new Set();
+    const out = [];
+    if (Array.isArray(savedOrder)) {
+      for (const k of savedOrder) {
+        if (typeof k !== 'string' || !byKey.has(k) || used.has(k)) continue;
+        used.add(k);
+        out.push(byKey.get(k));
+      }
+    }
+    for (const c of columns) {
+      if (!used.has(c.field_key)) out.push(c);
+    }
+    return out;
+  }
+
+  function readSavedColOrder() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_COL) || 'null');
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function slug(s) {
+    return String(s || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '')
+      .slice(0, 36) || 'q';
+  }
+
+  function uniqueName(base) {
+    const used = new Set(schema.questions.map(q => q.name));
+    let name = base;
+    let n = 0;
+    while (used.has(name)) {
+      n += 1;
+      name = `${base}_${n}`;
+    }
+    return name;
+  }
+
+  function typeLabel(t) {
+    const map = { text:'Text', number:'Number', date:'Date', radio:'Radio', checkbox:'Checkbox', dropdown:'Dropdown', rating:'Rating (1–5)' };
+    return map[t] || t;
+  }
+
+  function needsChoices(t) {
+    return ['radio','checkbox','dropdown'].includes(t);
+  }
+
+  function schemaToSurveyJson(localSchema) {
+    const q = Array.isArray(localSchema?.questions) ? localSchema.questions : [];
+    const elements = q.map(qq => {
+      const base = { name: qq.name, title: qq.title, isRequired: !!qq.isRequired };
+      switch (qq.type) {
+        case 'text': return { type:'text', ...base };
+        case 'number': return { type:'text', inputType:'number', ...base };
+        case 'date': return { type:'text', inputType:'date', ...base };
+        case 'radio': return { type:'radiogroup', choices: qq.choices || [], ...base };
+        case 'checkbox': return { type:'checkbox', choices: qq.choices || [], ...base };
+        case 'dropdown': return { type:'dropdown', choices: qq.choices || [], ...base };
+        case 'rating': return { type:'rating', rateValues:[1,2,3,4,5], ...base };
+        default: return { type:'text', ...base };
+      }
+    });
+    return { pages: [{ name:'profile_custom', elements }] };
+  }
+
+  function renderPreview() {
+    const card = document.getElementById('pf-preview-card');
+    if (card.hidden) return;
+    const host = document.getElementById('pf-preview-host');
+    host.innerHTML = '';
+    const sj = schemaToSurveyJson(schema);
+    previewSurvey = new Survey.Model(sj);
+    previewSurvey.showNavigationButtons = false;
+    previewSurvey.showCompletedButton = false;
+    previewSurvey.completedHtml = '';
+    previewSurvey.render(host);
+  }
+
+  function renderList() {
+    const list = document.getElementById('pf-q-list');
+    const empty = document.getElementById('pf-empty-msg');
+    list.innerHTML = '';
+    empty.hidden = schema.questions.length > 0;
+
+    for (const q of schema.questions) {
+      const li = document.createElement('li');
+      li.className = 'pf-sort-item';
+      li.dataset.name = q.name;
+      li.innerHTML = `
+        <button type="button" class="pf-drag" title="Drag to reorder" aria-label="Drag">
+          <span class="material-symbols-outlined">drag_indicator</span>
+        </button>
+        <div class="pf-sort-main">
+          <span class="pf-sort-label">${esc(q.title)}</span>
+          <span class="pf-sort-meta">${esc(typeLabel(q.type))} · ${q.isRequired ? 'Required' : 'Optional'} <code class="pf-key-inline">${esc(q.name)}</code></span>
+        </div>
+        <div class="pf-sort-actions">
+          <button type="button" class="pf-icon-btn" data-act="edit" title="Edit"><span class="material-symbols-outlined">edit</span></button>
+          <button type="button" class="pf-icon-btn" data-act="del" title="Delete"><span class="material-symbols-outlined">delete</span></button>
+        </div>
+      `;
+      li.querySelector('[data-act="edit"]').addEventListener('click', (e) => { e.stopPropagation(); openModal(q.name); });
+      li.querySelector('[data-act="del"]').addEventListener('click', (e) => { e.stopPropagation(); removeQuestion(q.name); });
+      list.appendChild(li);
+    }
+
+    Sortable.create(list, {
+      handle: '.pf-drag',
+      animation: 150,
+      onEnd: () => {
+        const order = [...list.querySelectorAll('li')].map(x => x.dataset.name);
+        schema.questions = order.map(n => schema.questions.find(q => q.name === n)).filter(Boolean);
+        renderPreview();
+      }
+    });
+  }
+
+  /* ── Add/Edit modal ─────────────────────────────────────── */
+  const qModal = document.getElementById('pf-q-modal');
+  const qForm = document.getElementById('pf-q-form');
+  const qTitle = document.getElementById('pf-q-title');
+  const qName = document.getElementById('pf-q-name');
+  const qLabel = document.getElementById('pf-q-label');
+  const qType = document.getElementById('pf-q-type');
+  const qRequired = document.getElementById('pf-q-required');
+  const qChoicesWrap = document.getElementById('pf-q-choices-wrap');
+  const qChoices = document.getElementById('pf-q-choices');
+
+  function syncChoicesVisibility() {
+    const t = qType.value;
+    const show = needsChoices(t);
+    qChoicesWrap.hidden = !show;
+    qChoices.toggleAttribute('required', show);
+  }
+  qType.addEventListener('change', syncChoicesVisibility);
+
+  function openModal(nameToEdit) {
+    qForm.reset();
+    qName.value = '';
+    qTitle.textContent = 'Add question';
+    qType.value = 'text';
+    qRequired.checked = false;
+    qChoices.value = '';
+    syncChoicesVisibility();
+
+    if (nameToEdit) {
+      const q = schema.questions.find(x => x.name === nameToEdit);
+      if (q) {
+        qTitle.textContent = 'Edit question';
+        qName.value = q.name;
+        qLabel.value = q.title;
+        qType.value = q.type;
+        qRequired.checked = !!q.isRequired;
+        qChoices.value = Array.isArray(q.choices) ? q.choices.join('\\n') : '';
+        syncChoicesVisibility();
+      }
+    }
+    qModal.hidden = false;
+    qLabel.focus();
+  }
+
+  function closeModal() {
+    qModal.hidden = true;
+  }
+
+  document.getElementById('pf-q-close').addEventListener('click', closeModal);
+  document.getElementById('pf-q-cancel').addEventListener('click', closeModal);
+  qModal.addEventListener('click', (e) => { if (e.target === qModal) closeModal(); });
+
+  document.getElementById('pf-add-q').addEventListener('click', () => openModal(null));
+
+  qForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const title = String(qLabel.value || '').trim();
+    const type = String(qType.value || '').trim();
+    if (!title) return;
+
+    let choices = undefined;
+    if (needsChoices(type)) {
+      choices = qChoices.value.split(/\\r?\\n/).map(s => s.trim()).filter(Boolean);
+      if (!choices.length) {
+        alert('Add at least one option.');
+        return;
+      }
+    }
+
+    const existingName = String(qName.value || '').trim();
+    if (existingName) {
+      const idx = schema.questions.findIndex(x => x.name === existingName);
+      if (idx !== -1) {
+        schema.questions[idx] = { name: existingName, title, type, isRequired: !!qRequired.checked, choices };
+      }
+    } else {
+      const base = 'custom_' + slug(title);
+      const name = uniqueName(base);
+      schema.questions.push({ name, title, type, isRequired: !!qRequired.checked, choices });
+    }
+
+    closeModal();
+    renderList();
+    renderPreview();
+  });
+
+  function removeQuestion(name) {
+    if (!confirm('Delete this question?')) return;
+    schema.questions = schema.questions.filter(q => q.name !== name);
+    renderList();
+    renderPreview();
+  }
+
+  function normalizeLoadedSchema(raw) {
+    if (!raw || typeof raw !== 'object' || !Array.isArray(raw.questions)) return { questions: [] };
+    return { questions: raw.questions };
+  }
+
+  async function loadSchema() {
+    const r = await fetch('/admin/api/profile-form', { credentials: 'same-origin' });
+    const d = await r.json().catch(() => ({}));
+    schema = normalizeLoadedSchema(d.schemaJson);
+    renderList();
+  }
+
+  document.getElementById('pf-save-form').addEventListener('click', async () => {
+    saveHint.textContent = '';
+    const r = await fetch('/admin/api/profile-form', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ schemaJson: schema }),
+    });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      saveHint.textContent = j.error || 'Save failed.';
+      return;
+    }
+    saveHint.textContent = 'Saved.';
+  });
+
+  document.getElementById('pf-preview-toggle').addEventListener('click', () => {
+    const card = document.getElementById('pf-preview-card');
+    card.hidden = !card.hidden;
+    if (!card.hidden) renderPreview();
+  });
+
+  loadSchema().catch(() => {
+    schema = { questions: [] };
+    renderList();
+  });
+
+  function showPanel(name) {
+    const editor = document.getElementById('pf-panel-editor');
+    const responses = document.getElementById('pf-panel-responses');
+    const t1 = document.getElementById('pf-tab-editor');
+    const t2 = document.getElementById('pf-tab-responses');
+    const resetBtn = document.getElementById('pf-reset-columns');
+    const isEditor = name === 'editor';
+    editor.hidden = !isEditor;
+    responses.hidden = isEditor;
+    t1.classList.toggle('is-active', isEditor);
+    t2.classList.toggle('is-active', !isEditor);
+    t1.setAttribute('aria-selected', isEditor ? 'true' : 'false');
+    t2.setAttribute('aria-selected', !isEditor ? 'true' : 'false');
+    resetBtn.hidden = isEditor;
+    if (!isEditor) loadResponses();
+  }
+
+  document.getElementById('pf-tab-editor').addEventListener('click', () => showPanel('editor'));
+  document.getElementById('pf-tab-responses').addEventListener('click', () => showPanel('responses'));
+  document.getElementById('pf-reset-columns').addEventListener('click', () => {
+    localStorage.removeItem(STORAGE_COL);
+    loadResponses();
+  });
+
+  let responsesSortable = null;
+
+  function fmtDate(d) {
+    if (!d) return '—';
+    try {
+      return new Date(d).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+    } catch (_) {
+      return String(d);
+    }
+  }
+
+  function buildThead(columns) {
+    theadRow.innerHTML = '';
+    const thName = document.createElement('th');
+    thName.className = 'pf-th-fixed';
+    thName.textContent = 'Name';
+
+    const thSub = document.createElement('th');
+    thSub.className = 'pf-th-fixed';
+    thSub.textContent = 'Submitted';
+
+    theadRow.appendChild(thName);
+    theadRow.appendChild(thSub);
+
+    for (const c of columns) {
+      const th = document.createElement('th');
+      th.className = 'pf-th-draggable';
+      th.dataset.colKey = c.field_key;
+      th.innerHTML = '<span class="material-symbols-outlined pf-col-grip" aria-hidden="true">drag_indicator</span>' + esc(c.label || c.field_key);
+      theadRow.appendChild(th);
+    }
+
+    const thGo = document.createElement('th');
+    thGo.className = 'pf-th-fixed pf-th-actions';
+    thGo.innerHTML = '<span class="pf-row-hint">View</span>';
+    theadRow.appendChild(thGo);
+
+    if (responsesSortable && typeof responsesSortable.destroy === 'function') {
+      responsesSortable.destroy();
+    }
+
+    responsesSortable = Sortable.create(theadRow, {
+      draggable: 'th[data-col-key]',
+      handle: '.pf-col-grip',
+      animation: 150,
+      fallbackTolerance: 3,
+      onEnd: () => {
+        const keys = [...theadRow.querySelectorAll('th[data-col-key]')].map(th => th.dataset.colKey);
+        localStorage.setItem(STORAGE_COL, JSON.stringify(keys));
+      },
+    });
+  }
+
+  async function loadResponses() {
+    resSummary.textContent = 'Loading…';
+    resTbody.innerHTML = '';
+    theadRow.innerHTML = '';
+
+    const r = await fetch('/admin/api/profile-form/responses', { credentials: 'same-origin' });
+    if (!r.ok) {
+      resSummary.textContent = 'Could not load responses.';
+      return;
+    }
+    const data = await r.json();
+    let cols = data.columns || [];
+    cols = mergeColOrder(cols, readSavedColOrder());
+    const rows = data.submissions || [];
+
+    resSummary.textContent = rows.length + ' submission' + (rows.length === 1 ? '' : 's');
+
+    buildThead(cols);
+
+    if (!rows.length) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td colspan="${2 + cols.length + 1}" class="pf-empty-cell">No completed profiles yet.</td>`;
+      resTbody.appendChild(tr);
+      return;
+    }
+
+    for (const row of rows) {
+      const tr = document.createElement('tr');
+      tr.className = 'pf-res-row';
+      tr.dataset.userId = String(row.userId);
+
+      const tdName = document.createElement('td');
+      tdName.className = 'pf-td-name';
+      tdName.textContent = row.name || '—';
+
+      const tdSub = document.createElement('td');
+      tdSub.textContent = fmtDate(row.submittedAt);
+
+      tr.appendChild(tdName);
+      tr.appendChild(tdSub);
+
+      for (const c of cols) {
+        const td = document.createElement('td');
+        const v = row.custom && row.custom[c.field_key];
+        td.textContent = v == null || v === '' ? '—' : String(v);
+        tr.appendChild(td);
+      }
+
+      const tdAct = document.createElement('td');
+      tdAct.innerHTML = '<span class="pf-row-hint">View</span>';
+      tr.appendChild(tdAct);
+
+      tr.addEventListener('click', () => openDetail(row.userId, row.name));
+      resTbody.appendChild(tr);
+    }
+  }
+
+  function closeDetail() {
+    detailModal.hidden = true;
+  }
+  document.getElementById('pf-detail-close').addEventListener('click', closeDetail);
+  document.getElementById('pf-detail-done').addEventListener('click', closeDetail);
+  detailModal.addEventListener('click', e => { if (e.target === detailModal) closeDetail(); });
+
+  async function openDetail(userId, nameHint) {
+    detailTitle.textContent = nameHint ? String(nameHint) : 'Response detail';
+    detailBody.innerHTML = '<p class="pf-muted">Loading…</p>';
+    detailModal.hidden = false;
+
+    const r = await fetch('/admin/api/profile-form/responses/' + encodeURIComponent(userId), { credentials: 'same-origin' });
+    if (!r.ok) {
+      detailBody.innerHTML = '<p class="pf-muted">Could not load this response.</p>';
+      return;
+    }
+    const d = await r.json();
+    const u = d.user || {};
+    const lp = d.learnerProfile || {};
+    const dom = d.domainRatings || [];
+    const custom = d.customFieldResponses || {};
+
+    let html = '<div class="pf-detail-grid">';
+    html += `<div class="pf-detail-block"><h3>Reviewee</h3><p>${esc(u.first_name || '')} ${esc(u.last_name || '')}</p><p class="pf-muted">${esc(u.email || '')}</p></div>`;
+    html += `<div class="pf-detail-block"><h3>Profile (system)</h3>
+      <ul class="pf-kv">
+        <li><span>Target exam date</span><b>${esc(lp.target_exam_date || '—')}</b></li>
+        <li><span>Study hours / week</span><b>${esc(lp.study_hours_per_week != null ? lp.study_hours_per_week : '—')}</b></li>
+        <li><span>Preferred study time</span><b>${esc(lp.preferred_study_time || '—')}</b></li>
+        <li><span>Primary device</span><b>${esc(lp.primary_device || '—')}</b></li>
+      </ul></div>`;
+
+    html += `<div class="pf-detail-block pf-detail-block--wide"><h3>Domain self-ratings</h3>`;
+    if (!dom.length) html += '<p class="pf-muted">None stored.</p>';
+    else html += '<ul class="pf-kv">' + dom.map(dr => `<li><span>${esc(dr.domain)}</span><b>${esc(dr.rating)}</b></li>`).join('') + '</ul>';
+    html += '</div>';
+
+    const defs = d.fieldDefs || [];
+    html += `<div class="pf-detail-block pf-detail-block--wide"><h3>Survey responses</h3>`;
+    if (!defs.length) html += '<p class="pf-muted">No SurveyJS fields defined.</p>';
+    else {
+      html += '<ul class="pf-kv">' + defs.map(def => {
+        let v = custom[def.field_key];
+        if (Array.isArray(v)) v = v.join(', ');
+        if (typeof v === 'object' && v != null) v = JSON.stringify(v);
+        return `<li><span>${esc(def.label)} <code class="pf-key-inline">${esc(def.field_key)}</code></span><b>${esc(v == null ? '' : v)}</b></li>`;
+      }).join('') + '</ul>';
+    }
+    html += '</div></div>';
+    detailBody.innerHTML = html;
+  }
+
+})();
+  </script>
 </body>
 </html>

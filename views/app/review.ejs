@@ -13,108 +13,340 @@
 
   <div id="navbar-placeholder"><%- include('../partials/navbar') %></div>
 
-  <div class="app-shell">
+  <div class="app-shell" id="app-shell">
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
     <div id="sidebar-placeholder"><%- include('../partials/sidebar') %></div>
 
     <main class="page-content">
 
-      <!-- ── Gate view: pretest not complete ── -->
-      <div id="review-gate" hidden>
-        <div class="review-gate-wrap">
-          <span class="material-symbols-outlined review-gate-icon">assignment_late</span>
-          <h2 class="review-gate-title">Diagnostic required</h2>
-          <p class="review-gate-body">Before starting a practice session, complete the diagnostic assessment. It measures your current domain scores and enables the system to personalise your review plan.</p>
-          <a href="/reviewee/diagnostic" class="cta-pill review-gate-btn">
-            <span class="material-symbols-outlined" style="font-size:18px;margin-right:0.4rem">play_circle</span>
-            Start Diagnostic
-          </a>
+      <!-- ══════════════════════════════════════════════════════
+           PANEL 1 — LAUNCHER
+      ══════════════════════════════════════════════════════ -->
+      <div id="rv-launcher">
+
+        <!-- Gate: diagnostic not done -->
+        <div id="rv-gate" hidden>
+          <div class="rv-gate-wrap">
+            <span class="material-symbols-outlined rv-gate-icon">lock</span>
+            <h2 class="rv-gate-title">Diagnostic Required</h2>
+            <p class="rv-gate-body">Complete the diagnostic assessment first. It calibrates your domain scores and enables the adaptive review system.</p>
+            <a href="/reviewee/diagnostic" class="cta-pill">
+              <span class="material-symbols-outlined" style="font-size:17px;margin-right:0.35rem">play_circle</span>
+              Start Diagnostic
+            </a>
+          </div>
+        </div>
+
+        <!-- Main launcher content -->
+        <div id="rv-main" hidden>
+
+          <header class="page-header">
+            <h1 class="page-title">Review</h1>
+          </header>
+
+          <!-- Two equal cards side by side -->
+          <div class="rv-launcher-grid">
+
+            <!-- LEFT: Session Starter -->
+            <div class="dash-card rv-starter-card">
+              <div class="rv-card-eyebrow">
+                <span class="material-symbols-outlined" style="font-size:14px">rocket_launch</span>
+                Session Starter
+              </div>
+
+              <div class="rv-rec-panel">
+                <div class="rv-rec-eyebrow">
+                  <span class="material-symbols-outlined" style="font-size:14px">auto_awesome</span>
+                  Recommended for You
+                </div>
+                <span class="q-domain-badge" id="rv-rec-badge" style="margin-bottom:0.35rem">—</span>
+                <h2 class="rv-rec-title" id="rv-rec-title">Loading…</h2>
+                <p class="rv-rec-desc" id="rv-rec-desc">Based on your current M-Elo ratings.</p>
+                <div class="rv-rec-meta">
+                  <span class="rv-meta-chip">
+                    <span class="material-symbols-outlined" style="font-size:13px">quiz</span>
+                    <span id="rv-rec-count">15</span> questions
+                  </span>
+                  <span class="rv-meta-chip">
+                    <span class="material-symbols-outlined" style="font-size:13px">psychology</span>
+                    Practice mode
+                  </span>
+                </div>
+              </div>
+
+              <div class="rv-starter-actions">
+                <button class="rv-rec-cta" id="rv-rec-start" type="button">
+                  <span class="material-symbols-outlined" style="font-size:17px">play_circle</span>
+                  Start Recommended
+                </button>
+                <button class="rv-custom-open-btn" id="rv-open-custom" type="button">
+                  <span class="material-symbols-outlined" style="font-size:17px">tune</span>
+                  Start Custom Session
+                </button>
+              </div>
+            </div>
+
+            <!-- RIGHT: Session History -->
+            <div class="dash-card rv-history-card">
+              <div class="rv-card-eyebrow">
+                <span class="material-symbols-outlined" style="font-size:14px">history</span>
+                Session History
+                <span class="rv-history-count" id="rv-session-count" style="margin-left:auto"></span>
+              </div>
+              <div id="rv-history-list" class="rv-history-scroll">
+                <div class="rv-history-empty">
+                  <span class="material-symbols-outlined">history</span>
+                  <p>No sessions yet. Start your first practice session above.</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div><!-- /#rv-launcher -->
+
+      <!-- ══════════════════════════════════════════════════════
+           CUSTOM SESSION MODAL
+      ══════════════════════════════════════════════════════ -->
+      <div class="rv-modal-overlay" id="rv-custom-modal" hidden>
+        <div class="rv-modal-card">
+          <div class="rv-modal-header">
+            <h3 class="rv-modal-title">
+              <span class="material-symbols-outlined" style="font-size:18px;vertical-align:-3px">tune</span>
+              Custom Session
+            </h3>
+            <button class="rv-modal-close" id="rv-modal-close" type="button" aria-label="Close">
+              <span class="material-symbols-outlined" style="font-size:20px">close</span>
+            </button>
+          </div>
+
+          <div class="rv-modal-body">
+            <div class="rv-modal-section">
+              <p class="rv-option-label">
+                <span class="material-symbols-outlined" style="font-size:14px;vertical-align:-2px">category</span>
+                Domain
+              </p>
+              <div class="rv-chip-row" id="rv-domain-chips">
+                <button class="rv-chip active" data-domain="All">All Domains</button>
+                <button class="rv-chip" data-domain="Verbal Ability">Verbal</button>
+                <button class="rv-chip" data-domain="Numerical Ability">Numerical</button>
+                <button class="rv-chip" data-domain="Analytical Ability">Analytical</button>
+                <button class="rv-chip" data-domain="Clerical Ability">Clerical</button>
+                <button class="rv-chip" data-domain="General Information">Gen. Info</button>
+              </div>
+            </div>
+
+            <div class="rv-modal-section">
+              <p class="rv-option-label">
+                <span class="material-symbols-outlined" style="font-size:14px;vertical-align:-2px">tune</span>
+                Mode
+              </p>
+              <div class="rv-mode-row">
+                <button class="rv-mode-btn active" data-mode="practice" type="button">
+                  <span class="material-symbols-outlined rv-mode-icon">psychology</span>
+                  <span class="rv-mode-name">Practice</span>
+                  <span class="rv-mode-desc">Instant feedback</span>
+                </button>
+                <button class="rv-mode-btn" data-mode="timed" type="button">
+                  <span class="material-symbols-outlined rv-mode-icon">timer</span>
+                  <span class="rv-mode-name">Timed</span>
+                  <span class="rv-mode-desc">Exam simulation</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="rv-modal-section">
+              <p class="rv-option-label">
+                <span class="material-symbols-outlined" style="font-size:14px;vertical-align:-2px">format_list_numbered</span>
+                Questions
+              </p>
+              <div class="rv-count-row" id="rv-count-chips">
+                <button class="rv-count-chip" data-count="10">10</button>
+                <button class="rv-count-chip active" data-count="15">15</button>
+                <button class="rv-count-chip" data-count="20">20</button>
+                <button class="rv-count-chip" data-count="30">30</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="rv-modal-footer">
+            <p class="rv-custom-note" id="rv-custom-note">All domains · Practice · 15 questions</p>
+            <button class="rv-rec-cta rv-modal-primary" id="rv-custom-start" type="button">
+              <span class="material-symbols-outlined" style="font-size:17px">play_arrow</span>
+              Start Session
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- ── Main review UI (visible after pretest) ── -->
-      <div id="review-main" hidden>
 
-        <!-- Page header -->
-        <header class="page-header">
-          <div>
-            <h1 class="page-title">Review</h1>
-            <p class="page-subtitle">Practice sessions and study history</p>
+      <!-- ══════════════════════════════════════════════════════
+           PANEL 2 — SESSION  (mirrors diagnostic layout)
+      ══════════════════════════════════════════════════════ -->
+      <div id="rv-session" hidden>
+
+        <!-- Header row -->
+        <div class="diag-exam-header">
+          <span class="diag-q-counter" id="rv-q-counter">Question 1 of 15</span>
+          <div class="diag-timer-wrap">
+            <span class="material-symbols-outlined" style="font-size:16px">schedule</span>
+            <span class="diag-timer" id="rv-timer">0:00</span>
           </div>
-        </header>
+          <button class="q-btn" id="rv-end-btn" style="padding:0.45rem 1.15rem;font-size:0.82rem">
+            End Session
+          </button>
+        </div>
 
-        <!-- ── Start Session card ── -->
-        <section class="review-start-section">
-          <div class="dash-card review-start-card">
-            <div class="review-start-header">
-              <div>
-                <span class="card-label">Start a Session</span>
-                <p class="card-sub">Choose domains and mode, then begin practising</p>
+        <!-- Progress bar -->
+        <div class="diag-progress-bar">
+          <div class="diag-progress-fill" id="rv-prog-fill" style="width:0%"></div>
+        </div>
+
+        <!-- Loading state -->
+        <div class="diag-question-card" id="rv-loading-card">
+          <p style="text-align:center;color:var(--text-subdued);padding:2rem 0">
+            <span class="material-symbols-outlined" style="font-size:2rem;display:block;margin-bottom:0.5rem;animation:spin 1s linear infinite">autorenew</span>
+            Preparing your session…
+          </p>
+        </div>
+
+        <!-- Question card -->
+        <div class="diag-question-card" id="rv-q-card" hidden>
+          <div class="q-meta">
+            <span class="q-domain-badge" id="rv-q-domain">Domain</span>
+          </div>
+          <p class="q-text" id="rv-q-text">Loading…</p>
+          <div class="q-choices" id="rv-choices"></div>
+
+          <!-- Feedback (shown after answer) -->
+          <div class="rv-feedback" id="rv-feedback" hidden></div>
+        </div>
+
+        <!-- Nav legend -->
+        <div class="q-nav-legend">
+          <div class="q-nav-legend-item">
+            <div class="q-legend-dot" style="background:#4ade80;border-radius:3px"></div>
+            Correct
+          </div>
+          <div class="q-nav-legend-item">
+            <div class="q-legend-dot" style="background:#f87171;border-radius:3px"></div>
+            Wrong
+          </div>
+          <div class="q-nav-legend-item">
+            <div class="q-legend-dot" style="background:rgba(37,99,235,0.15);border:1.5px solid var(--fs-blue);border-radius:3px"></div>
+            Answered
+          </div>
+          <div class="q-nav-legend-item">
+            <div class="q-legend-dot" style="background:transparent;border:1.5px solid var(--border-subdued);border-radius:3px"></div>
+            Unanswered
+          </div>
+        </div>
+        <div class="q-nav-grid" id="rv-nav-grid"></div>
+
+        <!-- Prev / Next controls -->
+        <div class="q-controls">
+          <button class="q-btn" id="rv-prev-btn" disabled
+            style="display:flex;align-items:center;gap:0.3rem">
+            <span class="material-symbols-outlined" style="font-size:18px">chevron_left</span>
+            Previous
+          </button>
+          <button class="q-btn" id="rv-next-btn"
+            style="display:flex;align-items:center;gap:0.3rem">
+            Next
+            <span class="material-symbols-outlined" style="font-size:18px">chevron_right</span>
+          </button>
+        </div>
+
+      </div><!-- /#rv-session -->
+
+
+      <!-- ══════════════════════════════════════════════════════
+           PANEL 3 — RESULT  (mirrors quiz.ejs result layout)
+      ══════════════════════════════════════════════════════ -->
+      <div id="rv-result" hidden>
+        <div class="qz-container" style="max-width:720px;margin:0 auto">
+          <div class="qz-results-card">
+
+            <div class="qz-score-display">
+              <div class="dash-ring-wrap large">
+                <svg viewBox="0 0 130 130" class="ring-svg" style="width:100%;height:100%">
+                  <circle cx="65" cy="65" r="54" class="ring-track"/>
+                  <circle cx="65" cy="65" r="54" class="ring-prog" id="rv-ring-prog"/>
+                </svg>
+                <div class="ring-center">
+                  <div class="ring-value-row">
+                    <span class="ring-pct" id="rv-score-val">0</span>
+                    <span class="ring-unit" style="font-size:1.2rem">%</span>
+                  </div>
+                  <span class="ring-note">Accuracy</span>
+                </div>
               </div>
-              <span class="material-symbols-outlined review-start-icon">school</span>
-            </div>
-
-            <!-- Domain selection -->
-            <div class="review-domain-select">
-              <p class="review-option-label">
-                <span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px">category</span>
-                Domain
+              <h2 class="qz-results-title" id="rv-result-badge">—</h2>
+              <p style="font-size:0.95rem;color:var(--text-subdued)">
+                You answered <strong id="rv-score-frac" style="color:var(--text-main)">— / —</strong> questions correctly.
               </p>
-              <div class="review-chip-row" id="review-domain-chips">
-                <button class="review-chip active" data-domain="All">All Domains</button>
-                <button class="review-chip" data-domain="Verbal Ability">Verbal</button>
-                <button class="review-chip" data-domain="Numerical Ability">Numerical</button>
-                <button class="review-chip" data-domain="Analytical Ability">Analytical</button>
-                <button class="review-chip" data-domain="Clerical Ability">Clerical</button>
-                <button class="review-chip" data-domain="General Information">General Info</button>
-              </div>
             </div>
 
-            <!-- Mode selection -->
-            <div class="review-mode-select">
-              <p class="review-option-label">
-                <span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px">tune</span>
-                Mode
-              </p>
-              <div class="review-mode-grid">
-                <button class="review-mode-card active" data-mode="practice" type="button">
-                  <span class="material-symbols-outlined review-mode-icon">psychology</span>
-                  <span class="review-mode-name">Practice</span>
-                  <span class="review-mode-desc">Instant feedback per question</span>
-                </button>
-                <button class="review-mode-card" data-mode="timed" type="button">
-                  <span class="material-symbols-outlined review-mode-icon">timer</span>
-                  <span class="review-mode-name">Timed</span>
-                  <span class="review-mode-desc">45-minute exam simulation</span>
-                </button>
-              </div>
+            <div class="qz-domain-breakdown">
+              <h3 class="qz-section-title">
+                <span class="material-symbols-outlined" style="color:var(--fs-orange)">stacked_bar_chart</span>
+                Domain Breakdown
+              </h3>
+              <div id="rv-breakdown"></div>
             </div>
 
-            <div class="review-start-row">
-              <p class="review-start-note" id="review-start-note">All domains · Practice mode</p>
-              <a href="/reviewee/quiz" class="cta-pill" id="review-start-link">
-                <span class="material-symbols-outlined" style="font-size:17px;margin-right:0.35rem">play_arrow</span>
-                Start Session
+            <!-- Detailed review toggle -->
+            <div style="margin-top:1.5rem;text-align:left">
+              <button id="rv-review-toggle" type="button"
+                style="width:100%;display:flex;align-items:center;justify-content:center;gap:0.5rem;padding:0.75rem;border-radius:10px;font-size:0.9rem;font-weight:600;background:var(--bg-base);border:1px solid var(--border-subdued);color:var(--text-main);cursor:pointer">
+                <span class="material-symbols-outlined" style="font-size:1.1rem">plagiarism</span>
+                Detailed Review
+              </button>
+              <div id="rv-review-list" style="margin-top:1rem" hidden></div>
+            </div>
+
+            <div class="qz-action-row">
+              <button class="qz-start-btn" id="rv-again-btn" type="button"
+                style="background:var(--card-bg);color:var(--text-main);border:2px solid var(--border-subdued);box-shadow:none">
+                <span class="material-symbols-outlined">refresh</span>
+                Practice Again
+              </button>
+              <a href="/reviewee/progress" class="qz-start-btn" style="text-decoration:none">
+                View Progress
               </a>
             </div>
-          </div>
-        </section>
 
-        <!-- ── Session history ── -->
-        <section class="review-history-section">
-          <div class="review-history-header">
-            <h2 class="review-history-title">Session History</h2>
-            <span class="review-history-count" id="review-session-count">0 sessions</span>
           </div>
-          <div id="review-history-list">
-            <div class="review-empty-state">
-              <span class="material-symbols-outlined" style="font-size:2.5rem;color:var(--text-subdued)">history</span>
-              <p>No sessions yet. Start your first practice session above.</p>
+        </div>
+      </div><!-- /#rv-result -->
+
+
+      <!-- Confirm end overlay -->
+      <div class="diag-confirm-overlay" id="rv-confirm-overlay" hidden>
+        <div class="diag-confirm-card">
+          <h3>End session?</h3>
+          <p>Your progress will be saved. Any unanswered questions will be skipped.</p>
+          <div class="diag-summary-grid">
+            <div class="diag-summary-tile">
+              <strong id="conf-answered" style="color:#4ade80">0</strong>
+              <span>Answered</span>
+            </div>
+            <div class="diag-summary-tile">
+              <strong id="conf-correct" style="color:#4ade80">0</strong>
+              <span>Correct</span>
+            </div>
+            <div class="diag-summary-tile">
+              <strong id="conf-unanswered" style="color:var(--fs-pink)">0</strong>
+              <span>Remaining</span>
             </div>
           </div>
-        </section>
-
-      </div><!-- /#review-main -->
+          <div class="confirm-btns">
+            <button class="q-btn" id="conf-cancel" style="flex:1;justify-content:center">Keep Going</button>
+            <button class="cta-pill" id="conf-finish" style="flex:1;justify-content:center">Finish Now</button>
+          </div>
+        </div>
+      </div>
 
     </main>
   </div>
@@ -123,102 +355,536 @@
   <script>
   (async () => {
 
-    /* ── Load dashboard to check pretestComplete ─────────── */
-    let d;
+    /* ── Constants ──────────────────────────────────────── */
+    const DOMAIN_SLUG = {
+      'Verbal Ability':      'verbal',
+      'Numerical Ability':   'numerical',
+      'Analytical Ability':  'analytical',
+      'Clerical Ability':    'clerical',
+      'General Information': 'general',
+    };
+    const DOMAIN_SHORT = {
+      'Verbal Ability':      'Verbal',
+      'Numerical Ability':   'Numerical',
+      'Analytical Ability':  'Analytical',
+      'Clerical Ability':    'Clerical',
+      'General Information': 'Gen. Info',
+    };
+    const LETTERS = ['A','B','C','D'];
+
+    /* ── Panel switch ───────────────────────────────────── */
+    function showPanel(name) {
+      ['rv-launcher','rv-session','rv-result'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.hidden = id !== `rv-${name}`;
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    /* ── Session state ──────────────────────────────────── */
+    let sessionId   = null;
+    let questions   = [];
+    let current     = 0;
+    let answers     = {}; // { questionId: {chosen, correct, isCorrect, explanation, delta} }
+    let startTime   = null;
+    let timerInt    = null;
+
+    /* ── Load initial data ──────────────────────────────── */
+    let d, prog;
     try {
-      const r = await fetch('/reviewee/api/dashboard');
-      if (r.ok) d = await r.json();
+      const [rD, rP] = await Promise.all([
+        fetch('/reviewee/api/dashboard'),
+        fetch('/reviewee/api/progress'),
+      ]);
+      if (rD.ok) d = await rD.json();
+      if (rP.ok) prog = await rP.json();
     } catch (_) {}
 
-    const gateEl = document.getElementById('review-gate');
-    const mainEl = document.getElementById('review-main');
-
-    if (!d || !d.pretestComplete) {
-      if (gateEl) gateEl.removeAttribute('hidden');
+    if (!d?.pretestComplete) {
+      document.getElementById('rv-gate').removeAttribute('hidden');
       return;
     }
-    if (mainEl) mainEl.removeAttribute('hidden');
+    document.getElementById('rv-main').removeAttribute('hidden');
 
-    /* ── Domain chip selection ──────────────────────────── */
-    let selectedDomain = 'All';
-    let selectedMode   = 'practice';
+    /* ── Recommendation panel ───────────────────────────── */
+    let recDomain = 'All', recCount = 15;
+    if (prog?.domainProgress?.length) {
+      const weakest = [...prog.domainProgress].sort((a,b) => a.current - b.current)[0];
+      recDomain = weakest.domain;
+      recCount  = weakest.current < 50 ? 20 : 15;
+      const badge = document.getElementById('rv-rec-badge');
+      badge.textContent = DOMAIN_SHORT[recDomain] || recDomain;
+      badge.className   = `q-domain-badge ${DOMAIN_SLUG[recDomain] || ''}`;
+      document.getElementById('rv-rec-title').textContent = weakest.domain;
+      document.getElementById('rv-rec-desc').textContent  =
+        `Your current score is ${weakest.current}%. A focused session here gives the most improvement.`;
+      document.getElementById('rv-rec-count').textContent = recCount;
+    } else {
+      const badge = document.getElementById('rv-rec-badge');
+      badge.textContent = 'All Domains';
+      badge.className   = 'q-domain-badge';
+      document.getElementById('rv-rec-title').textContent = 'All Domains';
+      document.getElementById('rv-rec-desc').textContent  = 'Practice across all domains to build a well-rounded score.';
+    }
+    document.getElementById('rv-rec-start').addEventListener('click', () =>
+      launchSession(recDomain, 'practice', recCount, 'recommended')
+    );
 
-    function updateStartLink() {
-      const link = document.getElementById('review-start-link');
-      const note = document.getElementById('review-start-note');
-      if (!link) return;
-      const domainParam = selectedDomain === 'All' ? '' : `?domain=${encodeURIComponent(selectedDomain)}`;
-      link.href = `/reviewee/quiz${domainParam}`;
-      if (note) {
-        const domLabel = selectedDomain === 'All' ? 'All domains' : selectedDomain;
-        const modeLabel = selectedMode === 'timed' ? 'Timed mode' : 'Practice mode';
-        note.textContent = `${domLabel} · ${modeLabel}`;
-      }
+    /* ── Custom modal ───────────────────────────────────── */
+    let selDomain = 'All', selMode = 'practice', selCount = 15;
+    const customModal = document.getElementById('rv-custom-modal');
+
+    function updateNote() {
+      const dL = selDomain === 'All' ? 'All domains' : (DOMAIN_SHORT[selDomain] || selDomain);
+      const mL = selMode === 'timed' ? 'Timed' : 'Practice';
+      document.getElementById('rv-custom-note').textContent = `${dL} · ${mL} · ${selCount} questions`;
     }
 
-    document.getElementById('review-domain-chips').addEventListener('click', e => {
-      const chip = e.target.closest('.review-chip');
-      if (!chip) return;
-      document.querySelectorAll('.review-chip').forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      selectedDomain = chip.dataset.domain;
-      updateStartLink();
+    // Open / close modal
+    document.getElementById('rv-open-custom').addEventListener('click', () => {
+      customModal.removeAttribute('hidden');
+      document.body.style.overflow = 'hidden';
     });
+    function closeModal() {
+      customModal.setAttribute('hidden', '');
+      document.body.style.overflow = '';
+    }
+    document.getElementById('rv-modal-close').addEventListener('click', closeModal);
+    customModal.addEventListener('click', e => { if (e.target === customModal) closeModal(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
-    document.querySelectorAll('.review-mode-card').forEach(card => {
-      card.addEventListener('click', () => {
-        document.querySelectorAll('.review-mode-card').forEach(c => c.classList.remove('active'));
-        card.classList.add('active');
-        selectedMode = card.dataset.mode;
-        updateStartLink();
+    document.getElementById('rv-domain-chips').addEventListener('click', e => {
+      const chip = e.target.closest('.rv-chip');
+      if (!chip) return;
+      document.querySelectorAll('#rv-domain-chips .rv-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      selDomain = chip.dataset.domain;
+      updateNote();
+    });
+    document.querySelectorAll('.rv-mode-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.rv-mode-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selMode = btn.dataset.mode;
+        updateNote();
       });
     });
+    document.getElementById('rv-count-chips').addEventListener('click', e => {
+      const chip = e.target.closest('.rv-count-chip');
+      if (!chip) return;
+      document.querySelectorAll('#rv-count-chips .rv-count-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      selCount = parseInt(chip.dataset.count);
+      updateNote();
+    });
+    document.getElementById('rv-custom-start').addEventListener('click', () => {
+      closeModal();
+      launchSession(selDomain, selMode, selCount, 'custom');
+    });
+    updateNote();
 
-    updateStartLink();
+    /* ── Session history ────────────────────────────────── */
+    async function loadHistory() {
+      let sessions = [];
+      try {
+        const r = await fetch('/reviewee/api/sessions');
+        if (r.ok) { const data = await r.json(); sessions = data.sessions || []; }
+      } catch (_) {}
 
-    /* ── Load session history ───────────────────────────── */
-    let sessions = [];
-    try {
-      const r = await fetch('/reviewee/api/sessions');
-      if (r.ok) {
-        const data = await r.json();
-        sessions = data.sessions || [];
-      }
-    } catch (_) {}
+      const countEl = document.getElementById('rv-session-count');
+      const listEl  = document.getElementById('rv-history-list');
+      if (countEl) countEl.textContent = sessions.length ? `${sessions.length} total` : '';
+      if (!listEl || !sessions.length) return;
 
-    const countEl = document.getElementById('review-session-count');
-    const listEl  = document.getElementById('review-history-list');
-    if (countEl) countEl.textContent = `${sessions.length} session${sessions.length !== 1 ? 's' : ''}`;
-
-    if (listEl && sessions.length) {
-      listEl.innerHTML = sessions.map((s, i) => {
-        const start = new Date(s.startedAt);
-        const end   = new Date(s.endedAt);
-        const mins  = Math.round((end - start) / 60000);
-        const dateStr = start.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
-        const timeStr = start.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' });
-        const domainsHtml = (s.domains || []).map(d =>
-          `<span class="review-hist-domain">${d.replace(' Ability', '')}</span>`
-        ).join('');
-        const scoreClass = s.score >= 80 ? 'good' : s.score >= 60 ? 'warn' : 'bad';
+      const SC = s => s >= 80 ? 'good' : s >= 60 ? 'warn' : 'bad';
+      listEl.innerHTML = sessions.slice(0, 5).map(s => {
+        const start   = new Date(s.startedAt);
+        const end     = new Date(s.endedAt);
+        const mins    = Math.round((end - start) / 60000);
+        const dateStr = start.toLocaleDateString('en-PH', { month:'short', day:'numeric', year:'numeric' });
+        const timeStr = start.toLocaleTimeString('en-PH', { hour:'2-digit', minute:'2-digit' });
+        const score   = s.score || 0;
+        const barClr  = score >= 80 ? '#4ade80' : score >= 60 ? '#ff9933' : '#f87171';
+        const tags    = (s.domains || []).map(dn =>
+          `<span class="rvh-domain-tag">${dn.replace(' Ability','')}</span>`).join('');
         return `
-          <div class="review-hist-row">
-            <div class="review-hist-left">
-              <span class="material-symbols-outlined review-hist-icon">quiz</span>
-              <div>
-                <p class="review-hist-date">${dateStr} at ${timeStr}</p>
-                <div class="review-hist-domains">${domainsHtml || '<span class="review-hist-domain">General</span>'}</div>
+          <div class="rvh-card">
+            <div class="rvh-card-top">
+              <div class="rvh-card-info">
+                <span class="rvh-date">${dateStr} · ${timeStr}</span>
+                <div class="rvh-tags">${tags || '<span class="rvh-domain-tag">All Domains</span>'}</div>
+              </div>
+              <div class="rvh-card-score">
+                <span class="rvh-score ${SC(score)}">${score}%</span>
+                <span class="rvh-meta">${s.questionCount || 0} q · ${mins < 1 ? '<1' : mins} min</span>
               </div>
             </div>
-            <div class="review-hist-right">
-              <span class="review-hist-meta">${s.questionCount || 0} questions · ${mins < 1 ? '<1' : mins} min</span>
-              <span class="review-hist-score ${scoreClass}">${s.score || 0}%</span>
+            <div class="rvh-bar-track">
+              <div class="rvh-bar-fill" style="width:${score}%;background:${barClr}"></div>
             </div>
           </div>`;
       }).join('');
     }
+    loadHistory();
+
+
+    /* ════════════════════════════════════════════════════════
+       SESSION ENGINE
+    ════════════════════════════════════════════════════════ */
+
+    async function launchSession(domain, mode, count, stype) {
+      // Collapse sidebar like diagnostic does
+      const shell   = document.getElementById('app-shell');
+      const sidebar = document.getElementById('app-sidebar');
+      if (shell)   shell.classList.add('sidebar-collapsed');
+      if (sidebar) sidebar.classList.add('collapsed');
+      localStorage.setItem('hauers_sidebar_collapsed', '1');
+
+      showPanel('session');
+      document.getElementById('rv-loading-card').removeAttribute('hidden');
+      document.getElementById('rv-q-card').setAttribute('hidden','');
+
+      let data;
+      try {
+        const resp = await fetch('/reviewee/api/session/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            domain: domain === 'All' ? null : domain,
+            mode, num_questions: count, session_type: stype,
+          }),
+        });
+        if (!resp.ok) throw new Error('Server error');
+        data = await resp.json();
+      } catch (err) {
+        alert('Could not start session. Please try again.');
+        showPanel('launcher');
+        return;
+      }
+
+      if (!data.questions?.length) {
+        alert('No questions found for this selection. Try "All Domains".');
+        showPanel('launcher');
+        return;
+      }
+
+      sessionId = data.sessionId;
+      questions = data.questions;
+      current   = 0;
+      answers   = {};
+      startTime = Date.now();
+
+      document.getElementById('rv-loading-card').setAttribute('hidden','');
+      document.getElementById('rv-q-card').removeAttribute('hidden');
+
+      startTimer();
+      renderQ();
+      buildNavGrid();
+    }
+
+    /* ── Timer ──────────────────────────────────────────── */
+    function startTimer() {
+      if (timerInt) clearInterval(timerInt);
+      timerInt = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        const m = Math.floor(elapsed / 60);
+        const s = elapsed % 60;
+        const el = document.getElementById('rv-timer');
+        if (el) el.textContent = `${m}:${s.toString().padStart(2,'0')}`;
+      }, 1000);
+    }
+
+    /* ── Render question ────────────────────────────────── */
+    function renderQ() {
+      const q    = questions[current];
+      const total= questions.length;
+      const ans  = answers[q.id];
+      const slug = DOMAIN_SLUG[q.domain] || 'general';
+
+      document.getElementById('rv-q-counter').textContent = `Question ${current+1} of ${total}`;
+      document.getElementById('rv-prog-fill').style.width = `${Math.round(((current+1)/total)*100)}%`;
+
+      const domEl = document.getElementById('rv-q-domain');
+      domEl.textContent = q.domain || '';
+      domEl.className   = `q-domain-badge ${slug}`;
+
+      document.getElementById('rv-q-text').textContent = q.question_text;
+
+      // Build choices
+      const choicesEl = document.getElementById('rv-choices');
+      choicesEl.innerHTML = (q.choices || []).map((c, i) => {
+        let cls = 'q-choice-btn';
+        if (ans) {
+          if (c === ans.correct)                  cls += ' rv-choice-correct';
+          else if (c === ans.chosen && !ans.isCorrect) cls += ' rv-choice-wrong';
+          else                                    cls += ' rv-choice-dimmed';
+        }
+        return `<button class="${cls}" data-choice="${c}"${ans ? ' disabled' : ''}>
+          <span class="q-choice-letter">${LETTERS[i]}</span>${c}
+        </button>`;
+      }).join('');
+
+      if (!ans) {
+        choicesEl.querySelectorAll('.q-choice-btn').forEach(btn => {
+          btn.addEventListener('click', () => handleAnswer(btn.dataset.choice, q));
+        });
+      }
+
+      // Feedback
+      const fbEl = document.getElementById('rv-feedback');
+      if (ans) {
+        fbEl.removeAttribute('hidden');
+        fbEl.className = `rv-feedback ${ans.isCorrect ? 'rv-feedback--correct' : 'rv-feedback--wrong'}`;
+        const explHtml = ans.explanation
+          ? `<p class="rv-feedback-expl">${ans.explanation}</p>` : '';
+        const dSign = ans.delta >= 0 ? '+' : '';
+        const dCls  = ans.delta >= 0 ? 'rv-delta--pos' : 'rv-delta--neg';
+        fbEl.innerHTML = `
+          <div class="rv-feedback-verdict">
+            <span class="material-symbols-outlined" style="font-size:18px">${ans.isCorrect ? 'check_circle' : 'cancel'}</span>
+            <span>${ans.isCorrect ? 'Correct!' : `Incorrect — correct answer: <strong>${ans.correct}</strong>`}</span>
+          </div>
+          ${explHtml}
+          ${ans.delta !== undefined ? `<span class="rv-delta-chip ${dCls}">${dSign}${ans.delta} pts · ${DOMAIN_SHORT[q.domain] || q.domain}</span>` : ''}`;
+      } else {
+        fbEl.setAttribute('hidden','');
+      }
+
+      // Controls
+      document.getElementById('rv-prev-btn').disabled = current === 0;
+      document.getElementById('rv-next-btn').disabled = current === total - 1;
+    }
+
+    /* ── Handle answer ──────────────────────────────────── */
+    async function handleAnswer(chosen, q) {
+      // Lock choices immediately
+      document.querySelectorAll('#rv-choices .q-choice-btn').forEach(b => { b.disabled = true; });
+
+      let result = null;
+      try {
+        const resp = await fetch('/reviewee/api/session/answer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId,
+            questionId: q.id,
+            chosenAnswerText: chosen,
+            timeSpentMs: startTime ? Date.now() - startTime : 0,
+          }),
+        });
+        if (resp.ok) result = await resp.json();
+      } catch (_) {}
+
+      if (result) {
+        answers[q.id] = {
+          chosen,
+          correct:     result.correctAnswer,
+          isCorrect:   result.correct,
+          explanation: result.explanation || null,
+          delta:       result.delta ?? 0,
+        };
+      }
+
+      buildNavGrid();
+      renderQ();
+
+      // Auto-advance if not last question (after brief pause to read feedback)
+      const isLast = current === questions.length - 1;
+      if (isLast && questions.every(qq => answers[qq.id])) {
+        document.getElementById('rv-next-btn').textContent = '';
+        document.getElementById('rv-next-btn').innerHTML =
+          'Finish Session <span class="material-symbols-outlined" style="font-size:16px">check</span>';
+        document.getElementById('rv-next-btn').disabled = false;
+        document.getElementById('rv-next-btn').onclick = finishSession;
+      }
+    }
+
+    /* ── Nav grid ───────────────────────────────────────── */
+    function buildNavGrid() {
+      const grid = document.getElementById('rv-nav-grid');
+      grid.innerHTML = questions.map((q, i) => {
+        const ans = answers[q.id];
+        let cls = 'q-nav-dot';
+        if (ans) cls += ans.isCorrect ? ' rv-dot-correct' : ' rv-dot-wrong';
+        else     cls += ' answered'; // blue if visited without answer (fallback)
+        if (!ans) cls = 'q-nav-dot'; // unanswered = grey
+        if (ans)  cls = `q-nav-dot ${ans.isCorrect ? 'rv-dot-correct' : 'rv-dot-wrong'}`;
+        if (i === current) cls += ' current';
+        return `<button class="${cls}" data-idx="${i}">${i+1}</button>`;
+      }).join('');
+      grid.querySelectorAll('.q-nav-dot').forEach(btn => {
+        btn.addEventListener('click', () => { current = +btn.dataset.idx; renderQ(); });
+      });
+    }
+
+    /* ── Controls ───────────────────────────────────────── */
+    document.getElementById('rv-prev-btn').addEventListener('click', () => {
+      if (current > 0) { current--; renderQ(); }
+    });
+    document.getElementById('rv-next-btn').addEventListener('click', () => {
+      if (current < questions.length - 1) { current++; renderQ(); }
+    });
+
+    /* ── End session button ─────────────────────────────── */
+    document.getElementById('rv-end-btn').addEventListener('click', () => {
+      const answered   = Object.keys(answers).length;
+      const correct    = Object.values(answers).filter(a => a.isCorrect).length;
+      const unanswered = questions.length - answered;
+      document.getElementById('conf-answered').textContent   = answered;
+      document.getElementById('conf-correct').textContent    = correct;
+      document.getElementById('conf-unanswered').textContent = unanswered;
+      document.getElementById('rv-confirm-overlay').removeAttribute('hidden');
+    });
+    document.getElementById('conf-cancel').addEventListener('click', () => {
+      document.getElementById('rv-confirm-overlay').setAttribute('hidden','');
+    });
+    document.getElementById('conf-finish').addEventListener('click', () => {
+      document.getElementById('rv-confirm-overlay').setAttribute('hidden','');
+      finishSession();
+    });
+
+    /* ── Finish session ─────────────────────────────────── */
+    async function finishSession() {
+      if (timerInt) { clearInterval(timerInt); timerInt = null; }
+      const timeTakenS = startTime ? Math.floor((Date.now() - startTime) / 1000) : null;
+      try {
+        await fetch('/reviewee/api/session/end', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId, timeTakenS }),
+        });
+      } catch (_) {}
+      buildResult();
+      showPanel('result');
+      loadHistory();
+    }
+
+
+    /* ════════════════════════════════════════════════════════
+       RESULT BUILDER  (same logic as quiz.ejs)
+    ════════════════════════════════════════════════════════ */
+    function buildResult() {
+      const userAnswers = Object.values(answers);
+      const total   = questions.length;
+      const correct = userAnswers.filter(a => a.isCorrect).length;
+      const pct     = total ? Math.round((correct / total) * 100) : 0;
+
+      // Ring animation
+      const scoreEl = document.getElementById('rv-score-val');
+      const ringEl  = document.getElementById('rv-ring-prog');
+      if (scoreEl) {
+        let v = 0;
+        const tick = setInterval(() => {
+          v = Math.min(v + Math.ceil(pct / 30), pct);
+          scoreEl.textContent = v;
+          if (v >= pct) clearInterval(tick);
+        }, 50);
+      }
+      if (ringEl) {
+        const r = 54, circ = 2 * Math.PI * r;
+        ringEl.style.strokeDasharray  = circ;
+        ringEl.style.strokeDashoffset = circ;
+        setTimeout(() => {
+          ringEl.style.transition      = 'stroke-dashoffset 1.5s cubic-bezier(0.34,1.56,0.64,1)';
+          ringEl.style.strokeDashoffset = circ * (1 - pct / 100);
+        }, 300);
+      }
+
+      document.getElementById('rv-score-frac').textContent = `${correct} / ${total}`;
+
+      const badge = document.getElementById('rv-result-badge');
+      if (pct >= 80) badge.innerHTML = 'Outstanding Performance! <span class="material-symbols-outlined" style="color:#FFD633">local_fire_department</span>';
+      else if (pct >= 60) badge.innerHTML = 'Good Effort, Keep Pushing <span class="material-symbols-outlined" style="display:inline-block;transform:translateY(4px);color:var(--fs-orange)">trending_up</span>';
+      else badge.innerHTML = 'Opportunity for Growth <span class="material-symbols-outlined" style="display:inline-block;transform:translateY(4px);color:var(--fs-pink)">menu_book</span>';
+
+      // Domain breakdown
+      const domainMap = {};
+      questions.forEach(q => {
+        const ans = answers[q.id];
+        if (!domainMap[q.domain]) domainMap[q.domain] = { total:0, correct:0, delta:0 };
+        domainMap[q.domain].total++;
+        if (ans?.isCorrect) domainMap[q.domain].correct++;
+        domainMap[q.domain].delta += ans?.delta || 0;
+      });
+
+      const brkEl = document.getElementById('rv-breakdown');
+      brkEl.innerHTML = '';
+      Object.entries(domainMap).forEach(([domain, d]) => {
+        const dp    = d.total ? Math.round((d.correct / d.total) * 100) : 0;
+        const cls   = dp >= 80 ? 'good' : dp >= 60 ? 'warn' : 'bad';
+        const dSign = d.delta >= 0 ? '+' : '';
+        brkEl.innerHTML +=
+          `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.3rem">
+            <span style="font-size:0.875rem;font-weight:600;color:var(--text-main)">${domain}
+              <span style="font-weight:normal;opacity:0.6">(Δ ${dSign}${Math.round(d.delta)})</span>
+            </span>
+            <span class="${cls}" style="font-weight:700;font-size:0.85rem">${d.correct}/${d.total} (${dp}%)</span>
+          </div>
+          <div style="height:6px;background:var(--card-bg);border:1px solid var(--border-subdued);border-radius:99px;margin-bottom:0.85rem;overflow:hidden">
+            <div style="height:100%;width:0%;border-radius:99px;transition:width 1s cubic-bezier(0.34,1.56,0.64,1);${cls==='good'?'background:#4ade80':cls==='warn'?'background:var(--fs-yellow)':'background:var(--fs-pink)'}" data-w="${dp}"></div>
+          </div>`;
+      });
+      setTimeout(() => {
+        brkEl.querySelectorAll('[data-w]').forEach(b => { b.style.width = b.dataset.w + '%'; });
+      }, 400);
+
+      // Detailed review
+      const revList = document.getElementById('rv-review-list');
+      revList.innerHTML = questions.map((q, i) => {
+        const ans    = answers[q.id];
+        const isCorr = ans?.isCorrect;
+        const icon   = isCorr ? 'check_circle' : 'cancel';
+        const color  = isCorr ? '#4ade80' : 'var(--fs-pink)';
+        const bg     = isCorr ? 'rgba(74,222,128,0.05)' : 'rgba(255,51,102,0.05)';
+        const border = isCorr ? 'rgba(74,222,128,0.15)' : 'rgba(255,51,102,0.15)';
+        return `
+          <div class="qz-review-item" style="background:${bg};border:1px solid ${border}">
+            <span class="material-symbols-outlined" style="color:${color}">${icon}</span>
+            <div>
+              <p class="qz-review-q">${i+1}. ${q.question_text}</p>
+              ${!isCorr
+                ? `<p class="qz-review-ans">Your answer: <s>${ans?.chosen || '—'}</s><br>Correct: <strong style="color:var(--text-main)">${ans?.correct || '—'}</strong></p>`
+                : `<p class="qz-review-ans">Correct: <strong>${ans?.chosen}</strong></p>`}
+              ${ans?.explanation ? `<p class="qz-review-ans" style="margin-top:0.3rem;font-style:italic">${ans.explanation}</p>` : ''}
+            </div>
+          </div>`;
+      }).join('');
+
+      document.getElementById('rv-review-toggle').onclick = function() {
+        revList.hidden = !revList.hidden;
+        this.innerHTML = revList.hidden
+          ? '<span class="material-symbols-outlined" style="font-size:1.1rem">plagiarism</span> Detailed Review'
+          : '<span class="material-symbols-outlined" style="font-size:1.1rem">expand_less</span> Hide Review';
+        if (!revList.hidden) revList.scrollIntoView({ behavior:'smooth', block:'start' });
+      };
+    }
+
+    document.getElementById('rv-again-btn').addEventListener('click', () => showPanel('launcher'));
+
+    /* Deep link from Study Plan: /reviewee/review?domain=…&start=1 */
+    const _sp = new URLSearchParams(location.search);
+    const _dom = _sp.get('domain');
+    const _go = _sp.get('start') === '1' || _sp.get('start') === 'true';
+    const _okDom = new Set([
+      'All', 'Verbal Ability', 'Numerical Ability', 'Analytical Ability',
+      'Clerical Ability', 'General Information',
+    ]);
+    if (_dom && _okDom.has(_dom)) {
+      document.querySelectorAll('#rv-domain-chips .rv-chip').forEach(c => {
+        c.classList.toggle('active', c.dataset.domain === _dom);
+      });
+      selDomain = _dom;
+      updateNote();
+      if (_go) {
+        history.replaceState({}, '', '/reviewee/review');
+        launchSession(_dom, 'practice', 15, 'study-plan');
+      }
+    }
 
   })();
   </script>
+
+  <%- include('../partials/enrollment-code-modal') %>
+  <script src="/js/toast-notifications.js"></script>
 </body>
 </html>

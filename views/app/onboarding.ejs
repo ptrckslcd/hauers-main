@@ -3,16 +3,83 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Initial Profile Setup | Hauers</title>
+  <title>Initial Profile Setup | ACCESS</title>
 
   <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
   <link rel="stylesheet" href="/css/base.css">
   <link rel="stylesheet" href="/css/layout.css">
   <link rel="stylesheet" href="/css/auth.css">
   <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/survey-core@1.12.61/survey-core.min.css">
+  <link rel="stylesheet" href="/css/surveyjs-hauers.css">
+  <script src="https://cdn.jsdelivr.net/npm/survey-core@1.12.61/survey.core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/survey-js-ui@1.12.61/survey-js-ui.min.js"></script>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block">
 
   <script src="/js/theme-toggle.js"></script>
+  <style>
+    /* Dark mode logo switching */
+    .logo-dark { display: none !important; }
+    .logo-light { display: inline-block !important; }
+
+    [data-theme="dark"] .logo-dark { display: inline-block !important; }
+    [data-theme="dark"] .logo-light { display: none !important; }
+    
+    /* ACCESS logo in dark mode: inverted palette (white and blue) */
+    [data-theme="dark"] .logo-access {
+      filter: invert(1) !important;
+      opacity: 0.9;
+    }
+    
+    /* Hauers logo remains same in both modes */
+    .logo-hauers {
+      filter: none !important;
+    }
+    
+    .brand-logos {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 0.5rem;
+    }
+    .brand-logos img {
+      height: 28px;
+      width: auto;
+    }
+    .brand-logos .separator {
+      color: var(--text-subdued);
+      font-weight: 300;
+      font-size: 1.5rem;
+      margin: 0 2px;
+    }
+    .brand-logos .brand-x {
+      color: var(--text-subdued);
+      margin: 0 4px;
+    }
+
+    /* Skip button styling */
+    .btn-skip-dashboard {
+      background: #ffffff !important;
+      color: #000000 !important;
+      border: 1px solid var(--border-default) !important;
+      font-weight: 600 !important;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .btn-skip-dashboard:hover {
+      background: #f8f9fa !important;
+      transform: translateY(-1px);
+    }
+
+    /* Disabled pre-test state */
+    .btn-disabled {
+      background: #e2e8f0 !important;
+      color: #94a3b8 !important;
+      cursor: not-allowed !important;
+      pointer-events: none !important;
+      box-shadow: none !important;
+      transform: none !important;
+    }
+  </style>
 </head>
 <body>
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -36,11 +103,21 @@
     <div class="auth-column">
       <div class="greeting-area">
         <div class="brand-logos">
-          <img src="/assets/access-logo.svg" alt="ACCESS logo" style="height: 28px;">
+          <!-- CSPC Logo -->
+          <img src="/assets/cspc-og-logo.png" alt="CSPC" class="logo-light">
+          <img src="/assets/cspc-white-logo.png" alt="CSPC" class="logo-dark">
+          
+          <span class="separator">|</span>
+          
+          <!-- ACCESS Logo -->
+          <img src="/assets/access-logo.svg" alt="ACCESS" class="logo-access">
+          
           <span class="brand-x">&times;</span>
-          <img src="/assets/hauers-logo.svg" alt="Hauers logo" style="height: 28px;">
+          
+          <!-- Hauers Logo -->
+          <img src="/assets/hauers-logo.svg" alt="Hauers" class="logo-hauers">
         </div>
-        <h1 class="greeting">Profile Setup</h1>
+        <h1 class="greeting" style="font-size: 1.8rem; margin-bottom: 0.5rem;">Profile Setup</h1>
         <p class="greeting-sub">Complete your setup so we can personalize your review journey.</p>
       </div>
 
@@ -122,7 +199,6 @@
                   <select class="ob-select" id="revieweeType" name="revieweeType" required>
                     <option value="" disabled selected>Select an option...</option>
                     <option value="student">Student</option>
-                    <option value="alumni">Alumni</option>
                     <option value="employee">Employee</option>
                   </select>
                   <span class="material-symbols-outlined input-trailing-icon">expand_more</span>
@@ -156,11 +232,49 @@
             <div class="grid-2">
               <div class="form-group">
                 <label class="input-label" for="program">Program / Course</label>
-                <div class="input-field"><div class="input-inner"><div class="input-stack"><input type="text" id="program" name="program" placeholder="e.g. BSCS"></div></div></div>
+                <div class="input-field">
+                  <div class="input-inner">
+                    <div class="input-stack">
+                      <select class="ob-select" id="program" name="program">
+                        <option value="" disabled selected>Select Program...</option>
+                        <option value="BSCS">BS Computer Science</option>
+                        <option value="BSIT">BS Information Technology</option>
+                        <option value="BSIS">BS Information Systems</option>
+                        <option value="BSEMC">BS Entertainment and Multimedia Computing</option>
+                        <option value="BSA">BS Accountancy</option>
+                        <option value="BSBA">BS Business Administration</option>
+                        <option value="BSTM">BS Tourism Management</option>
+                        <option value="BSHM">BS Hospitality Management</option>
+                        <option value="BSEd">Bachelor of Secondary Education</option>
+                        <option value="BEEd">Bachelor of Elementary Education</option>
+                        <option value="BSN">BS Nursing</option>
+                        <option value="BSCE">BS Civil Engineering</option>
+                        <option value="BSME">BS Mechanical Engineering</option>
+                        <option value="BSEE">BS Electrical Engineering</option>
+                        <option value="BSECE">BS Electronics Engineering</option>
+                      </select>
+                      <span class="material-symbols-outlined input-trailing-icon">expand_more</span>
+                    </div>
+                  </div>
+                </div>
               </div>
               <div class="form-group">
-                <label class="input-label" for="yearLevel">Year Level / Graduated</label>
-                <div class="input-field"><div class="input-inner"><div class="input-stack"><input type="text" id="yearLevel" name="yearLevel" placeholder="e.g. 4th Year or 2023"></div></div></div>
+                <label class="input-label" for="yearLevel">Year Level</label>
+                <div class="input-field">
+                  <div class="input-inner">
+                    <div class="input-stack">
+                      <select class="ob-select" id="yearLevel" name="yearLevel">
+                        <option value="" disabled selected>Select Year Level...</option>
+                        <option value="1st Year">1st Year</option>
+                        <option value="2nd Year">2nd Year</option>
+                        <option value="3rd Year">3rd Year</option>
+                        <option value="4th Year">4th Year</option>
+                        <option value="5th Year">5th Year</option>
+                      </select>
+                      <span class="material-symbols-outlined input-trailing-icon">expand_more</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -168,13 +282,43 @@
           <div id="section-employee" class="dynamic-section">
             <div class="form-group">
               <label class="input-label" for="department">Department or Office</label>
-              <div class="input-field"><div class="input-inner"><div class="input-stack"><input type="text" id="department" name="department" placeholder="e.g. HR Department"></div></div></div>
+              <div class="input-field">
+                <div class="input-inner">
+                  <div class="input-stack">
+                    <select class="ob-select" id="department" name="department">
+                      <option value="" disabled selected>Select Department...</option>
+                      <option value="Teaching Staff">Teaching Staff</option>
+                      <option value="Non-Teaching Staff">Non-Teaching Staff</option>
+                      <option value="Admin Office">Admin Office</option>
+                      <option value="Registrar">Registrar</option>
+                      <option value="Library">Library</option>
+                      <option value="Clinic">Clinic</option>
+                      <option value="Other">Other</option>
+                    </select>
+                    <span class="material-symbols-outlined input-trailing-icon">expand_more</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
         <div class="ob-panel hidden" data-panel="2">
           <p class="ob-question">Exam Information</p>
+
+          <div class="form-group" style="margin-bottom: 1.5rem;">
+            <label class="input-label" for="enrollmentCode">
+              Enrollment Code <span style="color: var(--text-subdued); font-weight: normal;">(Optional - enter later if you don't have one)</span>
+            </label>
+            <div class="input-field">
+              <div class="input-inner">
+                <div class="input-stack">
+                  <input type="text" id="enrollmentCode" name="enrollmentCode" placeholder="e.g. ACC-2026-PRO" autocomplete="off" spellcheck="false" style="text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600;">
+                </div>
+              </div>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-subdued); margin-top: 0.4rem;">This code ties your account to a specific batch and exam level, and is required before taking the pre-diagnostic test.</p>
+          </div>
 
           <div class="form-group">
             <label class="input-label" for="examLevel">Target Exam Level</label>
@@ -197,12 +341,7 @@
             <div class="input-field">
               <div class="input-inner">
                 <div class="input-stack">
-                  <select class="ob-select" id="examDate" name="examDate" required>
-                    <option value="" disabled selected>Select target window...</option>
-                    <option value="March">March</option>
-                    <option value="August">August</option>
-                  </select>
-                  <span class="material-symbols-outlined input-trailing-icon">expand_more</span>
+                  <input type="date" class="ob-select" id="examDate" name="examDate" required>
                 </div>
               </div>
             </div>
@@ -257,13 +396,15 @@
           <div class="form-group">
             <label class="input-label">Struggling Areas / Focus Topics</label>
             <div class="ob-days-grid" style="display:flex;gap:0.5rem;flex-wrap:wrap;">
-              <label class="ob-day-chip"><input type="checkbox" name="strugglingAreas" value="Numerical"><span>Numerical Ability</span></label>
-              <label class="ob-day-chip"><input type="checkbox" name="strugglingAreas" value="Verbal"><span>Verbal Ability</span></label>
-              <label class="ob-day-chip"><input type="checkbox" name="strugglingAreas" value="Clerical"><span>Clerical Operations</span></label>
-              <label class="ob-day-chip"><input type="checkbox" name="strugglingAreas" value="Logic"><span>Logic & Reasoning</span></label>
-              <label class="ob-day-chip"><input type="checkbox" name="strugglingAreas" value="General Info"><span>General Info</span></label>
+              <label class="ob-day-chip"><input type="checkbox" name="strugglingAreas" value="Numerical Ability"><span>Numerical Ability</span></label>
+              <label class="ob-day-chip"><input type="checkbox" name="strugglingAreas" value="Verbal Ability"><span>Verbal Ability</span></label>
+              <label class="ob-day-chip"><input type="checkbox" name="strugglingAreas" value="Clerical Ability"><span>Clerical Ability</span></label>
+              <label class="ob-day-chip"><input type="checkbox" name="strugglingAreas" value="Analytical Ability"><span>Analytical Ability</span></label>
+              <label class="ob-day-chip"><input type="checkbox" name="strugglingAreas" value="General Information"><span>General Information</span></label>
             </div>
           </div>
+
+          <div id="ob-custom-fields-root" class="ob-custom-fields-root"></div>
         </div>
 
         <div class="ob-nav" id="ob-nav">
@@ -278,8 +419,11 @@
             <span class="material-symbols-outlined" style="font-size:36px;color:#fff">check</span>
           </div>
           <h2 class="success-title sa-item" style="--sa-delay:0.18s">Profile Setup Complete!</h2>
-          <p class="success-desc sa-item" style="--sa-delay:0.28s">You are ready for your pre-diagnostic. Start the test now to generate your initial feedback and study direction.</p>
-          <a href="/reviewee/diagnostic" class="submit-btn sa-item" style="--sa-delay:0.38s;max-width:320px;width:100%;display:inline-flex;justify-content:center;text-decoration:none;">Start Pre-Diagnostic</a>
+          <p class="success-desc sa-item" style="--sa-delay:0.28s">You are ready for your pre-test. Start the test now to generate your initial feedback and study direction.</p>
+          <div style="width: 100%; display: flex; flex-direction: column; align-items: center; gap: 0.75rem;">
+            <a href="/reviewee/diagnostic" id="btn-pretest" class="submit-btn sa-item" style="--sa-delay:0.38s;max-width:320px;width:100%;display:inline-flex;justify-content:center;align-items:center;text-decoration:none;">Start Pre-test</a>
+            <a href="/reviewee/dashboard" class="submit-btn btn-skip-dashboard sa-item" style="--sa-delay:0.48s;max-width:320px;width:100%;display:inline-flex;justify-content:center;align-items:center;text-decoration:none;">Skip for now, go to Dashboard</a>
+          </div>
         </div>
       </section>
     </div>
@@ -542,7 +686,7 @@
         });
       })();
 
-      // Custom select dropdowns aligned with Hauers theme
+      // Custom select dropdowns aligned with ACCESS theme
       (function initCustomSelects() {
         const selects = document.querySelectorAll('.ob-panel select.ob-select');
         if (!selects.length) return;
@@ -706,7 +850,7 @@
 
       function syncTypeSections() {
         const type = revieweeType ? revieweeType.value : '';
-        if (schoolSection) schoolSection.classList.toggle('active', type === 'student' || type === 'alumni');
+        if (schoolSection) schoolSection.classList.toggle('active', type === 'student');
         if (employeeSection) employeeSection.classList.toggle('active', type === 'employee');
       }
 
@@ -726,6 +870,44 @@
       if (confidence && confDisplay) {
         confidence.addEventListener('input', () => { confDisplay.textContent = confidence.value; });
       }
+
+      let obSurveyModel = null;
+      const surveyRootEl = document.getElementById('ob-custom-fields-root');
+      const pffReady = fetch('/reviewee/api/profile-form', { credentials: 'same-origin' })
+        .then(r => (r.ok ? r.json() : {}))
+        .then(d => {
+          if (!surveyRootEl || typeof Survey === 'undefined' || !Survey.Model) return;
+          surveyRootEl.innerHTML = '';
+          surveyRootEl.classList.remove('ob-survey-root');
+          surveyRootEl.classList.add('hidden');
+          surveyRootEl.setAttribute('hidden', '');
+          const sj = d.surveyJson;
+          const m = new Survey.Model(sj && typeof sj === 'object' ? sj : {});
+          const questions = typeof m.getAllQuestions === 'function' ? m.getAllQuestions(false) : [];
+          if (!questions.length) {
+            obSurveyModel = null;
+            return;
+          }
+          obSurveyModel = m;
+          m.showNavigationButtons = false;
+          m.showCompletedButton = false;
+          m.completedHtml = '';
+          surveyRootEl.classList.remove('hidden');
+          surveyRootEl.removeAttribute('hidden');
+          surveyRootEl.classList.add('ob-survey-root');
+          const cap = document.createElement('p');
+          cap.className = 'ob-question';
+          cap.style.marginTop = '1.35rem';
+          cap.textContent = 'Additional information';
+          surveyRootEl.appendChild(cap);
+          const host = document.createElement('div');
+          host.className = 'ob-survey-host';
+          surveyRootEl.appendChild(host);
+          m.render(host);
+        })
+        .catch(() => {
+          obSurveyModel = null;
+        });
 
       function updateUI(n) {
         panels.forEach(p => p.classList.toggle('hidden', Number(p.dataset.panel) !== n));
@@ -759,6 +941,15 @@
           if (!String(el.value || '').trim()) valid = false;
         });
 
+        if (currentStep === 3 && obSurveyModel) {
+          const ql = typeof obSurveyModel.getAllQuestions === 'function'
+            ? obSurveyModel.getAllQuestions(false)
+            : [];
+          if (ql.length && obSurveyModel.hasErrors(true, true)) {
+            valid = false;
+          }
+        }
+
         return valid;
       }
 
@@ -771,7 +962,7 @@
         panel.addEventListener('animationend', () => panel.classList.remove('shake'), { once: true });
       }
 
-      nextBtn.addEventListener('click', () => {
+      nextBtn.addEventListener('click', async () => {
         if (!validate(step)) {
           shake(step);
           return;
@@ -784,7 +975,13 @@
         }
 
         if (step === TOTAL) {
-          sessionStorage.setItem('onboardingComplete', 'true');
+          nextBtn.disabled = true;
+          nextBtn.textContent = 'Saving...';
+
+          try {
+            await pffReady;
+          } catch (_) { /* ignore */ }
+
           const fd = new FormData(document.getElementById('ob-form'));
           const data = Object.fromEntries(fd.entries());
 
@@ -794,13 +991,61 @@
           const selectedDays = Array.from(document.querySelectorAll('input[name="studyDays"]:checked')).map(i => i.value);
           if (selectedDays.length) data.studyDays = selectedDays;
 
-          sessionStorage.setItem('studyPrefs', JSON.stringify(data));
+          const domains = ["Numerical Ability", "Verbal Ability", "Clerical Ability", "Analytical Ability", "General Information"];
+          const domainRatings = {};
+          domains.forEach(d => {
+            const isStruggling = selectedAreas.includes(d);
+            const baseConf = parseInt(data.confidence || 5);
+            let rating = Math.max(1, Math.min(5, Math.ceil(baseConf / 2)));
+            if (isStruggling) rating = Math.max(1, rating - 1);
+            domainRatings[d] = rating;
+          });
 
-          if (form) form.classList.add('hidden');
-          if (greeting) greeting.classList.add('hidden');
-          if (steps) steps.classList.add('hidden');
-          if (completionView) completionView.classList.remove('hidden');
-          if (authColumn) authColumn.classList.add('completion-mode');
+          try {
+            const res = await fetch('/reviewee/api/profile', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                first_name: data.firstName,
+                last_name: data.lastName,
+                target_exam_date: data.examDate,
+                study_hours_per_week: data.studyHours,
+                preferred_study_time: data.studyTime,
+                domain_self_ratings: domainRatings,
+                enrollment_code: data.enrollmentCode,
+                custom_fields: (() => {
+                  const n =
+                    obSurveyModel && typeof obSurveyModel.getAllQuestions === 'function'
+                      ? obSurveyModel.getAllQuestions(false).length
+                      : 0;
+                  return n ? { ...obSurveyModel.data } : {};
+                })(),
+              }),
+            });
+            const resData = await res.json().catch(() => ({}));
+            if (!res.ok || resData.error) {
+              throw new Error(resData.error || res.statusText || 'Save failed');
+            }
+
+            if (form) form.classList.add('hidden');
+            if (greeting) greeting.classList.add('hidden');
+            if (steps) steps.classList.add('hidden');
+
+            const codeInput = document.getElementById('enrollmentCode');
+            const pretestBtn = document.getElementById('btn-pretest');
+            if (pretestBtn && codeInput && !codeInput.value.trim()) {
+              pretestBtn.classList.add('btn-disabled');
+              pretestBtn.setAttribute('title', 'Please enroll in a batch first to take the pre-test.');
+            }
+
+            if (completionView) completionView.classList.remove('hidden');
+            if (authColumn) authColumn.classList.add('completion-mode');
+          } catch (err) {
+            console.error(err);
+            nextBtn.disabled = false;
+            nextBtn.textContent = 'Submit Profile';
+            alert(err.message || 'An error occurred. Please try again.');
+          }
         }
       });
 
