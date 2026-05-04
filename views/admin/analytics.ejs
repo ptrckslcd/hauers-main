@@ -9,6 +9,80 @@
   <link rel="stylesheet" href="/css/dashboard.css">
   <script src="/js/theme-toggle.js"></script>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block">
+  <style>
+    .ra-card-head {
+      border-bottom: 1px solid var(--border-subdued);
+      padding-bottom: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+    .ra-card-sub {
+      margin: 0.35rem 0 0;
+      font-size: 0.82rem;
+      color: var(--text-subdued);
+      font-weight: 500;
+    }
+    .ra-chart-host {
+      position: relative;
+      height: 300px;
+      width: 100%;
+    }
+    /* Institutional Table refinements */
+    .ra-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .ra-table th {
+      background: var(--bg-base);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-subdued);
+      padding: 0.85rem 1rem;
+      text-align: left;
+      font-weight: 700;
+      border-bottom: 1.5px solid var(--border-strong);
+    }
+    .ra-table td {
+      padding: 1rem;
+      font-size: 0.88rem;
+      border-bottom: 1px solid var(--border-subdued);
+      color: var(--text-main);
+    }
+    .ra-table tr:hover td {
+      background: rgba(37, 99, 235, 0.02);
+    }
+    .ra-table-wrap {
+      overflow-x: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border-subdued) transparent;
+    }
+    /* Comparison Panels */
+    .ra-compare-panel {
+      background: var(--bg-base) !important;
+      padding: 1.5rem !important;
+      border: 1px solid var(--border-subdued) !important;
+      box-shadow: none !important;
+    }
+    .ra-stat-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.75rem 0;
+      border-bottom: 1px dashed var(--border-strong);
+    }
+    .ra-stat-item span {
+      color: var(--text-subdued);
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+    .ra-stat-item b {
+      font-size: 0.9rem;
+      color: var(--text-main);
+      font-weight: 700;
+    }
+    .ra-stat-item--last {
+      border-bottom: none;
+    }
+  </style>
 </head>
 <body data-role="admin">
 
@@ -19,11 +93,9 @@
     <div id="sidebar-placeholder"><%- include('../partials/admin-sidebar') %></div>
 
     <main class="page-content home-page">
-
       <header class="page-header ra-page-header">
         <div>
           <h1 class="page-title">Reports &amp; analytics</h1>
-          <p class="pf-sub">Privacy-safe cohort insights. This page shows aggregates only — no individual identities.</p>
         </div>
         <div class="ra-header-actions">
           <button type="button" class="home-btn home-btn--ghost" id="ra-refresh">
@@ -64,8 +136,8 @@
         </div>
       </div>
 
-      <div class="dash-card pgx-card-history" style="margin-bottom: 2rem;">
-        <div class="pgx-history-top" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem; margin-bottom: 0;">
+      <div class="dash-card ra-overview-card" style="margin-bottom: 2rem;">
+        <div class="ra-card-head">
           <p class="pgx-section-label pgx-section-label--flush">Cohort performance overview</p>
         </div>
         <div class="pgx-table-scroll">
@@ -85,28 +157,28 @@
         </div>
       </div>
 
-      <div class="pgx-grid-2" style="margin-bottom: 2rem;">
-        <div class="dash-card pgx-card-trend">
-          <div class="pgx-trend-top" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+      <div class="pgx-grid-2" style="margin-bottom: 2rem; gap: 1.5rem;">
+        <div class="dash-card ra-chart-card">
+          <div class="ra-card-head">
             <p class="pgx-section-label pgx-section-label--flush">Domain weakness map</p>
-            <p class="pf-muted" style="margin: 0.25rem 0 0; font-size: 0.85rem;">Ranked weakest → strongest by theta</p>
+            <p class="ra-card-sub">Ranked weakest → strongest by theta</p>
           </div>
-          <div class="pgx-chart-shell" style="position: relative; height: 300px; width: 100%;">
+          <div class="ra-chart-host">
             <canvas id="ra-domain-bar"></canvas>
           </div>
         </div>
-        <div class="dash-card pgx-card-history">
-          <div class="pgx-history-top" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem; margin-bottom: 0;">
+        <div class="dash-card ra-detail-card">
+          <div class="ra-card-head">
             <p class="pgx-section-label pgx-section-label--flush">Domain details</p>
           </div>
-          <div class="pgx-table-scroll">
-            <table class="pgx-table ra-table">
+          <div class="ra-table-wrap">
+            <table class="ra-table">
               <thead>
                 <tr>
-                  <th class="pgx-th">Domain</th>
-                  <th class="pgx-th pgx-th--r" style="text-align:right;">Avg theta</th>
-                  <th class="pgx-th pgx-th--r" style="text-align:right;">% below passing</th>
-                  <th class="pgx-th" style="width:100px;">Trend</th>
+                  <th>Domain</th>
+                  <th style="text-align:right;">Avg theta</th>
+                  <th style="text-align:right;">% below passing</th>
+                  <th style="width:100px;">Trend</th>
                 </tr>
               </thead>
               <tbody id="ra-domain-tbody"></tbody>
@@ -115,41 +187,41 @@
         </div>
       </div>
 
-      <div class="pgx-grid-2" style="margin-bottom: 2rem;">
-        <div class="dash-card pgx-card-trend">
-          <div class="pgx-trend-top" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+      <div class="pgx-grid-2" style="margin-bottom: 2rem; gap: 1.5rem;">
+        <div class="dash-card ra-chart-card">
+          <div class="ra-card-head">
             <p class="pgx-section-label pgx-section-label--flush">Engagement</p>
-            <p class="pf-muted" style="margin: 0.25rem 0 0; font-size: 0.85rem;">Sessions per day (past 30 days)</p>
+            <p class="ra-card-sub">Sessions per day (past 30 days)</p>
           </div>
-          <div class="pgx-chart-shell" style="position: relative; height: 300px; width: 100%;">
+          <div class="ra-chart-host">
             <canvas id="ra-sessions-line"></canvas>
           </div>
         </div>
-        <div class="dash-card pgx-card-trend">
-          <div class="pgx-trend-top" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+        <div class="dash-card ra-chart-card">
+          <div class="ra-card-head">
             <p class="pgx-section-label pgx-section-label--flush">Usage patterns</p>
-            <p class="pf-muted" style="margin: 0.25rem 0 0; font-size: 0.85rem;">
+            <p class="ra-card-sub">
               Avg sessions / active reviewee / week: <strong id="ra-avg-sessions" style="color: var(--text-main);">—</strong>
             </p>
           </div>
-          <div class="pgx-chart-shell" style="position: relative; height: 300px; width: 100%;">
+          <div class="ra-chart-host">
             <canvas id="ra-peak-hours"></canvas>
           </div>
         </div>
       </div>
 
-      <div class="dash-card" style="margin-bottom: 2rem; padding: 1.5rem;">
-        <div class="pgx-history-top" style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+      <div class="dash-card" style="margin-bottom: 2rem;">
+        <div class="ra-card-head">
           <p class="pgx-section-label pgx-section-label--flush">Diagnostic completion funnel</p>
         </div>
-        <div class="ra-funnel" id="ra-funnel" style="max-width: 800px; margin: 0 auto;"></div>
+        <div class="ra-funnel" id="ra-funnel" style="max-width: 800px; margin: 0 auto; padding: 1.5rem;"></div>
       </div>
 
-      <div class="dash-card" style="margin-bottom: 2rem; padding: 1.5rem;">
-        <div class="ra-compare-head" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+      <div class="dash-card" style="margin-bottom: 2rem;">
+        <div class="ra-card-head" style="display: flex; justify-content: space-between; align-items: center;">
           <div>
             <p class="pgx-section-label pgx-section-label--flush">Batch comparison</p>
-            <p class="pf-muted" style="margin: 0.25rem 0 0; font-size: 0.85rem;">Compare two batches side-by-side</p>
+            <p class="ra-card-sub">Compare two batches side-by-side</p>
           </div>
           <div class="ra-compare-controls" style="display: flex; gap: 0.5rem; align-items: center;">
             <select class="bat-input bat-select" id="ra-batch-a" style="min-width: 150px; font-size: 0.85rem; height: 36px; padding: 0 10px;"></select>
@@ -159,34 +231,34 @@
         </div>
 
         <div class="pgx-grid-2" style="margin-bottom: 2rem; gap: 1.5rem;">
-          <div class="dash-card" style="background: var(--bg-inset); padding: 1.5rem; border: 1px solid var(--border-subtle); box-shadow: none;">
-            <p class="pgx-section-label" id="ra-a-title" style="margin-bottom: 1rem; font-size: 1.1rem; color: var(--text-main);">Batch A</p>
-            <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px dashed var(--border-subtle);">
-              <span style="color: var(--text-subdued); font-size: 0.9rem;">Avg readiness</span>
-              <b id="ra-a-readiness" style="font-size: 0.9rem;">—</b>
+          <div class="dash-card ra-compare-panel">
+            <p class="pgx-section-label" id="ra-a-title" style="margin-bottom: 1rem; font-size: 1.05rem; color: var(--text-main);">Batch A</p>
+            <div class="ra-stat-item">
+              <span>Avg readiness</span>
+              <b id="ra-a-readiness">—</b>
             </div>
-            <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px dashed var(--border-subtle);">
-              <span style="color: var(--text-subdued); font-size: 0.9rem;">Completion rate</span>
-              <b id="ra-a-completion" style="font-size: 0.9rem;">—</b>
+            <div class="ra-stat-item">
+              <span>Completion rate</span>
+              <b id="ra-a-completion">—</b>
             </div>
-            <div style="display: flex; justify-content: space-between; padding: 0.5rem 0;">
-              <span style="color: var(--text-subdued); font-size: 0.9rem;">Active (7d)</span>
-              <b id="ra-a-active" style="font-size: 0.9rem;">—</b>
+            <div class="ra-stat-item ra-stat-item--last">
+              <span>Active (7d)</span>
+              <b id="ra-a-active">—</b>
             </div>
           </div>
-          <div class="dash-card" style="background: var(--bg-inset); padding: 1.5rem; border: 1px solid var(--border-subtle); box-shadow: none;">
-            <p class="pgx-section-label" id="ra-b-title" style="margin-bottom: 1rem; font-size: 1.1rem; color: var(--text-main);">Batch B</p>
-            <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px dashed var(--border-subtle);">
-              <span style="color: var(--text-subdued); font-size: 0.9rem;">Avg readiness</span>
-              <b id="ra-b-readiness" style="font-size: 0.9rem;">—</b>
+          <div class="dash-card ra-compare-panel">
+            <p class="pgx-section-label" id="ra-b-title" style="margin-bottom: 1rem; font-size: 1.05rem; color: var(--text-main);">Batch B</p>
+            <div class="ra-stat-item">
+              <span>Avg readiness</span>
+              <b id="ra-b-readiness">—</b>
             </div>
-            <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px dashed var(--border-subtle);">
-              <span style="color: var(--text-subdued); font-size: 0.9rem;">Completion rate</span>
-              <b id="ra-b-completion" style="font-size: 0.9rem;">—</b>
+            <div class="ra-stat-item">
+              <span>Completion rate</span>
+              <b id="ra-b-completion">—</b>
             </div>
-            <div style="display: flex; justify-content: space-between; padding: 0.5rem 0;">
-              <span style="color: var(--text-subdued); font-size: 0.9rem;">Active (7d)</span>
-              <b id="ra-b-active" style="font-size: 0.9rem;">—</b>
+            <div class="ra-stat-item ra-stat-item--last">
+              <span>Active (7d)</span>
+              <b id="ra-b-active">—</b>
             </div>
           </div>
         </div>

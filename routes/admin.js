@@ -1344,7 +1344,7 @@ router.get('/api/announcements', requireAdmin, async (req, res) => {
               u.first_name AS authorFirstName, u.last_name AS authorLastName
          FROM announcements a
          LEFT JOIN batches b ON b.id = a.target_batch_id
-         JOIN users u ON u.id = a.published_by
+         LEFT JOIN users u ON u.id = a.published_by
         ORDER BY a.publish_at DESC, a.created_at DESC, a.id DESC`
     );
     res.json({ announcements: rows });

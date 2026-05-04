@@ -1242,11 +1242,11 @@ router.get('/api/materials', authEnrolled, async (req, res) => {
     const [rows] = await db.query(
       `SELECT m.id, m.title, m.description, m.type, m.difficulty, m.exam_level,
               m.content_url AS contentUrl, m.content_html AS contentHtml,
-              m.est_minutes AS estMinutes, d.name AS domain
+              m.est_minutes AS estMinutes, COALESCE(d.name, 'General') AS domain
        FROM materials m
-       JOIN domains d ON m.domain_id = d.id
+       LEFT JOIN domains d ON m.domain_id = d.id
        WHERE m.status = 'published'
-         AND (m.exam_level = ? OR m.exam_level = 'both')
+         AND (LOWER(m.exam_level) = ? OR LOWER(m.exam_level) = 'both')
        ORDER BY m.id DESC`,
       [examLevel]
     );
