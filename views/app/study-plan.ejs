@@ -33,7 +33,10 @@
               <span class="spx-k">Target exam date</span>
               <p class="spx-exam-date" id="spx-exam-date">—</p>
             </div>
-            <a href="/reviewee/profile" class="spx-profile-link">Edit in profile</a>
+            <a href="#spx-roadmap" class="spx-profile-link spx-timeline-btn">
+              <span class="material-symbols-outlined" style="font-size:16px">account_tree</span>
+              Preparation timeline
+            </a>
           </div>
 
           <div class="spx-metrics">
@@ -255,6 +258,18 @@
       renderWeekGrid(sp.dailySchedule || [], todayIso, diagOk);
       renderRoadmap(phases, idx);
       renderLog(sp.adjustments || []);
+
+      // Smooth scroll for timeline link
+      document.querySelector('.spx-timeline-btn')?.addEventListener('click', e => {
+        e.preventDefault();
+        const target = document.getElementById('spx-roadmap');
+        if (target) {
+          window.scrollTo({
+            top: target.offsetTop - 100, // accounting for navbar
+            behavior: 'smooth'
+          });
+        }
+      });
     }).catch(err => console.error('[study-plan]', err));
   })();
   </script>

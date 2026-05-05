@@ -364,20 +364,34 @@
     const calEl = q('pgx-cal-grid');
     const WK = 16;
     const now = new Date();
-    const gs  = new Date(now);
-    gs.setDate(now.getDate() - (WK * 7 - 1));
-    const dow = gs.getDay();
-    gs.setDate(gs.getDate() + (dow === 0 ? -6 : 1 - dow));
+    // Align gs to the Monday of the current week, then go back WK-1 weeks
+    const gs = new Date(now);
+    const day = gs.getDay();
+    const diffToMonday = (day === 0 ? 6 : day - 1); 
+    gs.setDate(gs.getDate() - diffToMonday);
+    gs.setDate(gs.getDate() - (WK - 1) * 7);
+    gs.setHours(0, 0, 0, 0);
 
     if (calEl) {
       let html = '';
+      const today = new Date();
+      today.setHours(23, 59, 59, 999); // Future starts after today ends
+      
       for (let i = 0; i < WK * 7; i++) {
-        const cd  = new Date(gs); cd.setDate(gs.getDate() + i);
-        const key = cd.toISOString().slice(0, 10);
+        const cd = new Date(gs);
+        cd.setDate(gs.getDate() + i);
+        
+        const y = cd.getFullYear();
+        const m = String(cd.getMonth() + 1).padStart(2, '0');
+        const d = String(cd.getDate()).padStart(2, '0');
+        const key = `${y}-${m}-${d}`;
+        
         const cnt = actMap[key] || 0;
-        const fut = cd > now;
-        const lv  = fut ? 'f' : cnt === 0 ? '0' : cnt === 1 ? '1' : cnt === 2 ? '2' : '3';
-        html += `<div class="pgx-cell pgx-cell--${lv}" title="${fut ? '' : key + ': ' + cnt + ' session' + (cnt !== 1 ? 's' : '')}"></div>`;
+        const fut = cd.getTime() > today.getTime();
+        const lv  = fut ? 'f' : (cnt === 0 ? '0' : (cnt === 1 ? '1' : (cnt === 2 ? '2' : '3')));
+        
+        const title = fut ? 'Future' : `${key}: ${cnt} session${cnt !== 1 ? 's' : ''}`;
+        html += `<div class="pgx-cell pgx-cell--${lv}" title="${title}"></div>`;
       }
       calEl.innerHTML = html;
     }
@@ -483,7 +497,21 @@
             scales: {
               x: {
                 grid: { display: false },
-                ticks: { color: tc(), font: { size: 10 }, maxRotation: 0, maxTicksLimit: 10 },
+                ticks: { 
+                  color: tc(), 
+                  font: { size: 10 }, 
+                  maxRotation: 0, 
+                  maxTicksLimit: 10,
+                  callback: function(val, index) {
+                    const label = this.getLabelForValue(val);
+                    if (!label || typeof label !== 'string') return label;
+                    try {
+                      const date = new Date(label);
+                      if (isNaN(date.getTime())) return label;
+                      return date.toLocaleDateString('en-PH', { month: 'short', day: 'numeric' });
+                    } catch (_) { return label; }
+                  }
+                },
               },
               y: {
                 min: 0, max: 100,

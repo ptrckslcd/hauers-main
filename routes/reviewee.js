@@ -5,6 +5,7 @@ const requireReviewee          = require('../middleware/requireReviewee');
 const requireOnboarded         = require('../middleware/requireOnboarded');
 const requireEnrolled          = require('../middleware/requireEnrolled');
 const requireDiagnosticComplete = require('../middleware/requireDiagnosticComplete');
+const blockIfDiagnosticComplete = require('../middleware/blockIfDiagnosticComplete');
 const db = require('../config/db');
 const profileFormSurvey = require('../lib/profileFormSurvey');
 
@@ -65,7 +66,7 @@ async function getProgRow(userId) {
     const onboardedAt = profileRows.length ? profileRows[0].completed_at : null;
 
     const [diagRows] = await db.query(
-      'SELECT completed_at, correct_count, total_questions FROM diagnostic_sessions WHERE user_id = ? AND status = "completed" LIMIT 1',
+      'SELECT completed_at, started_at, correct_count, total_questions FROM diagnostic_sessions WHERE user_id = ? AND status = "completed" LIMIT 1',
       [userId]
     );
 
@@ -109,7 +110,8 @@ async function getProgRow(userId) {
     historyRows.forEach(h => {
       if (!domainScoreHistory[h.domain]) domainScoreHistory[h.domain] = [];
       const score = Math.round((h.theta / 2400) * 100);
-      const dateStr = new Date(h.recorded_at).toLocaleDateString('en-PH', { month: 'short', day: 'numeric' });
+      // Use full ISO for uniqueness in charts, but we'll format it on the client
+      const dateStr = new Date(h.recorded_at).toISOString();
       domainScoreHistory[h.domain].push({ t: dateStr, score });
     });
 
@@ -118,7 +120,7 @@ async function getProgRow(userId) {
       .slice()
       .reverse()
       .map(s => ({
-        t: new Date(s.startedAt).toLocaleDateString('en-PH', { month: 'short', day: 'numeric' }),
+        t: new Date(s.startedAt).toISOString(),
         score: s.score,
       }));
     if (overallHistory.length) domainScoreHistory['Overall'] = overallHistory;
@@ -132,7 +134,7 @@ async function getProgRow(userId) {
       if (r.startedAt) {
         const d = new Date(r.startedAt);
         if (d >= cutoffCal) {
-          const key = d.toISOString().slice(0, 10);
+          const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
           activityMap[key] = (activityMap[key] || 0) + 1;
         }
       }
@@ -230,7 +232,7 @@ async function getProgRow(userId) {
       domainProgress,
       domainDeepDive,
       stats: {
-        diagnosticCompletedAt: diagRows.length ? diagRows[0].completed_at : null,
+        diagnosticCompletedAt: diagRows.length ? (diagRows[0].completed_at || diagRows[0].started_at) : null,
         diagnosticScore: diagRows.length ? Math.round((diagRows[0].correct_count / diagRows[0].total_questions) * 100) : 0,
         profileCompletedAt: onboardedAt,
         sessions: quizHistory,
@@ -643,7 +645,9 @@ router.get('/api/dashboard', authOnboarded, async (req, res) => {
     const domainScores = domainProgress.map(d => ({ domain: d.domain, score: d.current }));
 
     // Today's focus from study plan
-    const todayNum = new Date().getDay();
+    const d_now = new Date();
+    const day_now = d_now.getDay();
+    const todayNum = (day_now === 0 ? 6 : day_now - 1); // 0=Mon, 1=Tue... 6=Sun
     let todayFocus = null;
     try {
       const [focusRows] = await db.query(
@@ -1348,7 +1352,7 @@ router.get('/api/search', requireAuth, async (req, res) => {
 });
 
 /* ── API: diagnostic questions (answers stripped) ────────── */
-router.get('/api/diagnostic', requireAuth, async (req, res) => {
+router.get('/api/diagnostic', [requireAuth, blockIfDiagnosticComplete], async (req, res) => {
   try {
     const user = req.session.user;
     const [rows] = await db.query(`
@@ -1377,7 +1381,7 @@ router.get('/api/diagnostic', requireAuth, async (req, res) => {
 });
 
 /* ── API: submit diagnostic and persist results ───────── */
-router.post('/api/diagnostic/submit', requireAuth, async (req, res) => {
+router.post('/api/diagnostic/submit', [requireAuth, blockIfDiagnosticComplete], async (req, res) => {
   let connection;
   try {
     connection = await db.getConnection();
@@ -1447,7 +1451,13 @@ router.post('/api/diagnostic/submit', requireAuth, async (req, res) => {
       const actual = isCorrect ? 1 : 0;
       rating.theta += rating.k_factor * (actual - probability);
 
-      diagnosticAnswers.push([userId, null, q.id, userAnswerText, isCorrect]);
+      let selectedChoice = null;
+      if (userAnswerText === q.choice_a) selectedChoice = 'a';
+      else if (userAnswerText === q.choice_b) selectedChoice = 'b';
+      else if (userAnswerText === q.choice_c) selectedChoice = 'c';
+      else if (userAnswerText === q.choice_d) selectedChoice = 'd';
+
+      diagnosticAnswers.push([null, q.id, selectedChoice, isCorrect]);
     });
 
     // 4. Save Diagnostic Session
@@ -1456,16 +1466,16 @@ router.post('/api/diagnostic/submit', requireAuth, async (req, res) => {
     const [diagLevelRows] = await connection.query('SELECT exam_level FROM users WHERE id = ?', [userId]);
     const diagExamLevel = diagLevelRows[0]?.exam_level || 'professional';
     const [sessionRes] = await connection.query(`
-      INSERT INTO diagnostic_sessions (user_id, batch_id, exam_level, status, correct_count, total_questions)
-      VALUES (?, ?, ?, 'completed', ?, ?)
+      INSERT INTO diagnostic_sessions (user_id, batch_id, exam_level, status, correct_count, total_questions, completed_at)
+      VALUES (?, ?, ?, 'completed', ?, ?, NOW())
     `, [userId, diagBatchId, diagExamLevel, totalCorrect, questionIds.length]);
     const sessionId = sessionRes.insertId;
 
     // 5. Save Diagnostic Answers
     if (diagnosticAnswers.length > 0) {
-      diagnosticAnswers.forEach(ans => ans[1] = sessionId);
+      diagnosticAnswers.forEach(ans => ans[0] = sessionId);
       await connection.query(`
-        INSERT INTO diagnostic_answers (user_id, session_id, question_id, user_answer, is_correct)
+        INSERT INTO diagnostic_answers (session_id, question_id, selected_choice, is_correct)
         VALUES ?
       `, [diagnosticAnswers]);
     }
@@ -1666,6 +1676,7 @@ router.post('/api/profile', authReviewee, async (req, res) => {
   const {
     first_name,
     last_name,
+    exam_level,
     target_exam_date,
     study_hours_per_week,
     preferred_study_time,
@@ -1709,12 +1720,17 @@ router.post('/api/profile', authReviewee, async (req, res) => {
 
     // 2. Update users table with name
     if (first_name && last_name) {
+      // If enrollment_code wasn't processed above, we still update the name 
+      // and potentially the exam_level if they chose it manually.
       await db.query(
-        'UPDATE users SET first_name = ?, last_name = ? WHERE id = ?',
-        [first_name, last_name, userId]
+        'UPDATE users SET first_name = ?, last_name = ?, exam_level = COALESCE(exam_level, ?) WHERE id = ?',
+        [first_name, last_name, exam_level || null, userId]
       );
       req.session.user.firstName = first_name;
       req.session.user.lastName = last_name;
+      if (exam_level && !req.session.user.examLevel) {
+        req.session.user.examLevel = exam_level;
+      }
     }
 
     let customJson = null;
@@ -1775,7 +1791,11 @@ router.post('/api/profile', authReviewee, async (req, res) => {
         console.error('[Profile] Session save error:', err);
         return res.status(500).json({ error: 'Failed to save session.' });
       }
-      return res.json({ success: true });
+      return res.json({ 
+        success: true, 
+        examLevel: req.session.user.examLevel,
+        isEnrolled: req.session.user.isEnrolled 
+      });
     });
 
   } catch (err) {
@@ -1844,7 +1864,7 @@ router.get('/announcements',     authOnboarded, (req, res) => res.render('app/an
 router.get('/onboarding',        authReviewee, (req, res) => res.render('app/onboarding'));
 
 // Diagnostic: auth + reviewee + enrolled
-router.get('/diagnostic',        authEnrolled, (req, res) => res.render('app/diagnostic'));
+router.get('/diagnostic',        [...authEnrolled, blockIfDiagnosticComplete], (req, res) => res.render('app/diagnostic'));
 router.get('/diagnostic-result', authEnrolled, (req, res) => res.render('app/diagnostic-result'));
 
 // Pages requiring enrollment (but not necessarily a completed diagnostic)

@@ -28,6 +28,7 @@
   --fs-gold: #F5A623;
   --fs-gold-dark: #D48C1A;
   --fs-orange: #EA580C;
+  --fs-pink: #FF3366;
   --marker-pass-line: #B45309;
 
   /* Brand gradient — used only for text/icon accents, NOT surfaces */
@@ -134,6 +135,7 @@
   --glass-bg: var(--card-bg);
 
   --fs-orange: #FB923C;
+  --fs-pink: #FF5C8A;
   --marker-pass-line: #FBBF24;
 }
 

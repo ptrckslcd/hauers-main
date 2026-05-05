@@ -327,8 +327,8 @@
                 <div class="input-stack">
                   <select class="ob-select" id="examLevel" name="examLevel" required>
                     <option value="" disabled selected>Select level...</option>
-                    <option value="Professional">Professional (CSE-PPT)</option>
-                    <option value="Subprofessional">Subprofessional (CSE-PPT)</option>
+                    <option value="professional">Professional (CSE-PPT)</option>
+                    <option value="subprofessional">Subprofessional (CSE-PPT)</option>
                   </select>
                   <span class="material-symbols-outlined input-trailing-icon">expand_more</span>
                 </div>
@@ -341,7 +341,13 @@
             <div class="input-field">
               <div class="input-inner">
                 <div class="input-stack">
-                  <input type="date" class="ob-select" id="examDate" name="examDate" required>
+                  <select class="ob-select" id="examDate" name="examDate" required>
+                    <option value="" disabled selected>Select exam schedule...</option>
+                    <option value="2026-08-09">August 9, 2026 (Official Schedule)</option>
+                    <option value="2027-03-07">March 7, 2027 (Tentative)</option>
+                    <option value="2027-08-08">August 8, 2027 (Tentative)</option>
+                  </select>
+                  <span class="material-symbols-outlined input-trailing-icon">expand_more</span>
                 </div>
               </div>
             </div>
@@ -1008,6 +1014,7 @@
               body: JSON.stringify({
                 first_name: data.firstName,
                 last_name: data.lastName,
+                exam_level: data.examLevel,
                 target_exam_date: data.examDate,
                 study_hours_per_week: data.studyHours,
                 preferred_study_time: data.studyTime,
@@ -1025,6 +1032,21 @@
             const resData = await res.json().catch(() => ({}));
             if (!res.ok || resData.error) {
               throw new Error(resData.error || res.statusText || 'Save failed');
+            }
+
+            // Update display fields in completion view
+            if (data.examDate) {
+              const d = new Date(data.examDate + 'T12:00:00');
+              const dispDate = document.getElementById('disp-date');
+              if (dispDate) {
+                dispDate.textContent = d.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
+              }
+            }
+            
+            const levelVal = resData.examLevel || data.examLevel;
+            const dispLevel = document.getElementById('disp-level');
+            if (dispLevel && levelVal) {
+              dispLevel.textContent = levelVal.charAt(0).toUpperCase() + levelVal.slice(1);
             }
 
             if (form) form.classList.add('hidden');

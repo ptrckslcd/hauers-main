@@ -671,24 +671,41 @@
       /* Today's Focus */
       var focusEl = document.getElementById('home-focus-content');
       if (focusEl && d.todayFocus) {
-        var focus    = d.todayFocus;
-        var focusDom = (focus.domain || '').replace(' Ability', '');
-        var focusDc  = domClass(focus.domain);
+        var focus     = d.todayFocus;
+        var focusDom  = (focus.domain || '').replace(' Ability', '');
+        var focusDc   = domClass(focus.domain);
         var focusMins = esc(focus.est_minutes || 30);
+        
         focusEl.innerHTML =
-          '<div class="home-focus-meta">' +
-            '<span class="q-domain-badge ' + focusDc + '">' + esc(focusDom) + '</span>' +
-            '<span class="home-focus-dur"><span class="material-symbols-outlined" aria-hidden="true">schedule</span>' + focusMins + '\u202fmin</span>' +
+          '<div class="home-focus-split">' +
+            '<div class="home-focus-main">' +
+              '<div class="home-focus-meta">' +
+                '<span class="q-domain-badge ' + focusDc + '">' + esc(focusDom) + '</span>' +
+                '<span class="home-focus-dur"><span class="material-symbols-outlined" aria-hidden="true">schedule</span>' + focusMins + '\u202fmin</span>' +
+              '</div>' +
+              '<h3 class="home-focus-title">' + esc(focus.focus_label || 'Study Session') + '</h3>' +
+              '<p class="home-focus-desc">Today\'s recommended session focuses on strengthening your performance in ' + esc(focusDom) + '.</p>' +
+            '</div>' +
+            '<div class="home-focus-actions">' +
+              '<a href="/reviewee/review" class="home-btn home-btn--primary home-focus-cta">' +
+                '<span class="material-symbols-outlined" aria-hidden="true">play_circle</span>' +
+                'Start Session' +
+              '</a>' +
+            '</div>' +
           '</div>' +
-          '<p class="home-focus-title">' + esc(focus.focus_label || 'Study Session') + '</p>' +
-          '<a href="/reviewee/review" class="home-btn home-btn--primary home-focus-cta">' +
-            '<span class="material-symbols-outlined" aria-hidden="true">play_circle</span>Start Session' +
-          '</a>';
+          '<div class="home-focus-footer">' +
+            '<a href="/reviewee/study-plan" class="home-focus-plan-link">' +
+              '<span class="material-symbols-outlined">calendar_month</span>' +
+              'View full week study plan' +
+              '<span class="material-symbols-outlined">chevron_right</span>' +
+            '</a>' +
+          '</div>';
       } else if (focusEl && d.pretestComplete) {
         focusEl.innerHTML =
           '<div class="home-focus-empty">' +
             '<span class="material-symbols-outlined" aria-hidden="true">event_busy</span>' +
             '<p>No focus tasks scheduled for today.</p>' +
+            '<a href="/reviewee/study-plan" class="home-focus-plan-link" style="margin-top:0.75rem">Check study plan</a>' +
           '</div>';
       }
 
