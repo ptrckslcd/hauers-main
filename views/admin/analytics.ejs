@@ -102,6 +102,10 @@
             <span class="material-symbols-outlined" aria-hidden="true">refresh</span>
             Refresh
           </button>
+          <button type="button" class="home-btn home-btn--ghost" id="ra-export-csv">
+            <span class="material-symbols-outlined" aria-hidden="true">download</span>
+            Export Excel
+          </button>
         </div>
       </header>
 
@@ -273,6 +277,8 @@
 
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" crossorigin="anonymous"></script>
+  <!-- SheetJS (styled fork) for Excel export -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js" crossorigin="anonymous"></script>
   <script src="/js/admin-shell.js"></script>
   <script>
   (function () {
@@ -285,6 +291,14 @@
     let peakHours = null;
     let compareDomains = null;
 
+    const raData = {
+      overview: null,
+      domains: null,
+      engagement: null,
+      funnel: null,
+      compare: null,
+    };
+
     function setText(id, v) { const el = document.getElementById(id); if (el) el.textContent = v; }
     function fmtPct(v) { return (v == null ? '—' : String(v) + '%'); }
     function fmtTheta(v) { return v == null ? '—' : String(v); }
@@ -294,6 +308,7 @@
       const r = await fetch('/admin/api/reports/overview');
       if (!r.ok) throw new Error('overview');
       const d = await r.json();
+      raData.overview = d;
       const batches = Array.isArray(d.batches) ? d.batches : [];
       const total = batches.reduce((s, b) => s + (b.total_reviewees || 0), 0);
       const avgCompletion = batches.length ? Math.round(batches.reduce((s, b) => s + (b.completion_rate || 0), 0) / batches.length) : 0;
@@ -332,6 +347,7 @@
       const r = await fetch('/admin/api/reports/domains');
       if (!r.ok) throw new Error('domains');
       const d = await r.json();
+      raData.domains = d;
       const rows = Array.isArray(d.domains) ? d.domains : [];
 
       const ctx = document.getElementById('ra-domain-bar')?.getContext('2d');
@@ -375,6 +391,7 @@
       const r = await fetch('/admin/api/reports/engagement');
       if (!r.ok) throw new Error('engagement');
       const d = await r.json();
+      raData.engagement = d;
       const pts = Array.isArray(d.sessionsPerDay) ? d.sessionsPerDay : [];
       const hours = Array.isArray(d.peakHours) ? d.peakHours : [];
       setText('ra-avg-sessions', d.avgSessionsPerActivePerWeek != null ? String(d.avgSessionsPerActivePerWeek) : '—');
@@ -433,6 +450,7 @@
       const r = await fetch('/admin/api/reports/funnel');
       if (!r.ok) throw new Error('funnel');
       const d = await r.json();
+      raData.funnel = d;
       const stages = Array.isArray(d.stages) ? d.stages : [];
       const host = document.getElementById('ra-funnel');
       host.innerHTML = stages.length ? stages.map((s, idx) => `
@@ -456,6 +474,7 @@
       const r = await fetch(`/admin/api/reports/compare?a=${encodeURIComponent(a)}&b=${encodeURIComponent(b)}`);
       const d = await r.json().catch(() => ({}));
       if (!r.ok) { alert(d.error || 'Compare failed'); return; }
+      raData.compare = d;
       document.getElementById('ra-a-title').textContent = d.a.name;
       document.getElementById('ra-b-title').textContent = d.b.name;
       setText('ra-a-readiness', fmtPct(d.a.metrics?.avg_readiness));
@@ -498,8 +517,385 @@
       await Promise.all([loadDomains(), loadEngagement(), loadFunnel()]);
     }
 
+    function pct(v) { return v == null ? '' : Math.round(v) + '%'; }
+    function trendLabelOf(t) { return t === 'improving' ? 'Improving' : t === 'declining' ? 'Declining' : 'Flat'; }
+
+    const RA_CANVAS_COLS = 12;
+    function raCenterStart(ncols) {
+      const n = Math.max(1, Math.min(ncols, RA_CANVAS_COLS));
+      return Math.max(0, Math.floor((RA_CANVAS_COLS - n) / 2));
+    }
+
+    const XLSX_COLORS = {
+      titleBg: 'FF1E3A8A',
+      titleFg: 'FFFFFFFF',
+      headerBg: 'FFE5E7EB',
+      headerFg: 'FF111827',
+      zebraBg:  'FFF9FAFB',
+      borderCol:'FFD1D5DB',
+      metaFg:   'FF6B7280',
+    };
+
+    function thinBorder() {
+      const c = { style: 'thin', color: { rgb: XLSX_COLORS.borderCol } };
+      return { top: c, bottom: c, left: c, right: c };
+    }
+
+    function styleTitle() {
+      return {
+        font: { name: 'Calibri', sz: 14, bold: true, color: { rgb: XLSX_COLORS.titleFg } },
+        fill: { patternType: 'solid', fgColor: { rgb: XLSX_COLORS.titleBg } },
+        alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+        border: thinBorder(),
+      };
+    }
+    function styleMeta() {
+      return {
+        font: { name: 'Calibri', sz: 10, italic: true, color: { rgb: XLSX_COLORS.metaFg } },
+        alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+      };
+    }
+    function styleHeader() {
+      return {
+        font: { name: 'Calibri', sz: 11, bold: true, color: { rgb: XLSX_COLORS.headerFg } },
+        fill: { patternType: 'solid', fgColor: { rgb: XLSX_COLORS.headerBg } },
+        alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+        border: thinBorder(),
+      };
+    }
+    function styleBody(opts) {
+      const o = opts || {};
+      return {
+        font: { name: 'Calibri', sz: 11, color: { rgb: XLSX_COLORS.headerFg }, bold: !!o.bold },
+        alignment: { horizontal: o.align || 'left', vertical: 'center', wrapText: true },
+        fill: o.zebra ? { patternType: 'solid', fgColor: { rgb: XLSX_COLORS.zebraBg } } : undefined,
+        border: thinBorder(),
+      };
+    }
+
+    function colLetter(idx) {
+      let s = '';
+      let n = idx;
+      while (true) {
+        s = String.fromCharCode(65 + (n % 26)) + s;
+        n = Math.floor(n / 26) - 1;
+        if (n < 0) break;
+      }
+      return s;
+    }
+    function cellRef(r, c) { return colLetter(c) + (r + 1); }
+
+    function setCell(ws, r, c, value, style) {
+      const ref = cellRef(r, c);
+      const cell = { v: value == null ? '' : value, t: typeof value === 'number' ? 'n' : 's' };
+      if (style) cell.s = style;
+      ws[ref] = cell;
+    }
+
+    function buildSheet(title, generatedAt, headers, rows) {
+      const ws = {};
+      const merges = [];
+      const ncols = Math.max(headers.length, 1);
+      const startCol = raCenterStart(ncols);
+      const endCol = startCol + ncols - 1;
+
+      setCell(ws, 0, startCol, title, styleTitle());
+      for (let c = startCol + 1; c <= endCol; c++) setCell(ws, 0, c, '', styleTitle());
+      merges.push({ s: { r: 0, c: startCol }, e: { r: 0, c: endCol } });
+
+      setCell(ws, 1, startCol, 'Generated at: ' + generatedAt, styleMeta());
+      for (let c = startCol + 1; c <= endCol; c++) setCell(ws, 1, c, '', styleMeta());
+      merges.push({ s: { r: 1, c: startCol }, e: { r: 1, c: endCol } });
+
+      const headerRow = 3;
+      headers.forEach((h, c) => setCell(ws, headerRow, startCol + c, String(h), styleHeader()));
+
+      const colMax = headers.map(h => String(h).length);
+
+      if (!rows.length) {
+        setCell(ws, headerRow + 1, startCol, 'No data.', styleBody({ align: 'left' }));
+        for (let c = startCol + 1; c <= endCol; c++) setCell(ws, headerRow + 1, c, '', styleBody({ align: 'left' }));
+        merges.push({ s: { r: headerRow + 1, c: startCol }, e: { r: headerRow + 1, c: endCol } });
+      } else {
+        rows.forEach((row, ri) => {
+          const zebra = ri % 2 === 1;
+          row.forEach((val, c) => {
+            setCell(ws, headerRow + 1 + ri, startCol + c, val == null ? '' : val, styleBody({ align: 'left', zebra }));
+            const len = String(val == null ? '' : val).length;
+            if (len > (colMax[c] || 0)) colMax[c] = len;
+          });
+        });
+      }
+
+      const lastRow = headerRow + Math.max(rows.length, 1);
+      ws['!ref'] = 'A1:' + cellRef(lastRow, RA_CANVAS_COLS - 1);
+      ws['!merges'] = merges;
+
+      const innerWidths = colMax.map(w => Math.min(Math.max(w + 4, 12), 40));
+      const totalInner = innerWidths.reduce((s, w) => s + w, 0);
+      const minTitleInner = Math.min(90, Math.max(48, Math.ceil(title.length * 0.55)));
+      if (totalInner < minTitleInner) {
+        const deficit = minTitleInner - totalInner;
+        const perCol = Math.ceil(deficit / ncols);
+        for (let i = 0; i < innerWidths.length; i++) innerWidths[i] = Math.min(innerWidths[i] + perCol, 48);
+      }
+
+      const marginWch = 3;
+      const colWidths = [];
+      for (let i = 0; i < RA_CANVAS_COLS; i++) {
+        if (i < startCol || i > endCol) colWidths.push({ wch: marginWch });
+        else colWidths.push({ wch: innerWidths[i - startCol] });
+      }
+      ws['!cols'] = colWidths;
+
+      const finalInner = innerWidths.reduce((s, w) => s + w, 0);
+      const approxCharsPerLine = Math.max(8, Math.floor(finalInner * 0.9));
+      const titleLines = Math.max(1, Math.ceil(title.length / approxCharsPerLine));
+      const titleHeight = Math.min(72, 20 + (titleLines - 1) * 16);
+
+      ws['!rows'] = [];
+      ws['!rows'][0] = { hpt: titleHeight };
+      ws['!rows'][1] = { hpt: 16 };
+      ws['!rows'][headerRow] = { hpt: 22 };
+      ws['!freeze'] = { xSplit: 0, ySplit: headerRow + 1 };
+      return ws;
+    }
+
+    function buildOverviewSheet(generatedAt, sections) {
+      const ws = {};
+      const merges = [];
+      const rowHeights = {};
+      const CONTENT_COLS = 6;
+      const startCol = raCenterStart(CONTENT_COLS);
+      const endCol = startCol + CONTENT_COLS - 1;
+      const colMax = new Array(CONTENT_COLS).fill(12);
+      let r = 0;
+
+      const reportTitle = 'ADAPTIVE CSE-PPT REVIEW PLATFORM FOR CSPC ACCESS REVIEWEES — REPORTS & ANALYTICS';
+      setCell(ws, r, startCol, reportTitle, styleTitle());
+      for (let c = startCol + 1; c <= endCol; c++) setCell(ws, r, c, '', styleTitle());
+      merges.push({ s: { r, c: startCol }, e: { r, c: endCol } });
+      const mainTitleLines = Math.max(1, Math.ceil(reportTitle.length / 52));
+      rowHeights[r] = { hpt: Math.min(88, 22 + (mainTitleLines - 1) * 14) };
+      r++;
+
+      setCell(ws, r, startCol, 'Generated at: ' + generatedAt, styleMeta());
+      for (let c = startCol + 1; c <= endCol; c++) setCell(ws, r, c, '', styleMeta());
+      merges.push({ s: { r, c: startCol }, e: { r, c: endCol } });
+      rowHeights[r] = { hpt: 16 };
+      r++;
+      r++;
+
+      sections.forEach((sec, idx) => {
+        setCell(ws, r, startCol, (idx + 1) + '. ' + sec.title, styleTitle());
+        for (let c = startCol + 1; c <= endCol; c++) setCell(ws, r, c, '', styleTitle());
+        merges.push({ s: { r, c: startCol }, e: { r, c: endCol } });
+        const titleLen = sec.title.length + 4;
+        const approxLine = 56;
+        const lines = Math.max(1, Math.ceil(titleLen / approxLine));
+        rowHeights[r] = { hpt: Math.min(96, 20 + (lines - 1) * 16) };
+        r++;
+
+        const usedCols = sec.headers.length;
+        sec.headers.forEach((h, c) => setCell(ws, r, startCol + c, String(h), styleHeader()));
+        for (let c = usedCols; c < CONTENT_COLS; c++) setCell(ws, r, startCol + c, '', styleHeader());
+        if (CONTENT_COLS > usedCols) merges.push({ s: { r, c: startCol + usedCols }, e: { r, c: endCol } });
+        sec.headers.forEach((h, c) => { const len = String(h).length; if (len + 4 > colMax[c]) colMax[c] = len + 4; });
+        rowHeights[r] = { hpt: 22 };
+        r++;
+
+        if (!sec.rows.length) {
+          setCell(ws, r, startCol, 'No data.', styleBody({ align: 'left' }));
+          for (let c = startCol + 1; c <= endCol; c++) setCell(ws, r, c, '', styleBody({ align: 'left' }));
+          merges.push({ s: { r, c: startCol }, e: { r, c: endCol } });
+          r++;
+        } else {
+          sec.rows.forEach((row, ri) => {
+            const zebra = ri % 2 === 1;
+            row.forEach((val, c) => {
+              setCell(ws, r, startCol + c, val == null ? '' : val, styleBody({ align: 'left', zebra }));
+              const len = String(val == null ? '' : val).length + 2;
+              if (len > colMax[c]) colMax[c] = len;
+            });
+            for (let c = row.length; c < CONTENT_COLS; c++) setCell(ws, r, startCol + c, '', styleBody({ zebra }));
+            if (CONTENT_COLS > row.length) merges.push({ s: { r, c: startCol + row.length }, e: { r, c: endCol } });
+            r++;
+          });
+        }
+        r++;
+      });
+
+      const innerWidths = colMax.map(w => Math.min(Math.max(w, 12), 40));
+      const totalInner = innerWidths.reduce((s, w) => s + w, 0);
+      const minOverviewInner = Math.min(88, Math.max(52, Math.ceil(reportTitle.length * 0.38)));
+      if (totalInner < minOverviewInner) {
+        const deficit = minOverviewInner - totalInner;
+        const perCol = Math.ceil(deficit / CONTENT_COLS);
+        for (let i = 0; i < CONTENT_COLS; i++) innerWidths[i] = Math.min(innerWidths[i] + perCol, 48);
+      }
+
+      const marginWch = 3;
+      const colWidths = [];
+      for (let i = 0; i < RA_CANVAS_COLS; i++) {
+        if (i < startCol || i > endCol) colWidths.push({ wch: marginWch });
+        else colWidths.push({ wch: innerWidths[i - startCol] });
+      }
+      ws['!cols'] = colWidths;
+
+      const lastRow = Math.max(r, 1) - 1;
+      ws['!ref'] = 'A1:' + cellRef(lastRow, RA_CANVAS_COLS - 1);
+      ws['!merges'] = merges;
+      ws['!rows'] = [];
+      Object.keys(rowHeights).forEach(k => { ws['!rows'][Number(k)] = rowHeights[k]; });
+      ws['!freeze'] = { xSplit: 0, ySplit: 3 };
+      return ws;
+    }
+
+    function buildWorkbook() {
+      const wb = XLSX.utils.book_new();
+      const generatedAt = new Date().toLocaleString();
+      const sections = [];
+
+      const ov = raData.overview || {};
+      const batches = Array.isArray(ov.batches) ? ov.batches : [];
+      const total = batches.reduce((s, b) => s + (b.total_reviewees || 0), 0);
+      const avgCompletion = batches.length ? Math.round(batches.reduce((s, b) => s + (b.completion_rate || 0), 0) / batches.length) : 0;
+      const avgActive = batches.length ? Math.round(batches.reduce((s, b) => s + (b.active_rate_7d || 0), 0) / batches.length) : 0;
+      const avgReadiness = batches.length ? Math.round(batches.reduce((s, b) => s + (b.avg_readiness || 0), 0) / batches.length) : 0;
+
+      sections.push({
+        title: 'KPI SUMMARY',
+        sheet: 'Summary',
+        headers: ['Metric', 'Value'],
+        rows: [
+          ['Total reviewees (all batches)', total],
+          ['Diagnostic completion (avg)', avgCompletion + '%'],
+          ['Active rate (7d, avg)', avgActive + '%'],
+          ['Avg readiness (avg)', avgReadiness + '%'],
+        ],
+      });
+
+      sections.push({
+        title: 'COHORT PERFORMANCE OVERVIEW',
+        sheet: 'Cohort Performance',
+        headers: ['Batch', 'Exam Level', 'Total', 'Avg Readiness', 'Completion Rate', 'Active Rate (7d)'],
+        rows: batches.map(b => [
+          b.batch_name || '',
+          b.exam_level || '',
+          b.total_reviewees || 0,
+          b.avg_readiness == null ? '' : (Math.round(b.avg_readiness) + '%'),
+          Math.round(b.completion_rate || 0) + '%',
+          Math.round(b.active_rate_7d || 0) + '%',
+        ]),
+      });
+
+      const dom = raData.domains || {};
+      const domRows = Array.isArray(dom.domains) ? dom.domains : [];
+      sections.push({
+        title: 'DOMAIN DETAILS — WEAKNESS MAP (RANKED WEAKEST → STRONGEST BY THETA)',
+        sheet: 'Domain Details',
+        headers: ['Domain', 'Avg Theta', '% Below Passing', 'Trend'],
+        rows: domRows.map(r => [
+          r.domain || '',
+          r.avg_theta == null ? '' : r.avg_theta,
+          r.below_passing_pct == null ? '' : (r.below_passing_pct + '%'),
+          trendLabelOf(r.trend),
+        ]),
+      });
+
+      const eng = raData.engagement || {};
+      const sessions = Array.isArray(eng.sessionsPerDay) ? eng.sessionsPerDay : [];
+      sections.push({
+        title: 'ENGAGEMENT — SESSIONS PER DAY (PAST 30 DAYS)',
+        sheet: 'Engagement',
+        headers: ['Day', 'Sessions'],
+        rows: sessions.map(p => [p.day || '', p.sessions == null ? 0 : p.sessions]),
+      });
+
+      const hours = Array.isArray(eng.peakHours) ? eng.peakHours : [];
+      sections.push({
+        title: 'USAGE PATTERNS — PEAK HOURS  (AVG SESSIONS / ACTIVE REVIEWEE / WEEK: ' + (eng.avgSessionsPerActivePerWeek == null ? '—' : eng.avgSessionsPerActivePerWeek) + ')',
+        sheet: 'Usage Patterns',
+        headers: ['Hour', 'Sessions'],
+        rows: hours.map(h => [h.hour, h.sessions == null ? 0 : h.sessions]),
+      });
+
+      const fun = raData.funnel || {};
+      const stages = Array.isArray(fun.stages) ? fun.stages : [];
+      sections.push({
+        title: 'DIAGNOSTIC COMPLETION FUNNEL',
+        sheet: 'Funnel',
+        headers: ['Step', 'Stage', 'Count', 'Drop-off %'],
+        rows: stages.map((s, idx) => [
+          idx + 1,
+          s.label || '',
+          s.count == null ? 0 : s.count,
+          idx === 0 ? '' : (s.dropOffPct == null ? '' : s.dropOffPct + '%'),
+        ]),
+      });
+
+      const cmp = raData.compare;
+      if (cmp && cmp.a && cmp.b) {
+        const aName = cmp.a.name || 'Batch A';
+        const bName = cmp.b.name || 'Batch B';
+        sections.push({
+          title: 'BATCH COMPARISON',
+          sheet: 'Batch Comparison',
+          headers: ['Metric', aName, bName],
+          rows: [
+            ['Avg readiness', pct(cmp.a.metrics?.avg_readiness), pct(cmp.b.metrics?.avg_readiness)],
+            ['Completion rate', pct(cmp.a.metrics?.completion_rate), pct(cmp.b.metrics?.completion_rate)],
+            ['Active (7d)', pct(cmp.a.metrics?.active_rate_7d), pct(cmp.b.metrics?.active_rate_7d)],
+          ],
+        });
+
+        const labels = Array.from(new Set([
+          ...(cmp.a.domains || []).map(x => x.domain),
+          ...(cmp.b.domains || []).map(x => x.domain),
+        ]));
+        const aMap = new Map((cmp.a.domains || []).map(x => [x.domain, x.avg_theta == null ? '' : x.avg_theta]));
+        const bMap = new Map((cmp.b.domains || []).map(x => [x.domain, x.avg_theta == null ? '' : x.avg_theta]));
+        sections.push({
+          title: 'BATCH COMPARISON — DOMAIN AVG THETA',
+          sheet: 'Compare by Domain',
+          headers: ['Domain', aName, bName],
+          rows: labels.map(l => [l, aMap.has(l) ? aMap.get(l) : '', bMap.has(l) ? bMap.get(l) : '']),
+        });
+      }
+
+      const overviewWs = buildOverviewSheet(generatedAt, sections);
+      XLSX.utils.book_append_sheet(wb, overviewWs, 'Overview');
+
+      sections.forEach(sec => {
+        const ws = buildSheet(sec.title, generatedAt, sec.headers, sec.rows);
+        XLSX.utils.book_append_sheet(wb, ws, sec.sheet);
+      });
+
+      return wb;
+    }
+
+    async function exportCsv() {
+      const btn = document.getElementById('ra-export-csv');
+      try {
+        if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
+        if (typeof XLSX === 'undefined') { alert('Excel library failed to load.'); return; }
+        if (!raData.overview || !raData.domains || !raData.engagement || !raData.funnel) {
+          await loadAll();
+        }
+        const wb = buildWorkbook();
+        const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+        XLSX.writeFile(wb, `reports-analytics-${ts}.xlsx`, { bookType: 'xlsx', cellStyles: true });
+      } catch (e) {
+        console.error(e);
+        alert('Could not export Excel file.');
+      } finally {
+        if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+      }
+    }
+
     document.getElementById('ra-run-compare')?.addEventListener('click', runCompare);
     document.getElementById('ra-refresh')?.addEventListener('click', () => loadAll().catch(()=>{}));
+    document.getElementById('ra-export-csv')?.addEventListener('click', exportCsv);
     loadAll().catch(() => {});
   })();
   </script>
