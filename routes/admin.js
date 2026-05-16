@@ -1836,12 +1836,33 @@ router.get('/api/profile-form/responses', requireAdmin, async (req, res) => {
 
     const [rows] = await db.query(
       `SELECT u.id AS user_id, u.first_name, u.last_name, u.email,
-              lp.completed_at, lp.custom_field_responses
+              lp.completed_at, lp.target_exam_date, lp.study_hours_per_week,
+              lp.preferred_study_time, lp.primary_device, lp.custom_field_responses
          FROM users u
          INNER JOIN learner_profiles lp ON lp.user_id = u.id
         WHERE u.role = 'reviewee' AND lp.completed_at IS NOT NULL
         ORDER BY lp.completed_at DESC`
     );
+
+    const [domainList] = await db.query(
+      `SELECT id, name FROM domains ORDER BY sort_order, name`
+    );
+
+    const userIds = rows.map((r) => r.user_id);
+    const ratingsByUser = new Map();
+    if (userIds.length) {
+      const [ratingRows] = await db.query(
+        `SELECT ldsr.user_id, d.id AS domain_id, ldsr.self_rating AS rating
+           FROM learner_domain_self_ratings ldsr
+           JOIN domains d ON d.id = ldsr.domain_id
+          WHERE ldsr.user_id IN (?)`,
+        [userIds]
+      );
+      for (const rr of ratingRows) {
+        if (!ratingsByUser.has(rr.user_id)) ratingsByUser.set(rr.user_id, {});
+        ratingsByUser.get(rr.user_id)[rr.domain_id] = rr.rating;
+      }
+    }
 
     const submissions = rows.map((r) => {
       let json = r.custom_field_responses;
@@ -1857,17 +1878,32 @@ router.get('/api/profile-form/responses', requireAdmin, async (req, res) => {
       for (const c of colRows) {
         custom[c.field_key] = profileFormSurvey.formatCustomJsonValue(json[c.field_key]);
       }
+      const userRatings = ratingsByUser.get(r.user_id) || {};
+      const domainRatings = {};
+      for (const d of domainList) {
+        domainRatings[d.id] = userRatings[d.id] != null ? userRatings[d.id] : null;
+      }
       return {
         userId: r.user_id,
         name: `${r.first_name || ''} ${r.last_name || ''}`.trim(),
         email: r.email,
         submittedAt: r.completed_at,
+        targetExamDate: r.target_exam_date
+          ? (r.target_exam_date instanceof Date
+              ? r.target_exam_date.toISOString().slice(0, 10)
+              : String(r.target_exam_date).slice(0, 10))
+          : null,
+        studyHoursPerWeek: r.study_hours_per_week,
+        preferredStudyTime: r.preferred_study_time,
+        primaryDevice: r.primary_device,
+        domainRatings,
         custom,
       };
     });
 
     res.json({
       columns: colRows.map((c) => ({ field_key: c.field_key, label: c.label })),
+      domains: domainList.map((d) => ({ id: d.id, name: d.name })),
       submissions,
       total: submissions.length,
     });
@@ -1884,14 +1920,48 @@ router.get('/api/profile-form/responses/export', requireAdmin, async (req, res) 
 
     const [rows] = await db.query(
       `SELECT u.id AS user_id, u.first_name, u.last_name, u.email,
-              lp.completed_at, lp.custom_field_responses
+              lp.completed_at, lp.target_exam_date, lp.study_hours_per_week,
+              lp.preferred_study_time, lp.primary_device, lp.custom_field_responses
          FROM users u
          INNER JOIN learner_profiles lp ON lp.user_id = u.id
         WHERE u.role = 'reviewee' AND lp.completed_at IS NOT NULL
         ORDER BY lp.completed_at DESC`
     );
 
-    const headers = ['user_id', 'name', 'email', 'submitted_at', ...colRows.map((c) => c.field_key)];
+    const [domainList] = await db.query(
+      `SELECT id, name FROM domains ORDER BY sort_order, name`
+    );
+
+    const userIds = rows.map((r) => r.user_id);
+    const ratingsByUser = new Map();
+    if (userIds.length) {
+      const [ratingRows] = await db.query(
+        `SELECT ldsr.user_id, d.id AS domain_id, d.name AS domain, ldsr.self_rating AS rating
+           FROM learner_domain_self_ratings ldsr
+           JOIN domains d ON d.id = ldsr.domain_id
+          WHERE ldsr.user_id IN (?)
+          ORDER BY d.sort_order, d.name`,
+        [userIds]
+      );
+      for (const rr of ratingRows) {
+        if (!ratingsByUser.has(rr.user_id)) ratingsByUser.set(rr.user_id, {});
+        ratingsByUser.get(rr.user_id)[rr.domain_id] = rr.rating;
+      }
+    }
+
+    const domainHeaders = domainList.map((d) => `domain_${d.name.toLowerCase().replace(/\s+/g, '_')}`);
+    const headers = [
+      'user_id',
+      'name',
+      'email',
+      'submitted_at',
+      'target_exam_date',
+      'study_hours_per_week',
+      'preferred_study_time',
+      'primary_device',
+      ...domainHeaders,
+      ...colRows.map((c) => c.field_key),
+    ];
     const lines = [headers.map(csvEscape).join(',')];
 
     for (const r of rows) {
@@ -1905,11 +1975,21 @@ router.get('/api/profile-form/responses/export', requireAdmin, async (req, res) 
       }
       if (!json || typeof json !== 'object') json = {};
       const name = `${r.first_name || ''} ${r.last_name || ''}`.trim();
+      const userRatings = ratingsByUser.get(r.user_id) || {};
       const cells = [
         r.user_id,
         name,
         r.email || '',
         r.completed_at ? new Date(r.completed_at).toISOString() : '',
+        r.target_exam_date
+          ? (r.target_exam_date instanceof Date
+              ? r.target_exam_date.toISOString().slice(0, 10)
+              : String(r.target_exam_date).slice(0, 10))
+          : '',
+        r.study_hours_per_week != null ? r.study_hours_per_week : '',
+        r.preferred_study_time || '',
+        r.primary_device || '',
+        ...domainList.map((d) => (userRatings[d.id] != null ? userRatings[d.id] : '')),
         ...colRows.map((c) => profileFormSurvey.formatCustomJsonValue(json[c.field_key])),
       ];
       lines.push(cells.map(csvEscape).join(','));

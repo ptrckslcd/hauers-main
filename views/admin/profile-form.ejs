@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="/css/surveyjs-hauers.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block">
   <script src="/js/theme-toggle.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/survey-core@<%= _sv %>/survey.core.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/survey-js-ui@<%= _sv %>/survey-js-ui.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
@@ -35,10 +36,10 @@
             <span class="material-symbols-outlined">restart_alt</span>
             Reset columns
           </button>
-          <a class="home-btn home-btn--ghost pf-export-link" id="pf-export-csv" href="/admin/api/profile-form/responses/export">
+          <button type="button" class="home-btn home-btn--ghost" id="pf-export-csv">
             <span class="material-symbols-outlined" aria-hidden="true">download</span>
-            Export CSV
-          </a>
+            Export Excel
+          </button>
         </div>
       </header>
 
@@ -619,6 +620,257 @@
     html += '</div></div>';
     detailBody.innerHTML = html;
   }
+
+  /* ── Excel export (same layout/styles as Reports & Analytics) ─ */
+  const RA_CANVAS_COLS = 12;
+
+  const XLSX_COLORS = {
+    titleBg: 'FF1E3A8A',
+    titleFg: 'FFFFFFFF',
+    headerBg: 'FFE5E7EB',
+    headerFg: 'FF111827',
+    zebraBg: 'FFF9FAFB',
+    borderCol: 'FFD1D5DB',
+    metaFg: 'FF6B7280',
+  };
+
+  function thinBorderPf() {
+    const c = { style: 'thin', color: { rgb: XLSX_COLORS.borderCol } };
+    return { top: c, bottom: c, left: c, right: c };
+  }
+
+  function styleTitlePf() {
+    return {
+      font: { name: 'Calibri', sz: 14, bold: true, color: { rgb: XLSX_COLORS.titleFg } },
+      fill: { patternType: 'solid', fgColor: { rgb: XLSX_COLORS.titleBg } },
+      alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+      border: thinBorderPf(),
+    };
+  }
+  function styleMetaPf() {
+    return {
+      font: { name: 'Calibri', sz: 10, italic: true, color: { rgb: XLSX_COLORS.metaFg } },
+      alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+    };
+  }
+  function styleHeaderPf() {
+    return {
+      font: { name: 'Calibri', sz: 11, bold: true, color: { rgb: XLSX_COLORS.headerFg } },
+      fill: { patternType: 'solid', fgColor: { rgb: XLSX_COLORS.headerBg } },
+      alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+      border: thinBorderPf(),
+    };
+  }
+  function styleBodyPf(opts) {
+    const o = opts || {};
+    return {
+      font: { name: 'Calibri', sz: 11, color: { rgb: XLSX_COLORS.headerFg }, bold: !!o.bold },
+      alignment: { horizontal: o.align || 'left', vertical: 'center', wrapText: true },
+      fill: o.zebra ? { patternType: 'solid', fgColor: { rgb: XLSX_COLORS.zebraBg } } : undefined,
+      border: thinBorderPf(),
+    };
+  }
+
+  function colLetterPf(idx) {
+    let s = '';
+    let n = idx;
+    while (true) {
+      s = String.fromCharCode(65 + (n % 26)) + s;
+      n = Math.floor(n / 26) - 1;
+      if (n < 0) break;
+    }
+    return s;
+  }
+  function cellRefPf(r, c) { return colLetterPf(c) + (r + 1); }
+
+  function setCellPf(ws, r, c, value, style) {
+    const ref = cellRefPf(r, c);
+    const cell = { v: value == null ? '' : value, t: typeof value === 'number' ? 'n' : 's' };
+    if (style) cell.s = style;
+    ws[ref] = cell;
+  }
+
+  /** Mirrors `buildSheet` in analytics.ejs; wider canvas when there are many columns. */
+  function buildSheetPf(title, generatedAt, headers, rows) {
+    const ws = {};
+    const merges = [];
+    const ncols = Math.max(headers.length, 1);
+    const canvasCols = Math.max(RA_CANVAS_COLS, ncols + 2);
+    const startCol = Math.max(0, Math.floor((canvasCols - ncols) / 2));
+    const endCol = startCol + ncols - 1;
+
+    setCellPf(ws, 0, startCol, title, styleTitlePf());
+    for (let c = startCol + 1; c <= endCol; c++) setCellPf(ws, 0, c, '', styleTitlePf());
+    merges.push({ s: { r: 0, c: startCol }, e: { r: 0, c: endCol } });
+
+    setCellPf(ws, 1, startCol, 'Generated at: ' + generatedAt, styleMetaPf());
+    for (let c = startCol + 1; c <= endCol; c++) setCellPf(ws, 1, c, '', styleMetaPf());
+    merges.push({ s: { r: 1, c: startCol }, e: { r: 1, c: endCol } });
+
+    const headerRow = 3;
+    headers.forEach((h, c) => setCellPf(ws, headerRow, startCol + c, String(h), styleHeaderPf()));
+
+    const colMax = headers.map(h => String(h).length);
+
+    if (!rows.length) {
+      setCellPf(ws, headerRow + 1, startCol, 'No data.', styleBodyPf({ align: 'left' }));
+      for (let c = startCol + 1; c <= endCol; c++) {
+        setCellPf(ws, headerRow + 1, c, '', styleBodyPf({ align: 'left' }));
+      }
+      merges.push({ s: { r: headerRow + 1, c: startCol }, e: { r: headerRow + 1, c: endCol } });
+    } else {
+      rows.forEach((row, ri) => {
+        const zebra = ri % 2 === 1;
+        row.forEach((val, c) => {
+          setCellPf(ws, headerRow + 1 + ri, startCol + c, val == null ? '' : val, styleBodyPf({ align: 'left', zebra }));
+          const len = String(val == null ? '' : val).length;
+          if (len > (colMax[c] || 0)) colMax[c] = len;
+        });
+      });
+    }
+
+    const lastRow = headerRow + Math.max(rows.length, 1);
+    ws['!ref'] = 'A1:' + cellRefPf(lastRow, canvasCols - 1);
+    ws['!merges'] = merges;
+
+    function profileColCap(label) {
+      const hl = String(label || '').toLowerCase();
+      if (/\buser id\b/.test(hl)) return 9;
+      if (hl.includes('email')) return 22;
+      if (hl.includes('submitted')) return 20;
+      if ((hl.includes('name') || hl.includes('reviewee')) && !hl.includes('user id')) return 14;
+      if (hl.includes('target') && hl.includes('exam')) return 12;
+      if (hl.includes('hour')) return 11;
+      if (hl.includes('preferred')) return 13;
+      if (hl.includes('device')) return 12;
+      if (hl.includes('ability') || hl.includes('information')) return 11;
+      if (String(label || '').length > 28) return 20;
+      return 16;
+    }
+
+    const innerWidths = headers.map((h, ci) => {
+      const cap = profileColCap(h);
+      const w = colMax[ci] || 0;
+      return Math.min(Math.max(w + 1, 7), cap);
+    });
+
+    const marginWch = 2.3;
+    const colWidths = [];
+    for (let i = 0; i < canvasCols; i++) {
+      if (i < startCol || i > endCol) colWidths.push({ wch: marginWch });
+      else colWidths.push({ wch: innerWidths[i - startCol] });
+    }
+    ws['!cols'] = colWidths;
+
+    const approxCharsPerLine = Math.max(10, innerWidths.reduce((s, w) => s + w, 0) - 4);
+    const titleLines = Math.max(1, Math.ceil(title.length / approxCharsPerLine));
+    const titleHeight = Math.min(72, 20 + (titleLines - 1) * 16);
+
+    ws['!rows'] = [];
+    ws['!rows'][0] = { hpt: titleHeight };
+    ws['!rows'][1] = { hpt: 16 };
+    ws['!rows'][headerRow] = { hpt: 28 };
+    ws['!freeze'] = { xSplit: 0, ySplit: headerRow + 1 };
+    return ws;
+  }
+
+  function humanizeFieldKey(key) {
+    return String(key || '')
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, (ch) => ch.toUpperCase())
+      .trim();
+  }
+
+  /**
+   * Same row order and cell values as CSV export (IDs, dates, numbers, custom fields), with
+   * human-readable column titles and a locale-friendly submitted timestamp for readability.
+   */
+  function buildProfileExportTable(data) {
+    const columns = Array.isArray(data.columns) ? data.columns : [];
+    const domains = Array.isArray(data.domains) ? data.domains : [];
+    const submissions = Array.isArray(data.submissions) ? data.submissions : [];
+    const headers = [
+      'User ID',
+      'Name',
+      'Email',
+      'Submitted at',
+      'Target exam date',
+      'Study hours / week',
+      'Preferred study time',
+      'Primary device',
+      ...domains.map((d) => String(d.name || '').trim() || ('Domain ' + d.id)),
+      ...columns.map((c) => {
+        const lab = c.label != null && String(c.label).trim() ? String(c.label).trim() : '';
+        return lab || humanizeFieldKey(c.field_key);
+      }),
+    ];
+    const rows = submissions.map((s) => {
+      let submittedDisplay = '';
+      if (s.submittedAt) {
+        try {
+          submittedDisplay = new Date(s.submittedAt).toLocaleString(undefined, {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          });
+        } catch (_) {
+          submittedDisplay = String(s.submittedAt);
+        }
+      }
+      const domVals = domains.map((d) => {
+        const v = s.domainRatings && s.domainRatings[d.id];
+        return v != null ? v : '';
+      });
+      const customVals = columns.map((c) => {
+        const v = s.custom && s.custom[c.field_key];
+        return v == null ? '' : v;
+      });
+      return [
+        s.userId,
+        s.name || '',
+        s.email || '',
+        submittedDisplay,
+        s.targetExamDate || '',
+        s.studyHoursPerWeek != null ? s.studyHoursPerWeek : '',
+        s.preferredStudyTime || '',
+        s.primaryDevice || '',
+        ...domVals,
+        ...customVals,
+      ];
+    });
+    return { headers, rows };
+  }
+
+  async function exportProfileExcel() {
+    const btn = document.getElementById('pf-export-csv');
+    try {
+      if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
+      if (typeof XLSX === 'undefined') {
+        alert('Excel library failed to load.');
+        return;
+      }
+      const r = await fetch('/admin/api/profile-form/responses', { credentials: 'same-origin' });
+      if (!r.ok) throw new Error('Could not load responses');
+      const data = await r.json();
+      const { headers, rows } = buildProfileExportTable(data);
+      const wb = XLSX.utils.book_new();
+      const generatedAt = new Date().toLocaleString();
+      const title = 'ADAPTIVE CSE-PPT REVIEW PLATFORM FOR CSPC ACCESS REVIEWEES — LEARNER PROFILE RESPONSES';
+      const ws = buildSheetPf(title, generatedAt, headers, rows);
+      XLSX.utils.book_append_sheet(wb, ws, 'Profile responses');
+      const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+      XLSX.writeFile(wb, 'learner-profile-responses-' + ts + '.xlsx', { bookType: 'xlsx', cellStyles: true });
+    } catch (e) {
+      console.error(e);
+      alert('Could not export Excel file.');
+    } finally {
+      if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+    }
+  }
+
+  document.getElementById('pf-export-csv')?.addEventListener('click', exportProfileExcel);
 
 })();
   </script>
