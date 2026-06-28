@@ -7,7 +7,80 @@
   <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
   <link rel="stylesheet" href="/css/base.css">
   <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block">
   <script src="/js/theme-toggle.js"></script>
+  <style>
+    /* Generate enrollment codes modal — institutional polish */
+    #modal-gen-codes .bat-gen-modal-form {
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #modal-gen-codes .bat-modal-title {
+      font-family: var(--font-heading, 'Plus Jakarta Sans', sans-serif);
+      font-weight: 700;
+      color: var(--text-main);
+      letter-spacing: -0.02em;
+    }
+
+    #modal-gen-codes .modal-form-body {
+      display: flex;
+      flex-direction: column;
+      gap: 16px !important;
+      padding: 20px 24px !important;
+    }
+
+    #modal-gen-codes .modal-form-body .bat-field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      margin: 0;
+    }
+
+    #modal-gen-codes .bat-field-lbl {
+      font-family: var(--font-body, 'Inter', sans-serif);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+      line-height: 1.35;
+    }
+
+    #modal-gen-codes .bat-gen-notice {
+      font-family: var(--font-body, 'Inter', sans-serif);
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--text-subdued);
+      background: var(--bg-main, #f8fafc);
+      border: 1px solid var(--border-default);
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin: 0;
+    }
+
+    #modal-gen-codes .bat-gen-notice strong {
+      color: var(--text-main);
+      font-weight: 600;
+    }
+
+    #modal-gen-codes .modal-footer-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px !important;
+      padding: 16px 24px !important;
+      border-top: 1px solid var(--border-color, #e5e7eb);
+    }
+
+    #modal-gen-codes .modal-footer-actions .home-btn {
+      min-height: 40px;
+      padding: 10px 20px;
+      font-family: var(--font-body, 'Inter', sans-serif);
+      font-size: 0.875rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+  </style>
 </head>
 <body data-role="admin">
 
@@ -176,6 +249,7 @@
 
       </div>
 
+
     </main>
   </div>
 
@@ -235,23 +309,28 @@
         <h2 class="bat-modal-title" id="bat-gen-title">Generate enrollment codes</h2>
         <button type="button" class="bat-modal-x" id="bat-gen-close" aria-label="Close"><span class="material-symbols-outlined">close</span></button>
       </div>
-      <form id="bat-gen-form" class="bat-modal-form">
-        <div class="bat-field">
-          <label class="bat-field-lbl" for="gc-qty">Quantity</label>
-          <input class="bat-input" type="number" id="gc-qty" min="1" max="500" value="5" required>
+      <form id="bat-gen-form" class="bat-modal-form bat-gen-modal-form">
+        <div class="modal-form-body">
+          <div class="bat-field">
+            <label class="bat-field-lbl" for="gc-qty">Quantity</label>
+            <input class="bat-input" type="number" id="gc-qty" min="1" max="500" value="5" required>
+          </div>
+          <div class="bat-field" style="display:none;">
+            <input type="hidden" id="gc-max" value="1">
+          </div>
+          <div class="bat-field bat-field--full">
+            <p class="bat-gen-notice">
+              <strong>Note:</strong> System generated enrollment codes are strictly set to 1-time use only per reviewee to prevent account sharing.
+            </p>
+          </div>
+          <div class="bat-field bat-field--full">
+            <label class="bat-field-lbl" for="gc-exp">Expiry <span class="bat-optional">(optional)</span></label>
+            <input class="bat-input" type="datetime-local" id="gc-exp">
+          </div>
         </div>
-        <div class="bat-field">
-          <label class="bat-field-lbl" for="gc-max">Uses per code</label>
-          <input class="bat-input" type="number" id="gc-max" min="1" value="1" required>
-          <p class="bat-field-hint">How many reviewees can redeem each code (usually 1).</p>
-        </div>
-        <div class="bat-field bat-field--full">
-          <label class="bat-field-lbl" for="gc-exp">Expiry <span class="bat-optional">(optional)</span></label>
-          <input class="bat-input" type="datetime-local" id="gc-exp">
-        </div>
-        <div class="bat-modal-actions">
-          <button type="button" class="bat-btn-ghost" id="gc-cancel">Cancel</button>
-          <button type="submit" class="bat-btn-save" id="gc-submit">Generate</button>
+        <div class="modal-footer-actions">
+          <button type="button" class="home-btn home-btn--ghost" id="gc-cancel">Cancel</button>
+          <button type="submit" class="home-btn home-btn--primary" id="gc-submit">Generate</button>
         </div>
       </form>
     </div>
@@ -557,6 +636,7 @@
       if (!selectedId) return;
       window.location.href = '/admin/api/batches/' + selectedId + '/codes/export';
     });
+
 
     loadBatches();
   })();

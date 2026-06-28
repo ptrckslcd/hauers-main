@@ -66,6 +66,28 @@
         </div>
       </div>
 
+      <!-- Google Authentication -->
+      <div class="dash-card st-card">
+        <p class="pgx-section-label">Google Authentication</p>
+        <div class="st-pref-list">
+          <div class="st-pref-row st-pref-row--last">
+            <div class="st-pref-info">
+              <strong>Google Account</strong>
+              <% if (locals.user && (user.authProvider === 'google' || user.authProvider === 'both')) { %>
+                <span style="color:var(--text-success)">Bound to Google OAuth</span>
+              <% } else { %>
+                <span>Connect your @my.cspc.edu.ph account to enable omni-channel login</span>
+              <% } %>
+            </div>
+            <div class="st-action">
+              <% if (locals.user && user.authProvider !== 'google' && user.authProvider !== 'both') { %>
+                <a href="/admin/settings/bind-google" class="cta-pill" style="text-decoration:none;">Bind Google Account</a>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="pgx-grid-2" style="align-items:stretch">
         <!-- Change Password -->
         <div class="dash-card st-card">

@@ -9,7 +9,7 @@ A UI prototype / simulation of an adaptive review platform for **CSPC ACCESS** r
 ## Table of Contents
 
 - [Quick Start](#quick-start)
-- [Demo Credentials](#demo-credentials)
+- [Authentication](#authentication)
 - [Page Tour](#page-tour)
 - [Simulated Features](#simulated-features)
 - [Limitations](#limitations)
@@ -21,6 +21,8 @@ A UI prototype / simulation of an adaptive review platform for **CSPC ACCESS** r
 ## Quick Start
 
 **Prerequisites:** [Node.js](https://nodejs.org) v18 or later.
+
+Before starting the app, copy `.env.example` to `.env` and fill in the database and Google OAuth values. Reviewee sign-in now expects a Google OAuth client plus a whitelist entry.
 
 ```bash
 # 1. Clone / download the project
@@ -40,16 +42,9 @@ http://localhost:3000
 
 ---
 
-## Demo Credentials
+## Authentication
 
-All data is stored in `data/mock-users.js`. Two accounts are pre-seeded:
-
-| Role     | Email                    | Password | Notes                            |
-|----------|--------------------------|----------|----------------------------------|
-| Admin    | `admin@hauers.com`       | `123456` | Full admin dashboard access      |
-| Reviewee | `reviewee@hauers.com`    | `123456` | Sub-professional exam level      |
-
-> Signing up via the `/signup` form **does not create a real account**. The flow will redirect through the success/OTP screens but no new user is persisted (it is a UI simulation only). Use the credentials above to log in.
+There are no pre-seeded user credentials in the live database. The first administrator is created through the bootstrap setup route, and reviewee access is controlled by Google OAuth plus the admin-managed whitelist.
 
 ---
 
@@ -61,7 +56,7 @@ All data is stored in `data/mock-users.js`. Two accounts are pre-seeded:
 |------------------|-----------------------|--------------------------------------------------|
 | `/`              | Landing               | Hero, features overview, call-to-action          |
 | `/login`         | Login                 | Email + password login                           |
-| `/signup`        | Sign Up               | Registration form (simulated — see Limitations)  |
+| `/signup`        | Sign Up               | Reviewee Google OAuth entry point                |
 | `/signup-success`| Sign Up Success       | OTP prompt screen                                |
 | `/forgot-password`| Forgot Password      | Multi-step password-reset flow (UI only)         |
 | `/reset-password` | Reset Password       | New password entry screen (UI only)              |
@@ -102,13 +97,13 @@ All data is stored in `data/mock-users.js`. Two accounts are pre-seeded:
 
 These features work end-to-end in the prototype:
 
-- **Login / Logout** — session-based auth with role-based redirect (admin vs reviewee)
+- **Login / Logout** — session-based auth with role-based redirect (admin local password vs reviewee Google OAuth)
 - **Practice Quiz** — fetches 15 questions from mock data, shows answers and explanations after each question, tracks score
 - **Diagnostic Test** — timed 10-question exam with per-domain scoring
 - **Study Plan** — weekly plan rendered from `data/mock-study-plan.js`
 - **Progress Tracker** — charts populated from `data/mock-progress.js`
 - **Review Materials** — searchable/filterable card library from `data/mock-review-materials.js`
-- **Profile Edit** — name, email, and exam level updates persist to `data/mock-users.js` on disk (survives restart)
+- **Profile Edit** — name, email, and exam level updates persist in the live database
 - **Admin Question Search** — live filter by keyword, domain, and difficulty
 - **Dark / Light Theme** — toggle persists to `localStorage`
 - **Responsive Design** — works on mobile, tablet, and desktop
@@ -121,14 +116,14 @@ Since this is a mock simulation, many flows are intentionally incomplete:
 
 | Feature                   | Status       | Notes                                                          |
 |---------------------------|--------------|----------------------------------------------------------------|
-| Sign Up (new account)     | UI only      | Redirects through screens; no account is actually created      |
-| Email verification (OTP)  | UI only      | No real email is sent; the flow auto-succeeds                  |
+| Sign Up (new account)     | Partial      | Reviewees now use Google OAuth and the whitelist gate          |
+| Email verification (OTP)  | UI only      | Legacy local signup flow; not used by the Google OAuth path    |
 | Forgot / reset password   | UI only      | No email is sent; the form steps are decorative                |
 | Real database             | None         | All data lives in `data/*.js` files loaded into memory         |
 | Data persistence          | Partial      | Only profile edits (`/api/profile/update`) write to disk       |
 | Quiz scores saved         | No           | Scores are shown in the session but not stored anywhere        |
 | Diagnostic scores saved   | No           | Results page shows mock data; your actual answers aren't used  |
-| Password hashing          | None         | Passwords are stored in plain text in `mock-users.js`          |
+| Password hashing          | Bcrypt       | Local admin passwords are hashed before storage                |
 | Multi-user isolation      | None         | All reviewees see the same mock dashboard data                 |
 | CSC affiliation           | None         | Not affiliated with or endorsed by the Civil Service Commission |
 
@@ -143,7 +138,7 @@ hauers/
 ├── package.json
 │
 ├── data/                     # In-memory mock data (JSON-style JS modules)
-│   ├── mock-users.js         # User accounts and credentials
+│   ├── live auth users       # Live database users now drive auth
 │   ├── mock-questions.js     # Practice/diagnostic questions (15 items, 3 domains)
 │   ├── mock-reviewee-dashboard.js
 │   ├── mock-diagnostic-results.js

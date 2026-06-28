@@ -45,14 +45,14 @@
           Log in to <a href="/" class="auth-logo-link"><img src="/assets/hauers-logo.svg" alt="" draggable="false" style="height: 1.1em; vertical-align: middle; margin-left: 0.5rem; margin-bottom: 4px;"></a>
         </div>
         <div class="greeting-sub">
-          Welcome back. Please enter your details.
+          Admins use email and password. Reviewees use their CSPC email via Google OAuth.
         </div>
       </div>
 
       <!-- Error banner — shown when ?error=1 -->
       <div class="auth-error-banner" id="auth-error-banner" hidden>
         <span class="material-symbols-outlined auth-error-icon">error</span>
-        <span class="auth-error-text">Invalid email or password. Please try again.</span>
+        <span class="auth-error-text" id="auth-error-text">Invalid email or password. Please try again.</span>
         <button type="button" class="auth-error-close" id="auth-error-close" aria-label="Dismiss error">
           <span class="material-symbols-outlined" style="font-size:16px">close</span>
         </button>
@@ -95,7 +95,7 @@
 
       <div class="divider">or</div>
 
-      <button type="button" class="google-btn">
+      <a href="/auth/google?source=login" class="google-btn" style="display:flex;align-items:center;justify-content:center;text-decoration:none;">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
           <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
           <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
@@ -104,7 +104,7 @@
           <path fill="none" d="M0 0h48v48H0z"/>
         </svg>
         Log in with CSPC Email
-      </button>
+      </a>
 
       <p class="auth-footer-text">
         Don't have an account? <a href="/signup">Sign up</a>
@@ -118,6 +118,26 @@
       var params = new URLSearchParams(window.location.search);
       if (params.get('error') === '1') {
         var banner = document.getElementById('auth-error-banner');
+        if (banner) banner.hidden = false;
+      }
+
+      var errorMessages = {
+        use_google_for_reviewees: 'Reviewee accounts must use the CSPC Email button.',
+        admin_password_missing: 'This admin account does not have a local password yet.',
+        google_oauth_failed: 'Google sign-in failed. Please try again.',
+        google_email_missing: 'Google did not return an email address.',
+        google_email_not_verified: 'Your Google email must be verified before login.',
+        email_not_whitelisted: 'This email is not on the CSPC reviewee whitelist.',
+        google_workspace_restricted: 'Use a @my.cspc.edu.ph account to continue.',
+        session_save_failed: 'We could not save your login session. Please try again.',
+        role_mismatch: 'This account is not allowed to sign in here.'
+      };
+
+      var error = params.get('error');
+      if (error && error !== '1') {
+        var text = document.getElementById('auth-error-text');
+        var banner = document.getElementById('auth-error-banner');
+        if (text) text.textContent = errorMessages[error] || 'Login failed. Please try again.';
         if (banner) banner.hidden = false;
       }
       var closeBtn = document.getElementById('auth-error-close');

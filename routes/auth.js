@@ -1,10 +1,39 @@
 const express = require('express');
 const bcrypt  = require('bcrypt');
+require('../config/passport');
+const passport = require('passport');
 const db      = require('../config/db');
 
 const router = express.Router();
 
 const SALT_ROUNDS = 10;
+
+function normalizeEmail(email) {
+  return String(email || '').trim().toLowerCase();
+}
+
+function buildSessionUser(user) {
+  return {
+    id: user.id,
+    role: user.role,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+    examLevel: user.examLevel,
+    isVerified: !!user.isVerified,
+    isEnrolled: !!user.isEnrolled,
+    isOnboarded: !!user.isOnboarded,
+    isApproved: !!user.isApproved,
+    isSuspended: !!user.isSuspended,
+    authProvider: user.authProvider || 'local',
+    providerId: user.providerId || null,
+    oauthEmailVerified: !!user.oauthEmailVerified,
+  };
+}
+
+function authErrorRedirect(path, error) {
+  return `${path}?error=${encodeURIComponent(error)}`;
+}
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -18,16 +47,23 @@ function generateOTP() {
 // ── GET /login ─────────────────────────────────────────────────────────────
 router.get('/login', (req, res) => {
   if (req.session.user) {
-    return req.session.user.role === 'admin'
-      ? res.redirect('/admin/home')
-      : res.redirect('/reviewee/dashboard');
+    if (req.session.user.role === 'admin') {
+      return res.redirect('/admin/home');
+    }
+
+    if (!req.session.user.isOnboarded) {
+      return res.redirect('/reviewee/onboarding');
+    }
+
+    return res.redirect('/reviewee/dashboard');
   }
   res.render('auth/login');
 });
 
 // ── POST /login ────────────────────────────────────────────────────────────
 router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+  const email = normalizeEmail(req.body.email);
+  const password = req.body.password || '';
 
   if (!email || !password) {
     return res.redirect('/login?error=1');
@@ -38,6 +74,9 @@ router.post('/login', async (req, res) => {
       `SELECT id, role, first_name AS firstName, last_name AS lastName,
               email, exam_level AS examLevel,
               is_verified AS isVerified, is_enrolled AS isEnrolled, is_onboarded AS isOnboarded,
+              is_approved AS isApproved, is_suspended AS isSuspended,
+              auth_provider AS authProvider, provider_id AS providerId,
+              oauth_email_verified AS oauthEmailVerified,
               password
        FROM users WHERE email = ?`,
       [email]
@@ -49,9 +88,17 @@ router.post('/login', async (req, res) => {
 
     const user = rows[0];
 
+    if (user.role !== 'admin') {
+      return res.redirect(authErrorRedirect('/login', 'use_google_for_reviewees'));
+    }
+
+    if (!user.password) {
+      return res.redirect(authErrorRedirect('/login', 'admin_password_missing'));
+    }
+
     // Compare password — supports both bcrypt hashes and plaintext (demo seed)
     let passwordMatch = false;
-    if (user.password.startsWith('$2b$') || user.password.startsWith('$2a$')) {
+    if (String(user.password).startsWith('$2b$') || String(user.password).startsWith('$2a$')) {
       passwordMatch = await bcrypt.compare(password, user.password);
     } else {
       // Plaintext fallback for demo seed users — remove once all seeds are hashed
@@ -64,7 +111,7 @@ router.post('/login', async (req, res) => {
 
     // Strip the password hash from session data — never expose it
     const { password: _pw, ...safeUser } = user;
-    req.session.user = safeUser;
+    req.session.user = buildSessionUser(safeUser);
 
     console.log(`[Auth] Login: ${user.email} (${user.role})`);
 
@@ -92,58 +139,112 @@ router.get('/logout', (req, res) => {
   });
 });
 
-// ── POST /signup ───────────────────────────────────────────────────────────
-// Blueprint §5.1: Real DB insert with bcrypt hash + OTP generation
-router.post('/signup', async (req, res) => {
-  const { email, password, confirm_password } = req.body;
+router.get('/signup', async (req, res) => {
+  if (req.session.user) {
+    if (req.session.user.role === 'admin') {
+      return res.redirect('/admin/home');
+    }
 
-  // ── Validation ──────────────────────────────────────────────────────────
-  if (!email || !password || !confirm_password) {
-    return res.redirect('/signup?error=missing_fields');
-  }
+    if (!req.session.user.isOnboarded) {
+      return res.redirect('/reviewee/onboarding');
+    }
 
-  if (password !== confirm_password) {
-    return res.redirect('/signup?error=password_mismatch');
-  }
-
-  if (password.length < 8) {
-    return res.redirect('/signup?error=password_too_short');
+    return res.redirect('/reviewee/dashboard');
   }
 
   try {
-    // Check email uniqueness
-    const [existing] = await db.query(
-      'SELECT id FROM users WHERE email = ?',
-      [email]
-    );
-    if (existing.length > 0) {
-      return res.redirect('/signup?error=email_taken');
+    const [rows] = await db.query("SELECT COUNT(*) AS adminCount FROM users WHERE role = 'admin'");
+    const adminCount = Number(rows?.[0]?.adminCount || 0);
+    if (adminCount === 0) {
+      return res.redirect('/admin/setup?token=ac5be80e46376f290724c6d8da686cdadaae2756f0765125');
+    }
+  } catch (err) {
+    console.error('Error checking admin count on signup:', err);
+  }
+
+  return res.render('auth/signup');
+});
+
+// ── POST /signup — Local registration blocked (RSC compliance) ─────────────
+// Reviewees must authenticate exclusively via Google OAuth.
+router.post('/signup', (req, res) => {
+  return res.redirect('/signup?error=use_google');
+});
+
+router.get('/auth/google', (req, res, next) => {
+  req.session.oauthSource = req.query.source === 'signup' ? 'signup' : 'login';
+  return passport.authenticate('google', {
+    scope: ['profile', 'email'],
+    prompt: 'select_account',
+    session: false,
+  })(req, res, next);
+});
+
+router.get('/auth/google/callback', (req, res, next) => {
+  passport.authenticate('google', { session: false }, (err, user, info) => {
+    const rawSource = req.session.oauthSource || 'login';
+    const sourceRoute = rawSource === 'signup' ? '/signup' : '/login';
+    const isSetupReview = (rawSource === 'setup_review' || rawSource === 'activate_review');
+
+    if (err) {
+      console.error('[Auth] Google OAuth error:', err);
+      if (isSetupReview) return res.redirect('/admin/setup/review?error=google_oauth_failed');
+      if (rawSource === 'bind_admin') return res.redirect('/admin/settings?error=bind_failed');
+      if (rawSource === 'activate_admin') return res.redirect(`/admin/activate?token=${req.session.activationToken || ''}&error=google_oauth_failed`);
+      return res.redirect(authErrorRedirect(sourceRoute, 'google_oauth_failed'));
     }
 
-    // Hash password
-    const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
+    if (!user) {
+      const message = info?.message || 'google_oauth_failed';
+      if (isSetupReview) return res.redirect('/admin/setup/review?error=' + message);
+      if (rawSource === 'bind_admin') return res.redirect('/admin/settings?error=bind_failed');
+      if (rawSource === 'activate_admin') return res.redirect(`/admin/activate?token=${req.session.activationToken || ''}&error=${message}`);
+      return res.redirect(authErrorRedirect(sourceRoute, message));
+    }
 
-    // Insert user (unverified, name filled later)
-    const [result] = await db.query(
-      `INSERT INTO users (role, first_name, last_name, email, password, is_verified, is_enrolled)
-       VALUES ('reviewee', '', '', ?, ?, FALSE, FALSE)`,
-      [email, passwordHash]
-    );
+    // For setup_review, we do NOT create a full session — just redirect to the review page
+    if (isSetupReview) {
+      delete req.session.oauthSource;
+      return req.session.save(saveErr => {
+        if (saveErr) {
+          console.error('[Auth] Session save error after setup_review:', saveErr);
+          return res.redirect('/login?error=session_save_failed');
+        }
+        return res.redirect('/admin/setup/review');
+      });
+    }
 
-    const userId = result.insertId;
+    req.session.user = buildSessionUser ? buildSessionUser(user) : user;
+    delete req.session.oauthSource;
+    delete req.session.activationToken; // clean up if used
 
-    // Store context in session for the OTP step
-    req.session.pendingEmail  = email;
-    req.session.pendingUserId = userId;
+    req.session.save((saveErr) => {
+      if (saveErr) {
+        console.error('[Auth] Session save error after Google OAuth:', saveErr);
+        if (rawSource === 'bind_admin') return res.redirect('/admin/settings?error=session_save_failed');
+        if (rawSource === 'activate_admin') return res.redirect('/login?error=session_save_failed');
+        return res.redirect(authErrorRedirect(sourceRoute, 'session_save_failed'));
+      }
 
-    console.log(`[Auth] Signup success for ${email}. OTP screen active (Any 6-digit code will work for now).`);
+      if (rawSource === 'bind_admin') {
+        return res.redirect('/admin/settings?success=google_bound');
+      }
 
-    return res.redirect('/signup-success');
+      if (user.role === 'admin') {
+        return res.redirect('/admin/home');
+      }
 
-  } catch (err) {
-    console.error('[Auth] Signup error:', err);
-    return res.redirect('/signup?error=server_error');
-  }
+      if (user.role !== 'reviewee') {
+        return res.redirect('/login?error=role_mismatch');
+      }
+
+      if (!user.isOnboarded) {
+        return res.redirect('/reviewee/onboarding');
+      }
+
+      return res.redirect('/reviewee/dashboard');
+    });
+  })(req, res, next);
 });
 
 // ── POST /verify-email ─────────────────────────────────────────────────────
@@ -176,14 +277,17 @@ router.post('/verify-email', async (req, res) => {
 
     // Fetch full user record for session
     const [rows] = await db.query(
-      `SELECT id, role, email, is_verified AS isVerified, is_enrolled AS isEnrolled
+      `SELECT id, role, email, first_name AS firstName, last_name AS lastName,
+              exam_level AS examLevel, is_verified AS isVerified, is_enrolled AS isEnrolled,
+              is_onboarded AS isOnboarded, is_approved AS isApproved, is_suspended AS isSuspended,
+              auth_provider AS authProvider, provider_id AS providerId, oauth_email_verified AS oauthEmailVerified
        FROM users WHERE id = ?`,
       [userId]
     );
     const user = rows[0];
 
     // Log the user in
-    req.session.user = user;
+    req.session.user = buildSessionUser(user);
     delete req.session.pendingEmail;
     delete req.session.pendingUserId;
 

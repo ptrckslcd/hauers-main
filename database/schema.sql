@@ -18,18 +18,35 @@ CREATE TABLE IF NOT EXISTS `users` (
   `first_name`    VARCHAR(100) NOT NULL,
   `last_name`     VARCHAR(100) NOT NULL,
   `email`         VARCHAR(255) NOT NULL UNIQUE,
-  `password`      VARCHAR(255) NOT NULL,
+  `password`      VARCHAR(255) DEFAULT NULL,
   `is_verified`   BOOLEAN NOT NULL DEFAULT FALSE,
   `is_enrolled`   BOOLEAN NOT NULL DEFAULT FALSE,
+  `is_onboarded`  BOOLEAN NOT NULL DEFAULT FALSE,
   `exam_level`    ENUM('professional', 'subprofessional') DEFAULT NULL,
   `batch_id`      INT DEFAULT NULL,
   `streak`        INT NOT NULL DEFAULT 0,
   `is_suspended`  BOOLEAN NOT NULL DEFAULT FALSE,
   `is_approved`   BOOLEAN NOT NULL DEFAULT FALSE,
+  `auth_provider` VARCHAR(20) NOT NULL DEFAULT 'local',
+  `provider_id`   VARCHAR(255) DEFAULT NULL,
+  `oauth_email_verified` BOOLEAN NOT NULL DEFAULT FALSE,
   `last_active`   TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `created_at`    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  `updated_at`    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `updated_at`    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY `unique_provider_identity` (`auth_provider`, `provider_id`)
 );
+
+ALTER TABLE `users`
+  ADD COLUMN IF NOT EXISTS `is_onboarded` BOOLEAN NOT NULL DEFAULT FALSE,
+  ADD COLUMN IF NOT EXISTS `auth_provider` VARCHAR(20) NOT NULL DEFAULT 'local',
+  ADD COLUMN IF NOT EXISTS `provider_id` VARCHAR(255) DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS `oauth_email_verified` BOOLEAN NOT NULL DEFAULT FALSE;
+
+ALTER TABLE `users`
+  MODIFY COLUMN `password` VARCHAR(255) DEFAULT NULL;
+
+ALTER TABLE `users`
+  ADD UNIQUE INDEX IF NOT EXISTS `unique_provider_identity` (`auth_provider`, `provider_id`);
 
 -- ────────────────────────────────────────────────────────────
 -- 2. EMAIL VERIFICATIONS (for OTP flow)
@@ -88,6 +105,45 @@ CREATE TABLE IF NOT EXISTS `enrollments` (
   FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
   FOREIGN KEY (`batch_id`) REFERENCES `batches`(`id`) ON DELETE CASCADE,
   FOREIGN KEY (`enrollment_code_id`) REFERENCES `enrollment_codes`(`id`) ON DELETE SET NULL
+);
+
+-- ────────────────────────────────────────────────────────────
+-- 5b. REVIEWEE WHITELIST (admin-controlled Google OAuth gate)
+-- ────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS `reviewee_whitelist` (
+  `id`                 INT AUTO_INCREMENT PRIMARY KEY,
+  `email`              VARCHAR(255) NOT NULL UNIQUE,
+  `first_name`         VARCHAR(100) DEFAULT NULL,
+  `last_name`          VARCHAR(100) DEFAULT NULL,
+  `batch_id`           INT DEFAULT NULL,
+  `enrollment_code_id` INT DEFAULT NULL,
+  `is_active`          BOOLEAN NOT NULL DEFAULT TRUE,
+  `claimed_by_user_id`  INT DEFAULT NULL,
+  `claimed_at`         DATETIME DEFAULT NULL,
+  `created_by`         INT DEFAULT NULL,
+  `created_at`         TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (`batch_id`) REFERENCES `batches`(`id`) ON DELETE SET NULL,
+  FOREIGN KEY (`enrollment_code_id`) REFERENCES `enrollment_codes`(`id`) ON DELETE SET NULL,
+  FOREIGN KEY (`claimed_by_user_id`) REFERENCES `users`(`id`) ON DELETE SET NULL,
+  FOREIGN KEY (`created_by`) REFERENCES `users`(`id`) ON DELETE SET NULL
+);
+
+-- ────────────────────────────────────────────────────────────
+-- 5c. ADMIN INVITATIONS (internal staff onboarding)
+-- ────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS `admin_invitations` (
+  `id`          INT AUTO_INCREMENT PRIMARY KEY,
+  `email`       VARCHAR(255) NOT NULL,
+  `token_hash`  CHAR(64) NOT NULL UNIQUE,
+  `expires_at`  DATETIME NOT NULL,
+  `created_by`  INT NOT NULL,
+  `accepted_by` INT DEFAULT NULL,
+  `accepted_at` DATETIME DEFAULT NULL,
+  `revoked_at`  DATETIME DEFAULT NULL,
+  `created_at`  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX `idx_admin_inv_email_status` (`email`, `accepted_at`, `revoked_at`, `expires_at`),
+  FOREIGN KEY (`created_by`) REFERENCES `users`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`accepted_by`) REFERENCES `users`(`id`) ON DELETE SET NULL
 );
 
 -- ────────────────────────────────────────────────────────────
@@ -460,41 +516,39 @@ INSERT IGNORE INTO `profile_form_definition` (`id`, `survey_json`) VALUES
 -- SEED DATA
 -- ────────────────────────────────────────────────────────────
 
--- Admin user
--- IMPORTANT: Password is plaintext for demo only.
---            Replace with a proper bcrypt hash before production.
-INSERT IGNORE INTO `users`
-  (`id`, `role`, `first_name`, `last_name`, `email`, `password`, `is_verified`, `is_enrolled`, `created_at`)
-VALUES
-  (1, 'admin', 'ACCESS', 'Admin', 'admin@hauers.com', '123456', 1, 0, '2025-11-01 00:00:00');
+-- ────────────────────────────────────────────────────────────
+-- SCHEMA ALIGNMENT MIGRATIONS (Aligning Live DB with Manuscript)
+-- ────────────────────────────────────────────────────────────
 
--- Demo reviewee (pre-enrolled for testing)
-INSERT IGNORE INTO `users`
-  (`id`, `role`, `first_name`, `last_name`, `email`, `password`, `is_verified`, `is_enrolled`, `exam_level`, `streak`, `created_at`)
-VALUES
-  (2, 'reviewee', 'Mock', 'Reviewee', 'reviewee@hauers.com', '123456', 1, 1, 'professional', 5, '2026-01-15 00:00:00');
+-- 1. Safely fix diagnostic_sessions table column name if it exists as total_items
+SET @dbname = DATABASE();
+SET @tablename = 'diagnostic_sessions';
+SET @oldcolumn = 'total_items';
+SET @newcolumn = 'total_questions';
 
--- Demo batch (for the mock reviewee)
-INSERT IGNORE INTO `batches`
-  (`id`, `name`, `exam_level`, `start_date`, `end_date`, `status`, `created_by`)
-VALUES
-  (1, 'Demo Batch 2026 — Professional', 'professional', '2026-01-01', '2026-12-31', 'active', 1);
+SELECT COUNT(*) INTO @exists 
+FROM information_schema.COLUMNS 
+WHERE TABLE_SCHEMA = @dbname 
+  AND TABLE_NAME = @tablename 
+  AND COLUMN_NAME = @oldcolumn;
 
--- Link demo reviewee to the demo batch
-UPDATE `users` SET `batch_id` = 1 WHERE `id` = 2;
+SET @query = IF(@exists > 0, 
+  CONCAT('ALTER TABLE `', @tablename, '` CHANGE COLUMN `', @oldcolumn, '` `', @newcolumn, '` INT NOT NULL'), 
+  'SELECT "Column total_questions already aligned or total_items not found." AS status');
+PREPARE stmt FROM @query;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
--- Demo enrollment record
-INSERT IGNORE INTO `enrollments` (`user_id`, `batch_id`) VALUES (2, 1);
 
--- Demo domain ratings for mock reviewee (professional level — 5 domains)
-INSERT IGNORE INTO `domain_ratings` (`user_id`, `domain_id`, `theta`, `k_factor`, `sessions_count`)
-SELECT 2, d.id,
-  CASE d.code
-    WHEN 'verbal'       THEN 1310.0
-    WHEN 'numerical'    THEN 1180.0
-    WHEN 'clerical'     THEN 1240.0
-    WHEN 'general_info' THEN 1150.0
-    WHEN 'analytical'   THEN 1090.0
-  END,
-  24.0, 8
-FROM `domains` d;
+-- 2. Safely fix learner_profiles table column names if they are using the short versions
+SET @tablename2 = 'learner_profiles';
+
+-- Fix target_date -> target_exam_date
+SELECT COUNT(*) INTO @existsDate FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = @dbname AND TABLE_NAME = @tablename2 AND COLUMN_NAME = 'target_exam_date';
+SET @queryDate = IF(@existsDate > 0, CONCAT('ALTER TABLE `', @tablename2, '` CHANGE COLUMN `target_date` `target_exam_date` DATE DEFAULT NULL'), 'SELECT 1');
+PREPARE stmtDate FROM @queryDate; EXECUTE stmtDate; DEALLOCATE PREPARE stmtDate;
+
+-- Fix preferred_time -> preferred_study_time
+SELECT COUNT(*) INTO @existsTime FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = @dbname AND TABLE_NAME = @tablename2 AND COLUMN_NAME = 'preferred_time';
+SET @queryTime = IF(@existsTime > 0, CONCAT('ALTER TABLE `', @tablename2, '` CHANGE COLUMN `preferred_time` `preferred_study_time` ENUM("morning", "afternoon", "evening") DEFAULT NULL'), 'SELECT 1');
+PREPARE stmtTime FROM @queryTime; EXECUTE stmtTime; DEALLOCATE PREPARE stmtTime;

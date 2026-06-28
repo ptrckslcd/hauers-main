@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reviewees | Hauers Admin</title>
+  <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block">
+  <script src="/js/theme-toggle.js"></script>
+  <style>
+    .rxv-whitelist-card {
+      margin-top: 1.5rem;
+      padding: 1.5rem;
+      gap: 0;
+    }
+
+    .rxv-whitelist-card:hover {
+      border-color: #D0DBF0;
+      box-shadow: 0 2px 8px rgba(27, 79, 138, 0.06);
+    }
+
+    .rxv-whitelist-header {
+      margin-bottom: 1.25rem;
+    }
+
+    .rxv-whitelist-card .home-recs-title {
+      font-family: var(--font-heading, 'Plus Jakarta Sans', sans-serif);
+    }
+
+    .rxv-whitelist-card .home-recs-sub {
+      font-family: var(--font-body, 'Inter', sans-serif);
+    }
+
+    .rxv-wl-form {
+      margin-bottom: 0;
+    }
+
+    .whitelist-form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px !important;
+      margin-bottom: 20px !important;
+    }
+
+    .rxv-wl-form .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin: 0;
+      min-width: 0;
+    }
+
+    .rxv-wl-form .input-label {
+      font-family: var(--font-body, 'Inter', sans-serif);
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-main);
+      line-height: 1.35;
+    }
+
+    .rxv-wl-form .bat-input,
+    .rxv-wl-form .bat-select {
+      width: 100%;
+      min-height: 42px;
+      box-sizing: border-box;
+      font-family: var(--font-body, 'Inter', sans-serif);
+      font-size: 0.875rem;
+      border: 1px solid var(--border-default);
+      border-radius: 10px;
+      padding: 0.62rem 0.85rem;
+      background: var(--bg-main, #f8fafc);
+      color: var(--text-main);
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .rxv-wl-form .bat-input:focus,
+    .rxv-wl-form .bat-select:focus {
+      outline: none;
+      border-color: var(--fs-blue, #2563eb);
+      box-shadow: var(--focus-glow, 0 0 0 3px rgba(37, 99, 235, 0.15));
+    }
+
+    .rxv-wl-form .bat-input::placeholder {
+      color: var(--text-muted, #94a3b8);
+    }
+
+    .form-actions-row {
+      display: flex;
+      justify-content: flex-end;
+      width: 100%;
+      margin-top: 12px;
+    }
+
+    .whitelist-submit-btn {
+      width: auto !important;
+      padding: 10px 24px !important;
+      align-self: flex-end;
+      white-space: nowrap;
+    }
+
+    .rxv-whitelist-entries {
+      margin-top: 0.25rem;
+    }
+
+    .rxv-whitelist-entries .home-recs-sub {
+      margin-bottom: 0.65rem;
+    }
+  </style>
+</head>
+<body data-role="admin">
+
+  <div id="navbar-placeholder"><%- include('../partials/navbar') %></div>
+
+  <div class="app-shell sidebar-collapsed">
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div id="sidebar-placeholder"><%- include('../partials/admin-sidebar') %></div>
+
+    <main class="page-content">
+
+      <header class="page-header">
+        <h1 class="page-title">Reviewees</h1>
+      </header>
+
+      <!-- KPIs -->
+      <div class="home-stats-row" style="margin-bottom:1.25rem">
+        <div class="dash-card home-stat-card">
+          <div class="home-stat-ico-wrap home-stat-ico-wrap--blue"><span class="material-symbols-outlined">group</span></div>
+          <div class="home-stat-copy">
+            <span class="home-stat-value" id="kpi-total">—</span>
+            <span class="home-stat-label">Total</span>
+          </div>
+        </div>
+        <div class="dash-card home-stat-card">
+          <div class="home-stat-ico-wrap home-stat-ico-wrap--green"><span class="material-symbols-outlined">how_to_reg</span></div>
+          <div class="home-stat-copy">
+            <span class="home-stat-value" id="kpi-enrolled">—</span>
+            <span class="home-stat-label">Enrolled</span>
+          </div>
+        </div>
+        <div class="dash-card home-stat-card">
+          <div class="home-stat-ico-wrap home-stat-ico-wrap--amber"><span class="material-symbols-outlined">fact_check</span></div>
+          <div class="home-stat-copy">
+            <span class="home-stat-value" id="kpi-diag">—</span>
+            <span class="home-stat-label">Diagnostic Done</span>
+          </div>
+        </div>
+        <div class="dash-card home-stat-card">
+          <div class="home-stat-ico-wrap home-stat-ico-wrap--fire"><span class="material-symbols-outlined">bolt</span></div>
+          <div class="home-stat-copy">
+            <span class="home-stat-value" id="kpi-active">—</span>
+            <span class="home-stat-label">Active (7d)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="dash-card rxv-toolbar">
+        <p class="rxv-toolbar-label">Search and filters</p>
+
+        <div class="rxv-search-wrap">
+          <span class="material-symbols-outlined rxv-search-ic">search</span>
+          <input type="search" id="user-search" class="rxv-search-input" placeholder="Search by name or email…" autocomplete="off">
+        </div>
+
+        <div class="rxv-selects" role="toolbar" aria-label="Filters">
+          <div class="rxv-select-wrap rxv-select-wrap--status">
+            <label class="rxv-select-lbl" for="filter-status">Status</label>
+            <select id="filter-status" class="rxv-select" aria-label="Filter by status">
+              <option value="all">All reviewees</option>
+              <option value="enrolled">Enrolled</option>
+              <option value="pending">Pending enrollment</option>
+              <option value="diagnostic">Diagnostic complete</option>
+              <option value="active">Active (7 days)</option>
+              <option value="suspended">Suspended</option>
+            </select>
+          </div>
+          <div class="rxv-select-wrap">
+            <label class="rxv-select-lbl" for="filter-batch">Batch</label>
+            <select id="filter-batch" class="rxv-select" aria-label="Filter by batch">
+              <option value="all">All batches</option>
+            </select>
+          </div>
+          <div class="rxv-select-wrap">
+            <label class="rxv-select-lbl" for="filter-level">Exam level</label>
+            <select id="filter-level" class="rxv-select" aria-label="Filter by exam level">
+              <option value="all">All levels</option>
+              <option value="professional">Professional</option>
+              <option value="subprofessional">Sub-professional</option>
+            </select>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Table -->
+      <div class="admin-table-wrap">
+        <div style="overflow-x:auto">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Reviewee</th>
+                <th>Batch</th>
+                <th>Exam Level</th>
+                <th>Enrolled</th>
+                <th>Diagnostic</th>
+                <th>Last Active</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="users-tbody">
+              <tr><td colspan="8" class="rxv-loading">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Reviewee Whitelist -->
+      <section class="dash-card rxv-whitelist-card">
+        <div class="rxv-whitelist-header home-recs-header">
+          <div>
+            <h2 class="home-recs-title">Reviewee Whitelist</h2>
+            <p class="home-recs-sub">Approve Google OAuth access by email before onboarding begins.</p>
+          </div>
+        </div>
+
+        <form id="reviewee-whitelist-form" class="rxv-wl-form">
+          <div class="whitelist-form-grid">
+            <div class="form-group">
+              <label class="input-label" for="whitelist-email">Email <span style="color:var(--fs-red);">*</span></label>
+              <input class="bat-input" id="whitelist-email" name="email" type="email" placeholder="reviewee@my.cspc.edu.ph" required>
+            </div>
+            <div class="form-group">
+              <label class="input-label" for="whitelist-first-name">First name <span style="color:var(--fs-red);">*</span></label>
+              <input class="bat-input" id="whitelist-first-name" name="firstName" type="text" placeholder="e.g. Juan" required>
+            </div>
+            <div class="form-group">
+              <label class="input-label" for="whitelist-last-name">Last name <span style="color:var(--fs-red);">*</span></label>
+              <input class="bat-input" id="whitelist-last-name" name="lastName" type="text" placeholder="e.g. Dela Cruz" required>
+            </div>
+            <div class="form-group">
+              <label class="input-label" for="whitelist-batch-id">Batch ID <span style="color:var(--fs-red);">*</span></label>
+              <select class="bat-input bat-select" id="whitelist-batch-id" name="batchId" required>
+                <option value="">Select Batch</option>
+                <% if (locals.batches) { %>
+                  <% batches.forEach(function(batch) { %>
+                    <option value="<%= batch.id %>">Batch <%= batch.id %> - <%= batch.exam_level %></option>
+                  <% }); %>
+                <% } %>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="input-label" for="whitelist-enrollment-code-id">Enrollment Code <span style="color:var(--fs-red);">*</span></label>
+              <select class="bat-input bat-select" id="whitelist-enrollment-code-id" name="enrollmentCodeId" required disabled>
+                <option value="">Select Batch First</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-actions-row">
+            <button type="submit" class="home-btn home-btn--primary whitelist-submit-btn">Save Whitelist Entry</button>
+          </div>
+        </form>
+
+        <div class="invite-entries-label rxv-whitelist-entries">
+          <p class="home-recs-sub">Recent whitelist entries</p>
+          <div id="whitelist-list" class="invite-entries-list">
+            <% if (locals.whitelist && whitelist.length > 0) { %>
+              <% whitelist.forEach(function(entry) { %>
+                <div style="display:flex;justify-content:space-between;gap:0.75rem;padding:0.85rem 1rem;border:1px solid var(--border-default);border-radius:14px;align-items:center;">
+                  <div style="min-width:0;">
+                    <div style="font-weight:700;"><%= entry.email %></div>
+                    <div style="font-size:0.85rem;color:var(--text-subdued);">
+                      <%= entry.firstName || '' %> <%= entry.lastName || '' %>
+                      <%= entry.batchLabel ? ' · ' + entry.batchLabel : '' %>
+                      <%= entry.enrollmentCode ? ' · Code ' + entry.enrollmentCode : '' %>
+                    </div>
+                    <div style="font-size:0.8rem;color:var(--text-subdued);">
+                      <%= entry.claimedByName ? 'Claimed by ' + entry.claimedByName : 'Not yet claimed' %>
+                      <%= entry.claimedAt ? ' on ' + new Date(entry.claimedAt).toLocaleString() : '' %>
+                    </div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;justify-content:flex-end;">
+                    <span style="font-size:0.82rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;"><%= entry.status %></span>
+                    <% if (entry.status === 'active') { %>
+                      <button type="button" class="bat-btn-ghost whitelist-revoke" data-id="<%= entry.id %>">Revoke</button>
+                    <% } else { %>
+                      <button type="button" class="bat-btn-ghost whitelist-reactivate" data-id="<%= entry.id %>">Reactivate</button>
+                    <% } %>
+                  </div>
+                </div>
+              <% }); %>
+            <% } else { %>
+              <p style="margin:0;color:var(--text-subdued);">No whitelist entries yet.</p>
+            <% } %>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="/js/admin-shell.js"></script>
+  <script>
+  (async () => {
+    const $ = id => document.getElementById(id);
+    const set = (id, v) => { const e = $(id); if (e) e.textContent = v; };
+
+    function fmtDate(d) {
+      return d ? new Date(d).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
+    }
+    function relTime(d) {
+      if (!d) return 'Never';
+      const diff = Math.floor((Date.now() - new Date(d)) / 86400000);
+      if (diff === 0) return 'Today';
+      if (diff === 1) return 'Yesterday';
+      if (diff < 7)  return diff + 'd ago';
+      return fmtDate(d);
+    }
+    function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : '—'; }
+
+    /* ── Load ── */
+    let allUsers = [];
+    try {
+      const r = await fetch('/admin/api/users');
+      if (!r.ok) throw new Error();
+      allUsers = (await r.json()).users || [];
+    } catch { $('users-tbody').innerHTML = '<tr><td colspan="8" class="rxv-loading">Failed to load reviewees.</td></tr>'; return; }
+
+    /* Load batches for filter */
+    try {
+      const rb = await fetch('/admin/api/batches');
+      if (rb.ok) {
+        const { batches } = await rb.json();
+        const sel = $('filter-batch');
+        batches.forEach(b => {
+          const opt = document.createElement('option');
+          opt.value = b.id;
+          opt.textContent = b.name;
+          sel.appendChild(opt);
+        });
+      }
+    } catch {}
+
+    /* ── KPIs ── */
+    const now = Date.now();
+    set('kpi-total',   allUsers.length);
+    set('kpi-enrolled', allUsers.filter(u => u.isEnrolled).length);
+    set('kpi-diag',    allUsers.filter(u => u.diagnosticStatus === 'completed').length);
+    set('kpi-active',  allUsers.filter(u => u.lastActive && (now - new Date(u.lastActive)) < 7*86400000).length);
+
+    /* ── Render ── */
+    const tbody = $('users-tbody');
+    function renderUsers(users) {
+      if (!users.length) {
+        tbody.innerHTML = '<tr><td colspan="8" class="rxv-loading" style="color:var(--text-subdued)">No reviewees match your filters.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = users.map(u => {
+        const initials = ((u.firstName||'?')[0] + (u.lastName||'?')[0]).toUpperCase();
+        const diagBadge = u.diagnosticStatus === 'completed'
+          ? `<span class="rxv-badge rxv-badge--done">Done</span>`
+          : `<span class="rxv-badge rxv-badge--pending">Pending</span>`;
+
+        let statusBadge;
+        if (u.isSuspended)       statusBadge = `<span class="rxv-badge rxv-badge--suspended">Suspended</span>`;
+        else if (u.isEnrolled)   statusBadge = `<span class="rxv-badge rxv-badge--enrolled">Enrolled</span>`;
+        else if (u.isApproved)   statusBadge = `<span class="rxv-badge rxv-badge--approved">Approved</span>`;
+        else                     statusBadge = `<span class="rxv-badge rxv-badge--pending">Pending</span>`;
+
+        return `<tr onclick="location.href='/admin/reviewees/${u.id}'" style="cursor:pointer">
+          <td>
+            <div class="tbl-name-cell">
+              <span class="tbl-avatar">${initials}</span>
+              <div>
+                <span class="tbl-name">${u.firstName} ${u.lastName}</span>
+                <span class="tbl-email">${u.email}</span>
+              </div>
+            </div>
+          </td>
+          <td style="font-size:.82rem">${u.batchName || '<span style="color:var(--text-subdued)">—</span>'}</td>
+          <td style="font-size:.82rem">${cap(u.examLevel) || '—'}</td>
+          <td style="font-size:.82rem;color:var(--text-subdued)">${fmtDate(u.enrolledAt)}</td>
+          <td>${diagBadge}</td>
+          <td style="font-size:.82rem;color:var(--text-subdued)">${relTime(u.lastActive)}</td>
+          <td>${statusBadge}</td>
+          <td><a class="tbl-view-btn" href="/admin/reviewees/${u.id}" onclick="event.stopPropagation()">View →</a></td>
+        </tr>`;
+      }).join('');
+    }
+
+    renderUsers(allUsers);
+
+    /* ── Filters ── */
+    let activeStatus = 'all', activeBatch = 'all', activeLevel = 'all', query = '';
+    const sevenDays = 7 * 86400000;
+
+    function applyFilters() {
+      return allUsers.filter(u => {
+        const byStatus = activeStatus === 'all'
+          || (activeStatus === 'enrolled'   && u.isEnrolled && !u.isSuspended)
+          || (activeStatus === 'pending'    && !u.isEnrolled && !u.isSuspended)
+          || (activeStatus === 'diagnostic' && u.diagnosticStatus === 'completed')
+          || (activeStatus === 'active'     && u.lastActive && (now - new Date(u.lastActive)) < sevenDays)
+          || (activeStatus === 'suspended'  && u.isSuspended);
+        const byBatch  = activeBatch === 'all' || String(u.batchId) === String(activeBatch);
+        const byLevel  = activeLevel === 'all' || (u.examLevel || '') === activeLevel;
+        const q        = query.trim().toLowerCase();
+        const bySearch = !q || `${u.firstName} ${u.lastName}`.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
+        return byStatus && byBatch && byLevel && bySearch;
+      });
+    }
+
+    $('filter-status').addEventListener('change', e => { activeStatus = e.target.value; renderUsers(applyFilters()); });
+    $('filter-batch').addEventListener('change', e => { activeBatch = e.target.value; renderUsers(applyFilters()); });
+    $('filter-level').addEventListener('change', e => { activeLevel = e.target.value; renderUsers(applyFilters()); });
+
+    let debounce;
+    $('user-search').addEventListener('input', e => {
+      clearTimeout(debounce);
+      debounce = setTimeout(() => { query = e.target.value; renderUsers(applyFilters()); }, 200);
+    });
+    /* ── Whitelist Form ── */
+    function toast(msg, isErr) {
+      const el = document.createElement('div');
+      el.textContent = msg;
+      el.style.cssText = 'position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);padding:0.85rem 1.5rem;border-radius:12px;font-weight:600;font-size:0.92rem;z-index:9999;color:#fff;background:' + (isErr ? '#ef4444' : '#22c55e');
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 3000);
+    }
+
+    const availableCodes = <%- JSON.stringify(locals.availableCodes || []) %>;
+    const batchSelect = $('whitelist-batch-id');
+    const codeSelect = $('whitelist-enrollment-code-id');
+
+    if (batchSelect && codeSelect) {
+      batchSelect.addEventListener('change', (e) => {
+        const batchId = e.target.value;
+        codeSelect.innerHTML = '<option value="">Select Code</option>';
+        if (!batchId) {
+          codeSelect.innerHTML = '<option value="">Select Batch First</option>';
+          codeSelect.disabled = true;
+          return;
+        }
+
+        const filteredCodes = availableCodes.filter(c => String(c.batch_id) === String(batchId));
+        if (filteredCodes.length === 0) {
+          codeSelect.innerHTML = '<option value="">No Codes Available</option>';
+          codeSelect.disabled = true;
+        } else {
+          filteredCodes.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.id;
+            opt.textContent = c.code;
+            codeSelect.appendChild(opt);
+          });
+          codeSelect.disabled = false;
+        }
+      });
+    }
+
+    const whitelistForm = $('reviewee-whitelist-form');
+    if (whitelistForm) {
+      whitelistForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const formData = new FormData(whitelistForm);
+        
+        const fEmail = formData.get('email');
+        const fFirst = formData.get('firstName');
+        const fLast = formData.get('lastName');
+        const fBatch = formData.get('batchId');
+        const fCode = formData.get('enrollmentCodeId');
+
+        if (!fEmail || !fFirst?.trim() || !fLast?.trim() || !fBatch?.trim() || !fCode?.trim()) {
+          toast('All fields are required. Please provide a First Name, Last Name, Batch, and Enrollment Code to save the whitelist entry.', true);
+          return;
+        }
+
+        try {
+          const response = await fetch('/admin/api/reviewee-whitelist', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: fEmail,
+              firstName: fFirst,
+              lastName: fLast,
+              batchId: fBatch,
+              enrollmentCodeId: fCode,
+              isActive: true
+            })
+          });
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.error || 'Failed to save whitelist entry');
+          }
+          toast('Whitelist entry saved successfully.');
+          setTimeout(() => window.location.reload(), 1000);
+        } catch (error) {
+          toast(error.message || 'Could not save whitelist entry.', true);
+        }
+      });
+    }
+
+    const whitelistList = $('whitelist-list');
+    if (whitelistList) {
+      whitelistList.addEventListener('click', async (event) => {
+        const revokeBtn = event.target.closest('.whitelist-revoke');
+        const reactivateBtn = event.target.closest('.whitelist-reactivate');
+
+        if (revokeBtn) {
+          if (!confirm('Revoke this reviewee whitelist entry?')) return;
+          try {
+            const response = await fetch(`/admin/api/reviewee-whitelist/${revokeBtn.dataset.id}/revoke`, { method: 'POST' });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || 'Could not revoke whitelist entry');
+            toast('Whitelist entry revoked.');
+            setTimeout(() => window.location.reload(), 500);
+          } catch (error) {
+            toast(error.message || 'Could not revoke whitelist entry.', true);
+          }
+        }
+
+        if (reactivateBtn) {
+          try {
+            const response = await fetch(`/admin/api/reviewee-whitelist/${reactivateBtn.dataset.id}/reactivate`, { method: 'POST' });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || 'Could not reactivate whitelist entry');
+            toast('Whitelist entry reactivated.');
+            setTimeout(() => window.location.reload(), 500);
+          } catch (error) {
+            toast(error.message || 'Could not reactivate whitelist entry.', true);
+          }
+        }
+      });
+    }
+  })();
+  </script>
+
+</body>
+</html>

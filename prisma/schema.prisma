@@ -1,0 +1,284 @@
+datasource db {
+  provider = "mysql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// 1. User Profiles & Credentials Table
+model User {
+  id                  Int       @id @default(autoincrement())
+  email               String    @unique
+  password            String?
+  role                String    @default("reviewee")
+  firstName           String    @map("first_name")
+  lastName            String    @map("last_name")
+  examLevel           String?   @map("exam_level")      
+  batchId             Int?      @map("batch_id")        
+  streak              Int       @default(0)             
+  lastActive          DateTime? @default(now()) @map("last_active")     
+  isVerified          Boolean   @default(false) @map("is_verified")
+  isEnrolled          Boolean   @default(false) @map("is_enrolled")
+  isOnboarded         Boolean   @default(false) @map("is_onboarded")
+  isApproved          Boolean   @default(false) @map("is_approved")
+  isSuspended         Boolean   @default(false) @map("is_suspended")
+  authProvider        String    @default("local") @map("auth_provider")
+  providerId          String?   @map("provider_id")
+  oauthEmailVerified  Boolean   @default(false) @map("oauth_email_verified")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @default(now()) @map("updated_at")
+
+  @@map("users")
+}
+
+// 2. Admin Invitation Table
+model AdminInvitation {
+  id           Int       @id @default(autoincrement())
+  email        String    
+  tokenHash    String    @unique @map("token_hash")
+  expiresAt    DateTime  @map("expires_at")
+  acceptedAt   DateTime? @map("accepted_at")
+  revokedAt    DateTime? @map("revoked_at")
+  invitedById  Int       @map("created_by")
+  acceptedById Int?      @map("accepted_by")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  @@map("admin_invitations")
+}
+
+// 2b. Reviewee Whitelist Table
+model RevieweeWhitelist {
+  id               Int       @id @default(autoincrement())
+  email            String    @unique
+  firstName        String?   @map("first_name")
+  lastName         String?   @map("last_name")
+  batchId          Int?      @map("batch_id")
+  enrollmentCodeId Int?      @map("enrollment_code_id")
+  isActive         Boolean   @default(true) @map("is_active")
+  claimedByUserId  Int?      @map("claimed_by_user_id")
+  claimedAt        DateTime? @map("claimed_at")
+  createdById      Int?      @map("created_by")
+  createdAt        DateTime  @default(now()) @map("created_at")
+
+  @@map("reviewee_whitelist")
+}
+
+// 3. CSE-PPT Question Bank Table (Mapped to Lead Programmer's exact SQL naming scheme)
+model Question {
+  id             Int       @id @default(autoincrement())
+  content        String    @map("question_text") @db.Text
+  choiceA        String    @map("choice_a") @db.VarChar(500)
+  choiceB        String    @map("choice_b") @db.VarChar(500)
+  choiceC        String    @map("choice_c") @db.VarChar(500)
+  choiceD        String    @map("choice_d") @db.VarChar(500)
+  correctAnswer  String    @map("correct_choice")
+  explanation    String?   @db.Text
+  difficulty     String    @default("medium")
+  examLevel      String    @default("both") @map("exam_level")
+  meloDifficulty Float     @default(1200.0) @map("melo_difficulty")
+  status         String    @default("active") 
+  createdBy      Int?      @map("created_by")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @default(now()) @map("updated_at")
+
+  @@map("questions")
+}
+
+// 7. Operational Batches
+model Batch {
+  id           Int       @id @default(autoincrement())
+  name         String
+  examLevel    String    @map("exam_level")
+  startDate    DateTime  @map("start_date") @db.Date
+  endDate      DateTime  @map("end_date") @db.Date
+  maxCapacity  Int?      @map("max_capacity")
+  status       String    @default("draft")
+  createdBy    Int       @map("created_by")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  @@map("batches")
+}
+
+model Enrollment {
+  id               Int      @id @default(autoincrement())
+  userId           Int      @map("user_id")
+  batchId          Int      @map("batch_id")
+  enrollmentCodeId Int?     @map("enrollment_code_id")
+  enrolledAt       DateTime @default(now()) @map("enrolled_at")
+
+  @@map("enrollments")
+}
+
+// Mapped safely to track dashboard queries without conflicting with core schema
+model PracticeSession {
+  id               Int       @id @default(autoincrement())
+  userId           Int       @map("user_id")
+  batchId          Int       @map("batch_id")
+  sessionType      String    @default("recommended") @map("session_type")
+  mode             String    @default("practice")
+  domainFilter     String?   @map("domain_filter")
+  totalQuestions   Int       @default(0) @map("total_questions")
+  correctCount     Int       @default(0) @map("correct_count")
+  timeTakenS       Int?      @default(0) @map("time_taken_s")
+  status           String    @default("in_progress")
+  fatigueDetected  Boolean   @default(false) @map("fatigue_detected")
+  distributionMode String    @default("70_30") @map("distribution_mode")
+  startedAt        DateTime  @default(now()) @map("started_at") 
+  completedAt      DateTime? @map("completed_at")
+
+  @@map("practice_sessions")
+}
+
+model SessionAnswer {
+  id             Int       @id @default(autoincrement())
+  sessionId      Int       @map("session_id")
+  questionId     Int       @map("question_id")
+  selectedChoice String?   @map("selected_choice")
+  isCorrect      Boolean?  @default(false) @map("is_correct")
+  thetaDeltaJson Json?     @map("theta_delta_json")
+  timeSpentMs    Int?      @map("time_spent_ms")
+  answeredAt     DateTime  @default(now()) @map("answered_at")
+
+  @@map("session_answers")
+}
+
+model DiagnosticSession {
+  id             Int       @id @default(autoincrement())
+  userId         Int       @map("user_id")
+  batchId        Int       @map("batch_id")
+  examLevel      String    @map("exam_level")
+  totalQuestions Int       @map("total_questions")
+  correctCount   Int       @default(0) @map("correct_count") 
+  timeTakenS     Int?      @map("time_taken_s")
+  status         String    @default("in_progress")
+  startedAt      DateTime  @default(now()) @map("started_at") 
+  completedAt    DateTime? @map("completed_at")
+
+  @@map("diagnostic_sessions")
+}
+
+model Domain {
+  id        Int    @id @default(autoincrement())
+  code      String @unique
+  name      String
+  examLevel String @default("both") @map("exam_level") 
+  sortOrder Int    @default(0) @map("sort_order")
+
+  @@map("domains")
+}
+
+model QuestionDomain {
+  questionId Int   @map("question_id")
+  domainId   Int   @map("domain_id")
+  weight     Float @default(1.0)
+
+  @@id([questionId, domainId])
+  @@map("question_domains")
+}
+
+model Material {
+  id          Int      @id @default(autoincrement())
+  domainId    Int      @map("domain_id")
+  type        String
+  title       String
+  description String?  @db.Text
+  difficulty  String   @default("intermediate")
+  examLevel   String   @default("both") @map("exam_level")
+  contentUrl  String?  @map("content_url") @db.VarChar(500)
+  contentHtml String?  @map("content_html") @db.MediumText
+  estMinutes  Int?     @map("est_minutes")
+  status      String   @default("published") 
+  uploadedBy  Int?     @map("uploaded_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("materials")
+}
+
+model Announcement {
+  id            Int       @id @default(autoincrement())
+  title         String
+  body          String    @db.Text
+  category      String    @default("general")
+  targetType    String    @default("all") @map("target_type")
+  targetBatchId Int?      @map("target_batch_id")
+  publishedBy   Int       @map("published_by")
+  status        String    @default("draft")
+  publishAt     DateTime  @default(now()) @map("publish_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  @@map("announcements")
+}
+
+model LearnerProfile {
+  id                   Int       @id @default(autoincrement())
+  userId               Int       @unique @map("user_id")
+  targetExamDate       DateTime? @map("target_exam_date") @db.Date
+  studyHoursPerWeek    Float     @default(5.0) @map("study_hours_per_week")
+  preferredStudyTime   String?   @map("preferred_study_time")
+  primaryDevice        String?   @map("primary_device")
+  customFieldResponses Json?     @map("custom_field_responses")
+  completedAt          DateTime? @map("completed_at")
+  updatedAt            DateTime? @default(now()) @map("updated_at")
+
+  @@map("learner_profiles")
+}
+
+// 6. Domain Competency Ratings Table
+model DomainCompetencyRating {
+  id            Int      @id @default(autoincrement())
+  userId        Int      @map("user_id")
+  domainId      Int      @map("domain_id") 
+  theta         Float    @default(1200.0)
+  kFactor       Float    @default(48.0) @map("k_factor")
+  sessionsCount Int      @default(0) @map("sessions_count")
+  lastUpdated   DateTime @default(now()) @map("last_updated")
+
+  @@unique([userId, domainId], name: "unique_user_domain_rating")
+  @@map("domain_ratings") 
+}
+
+// 8. Dynamic M-Elo Analytical Progression Tracking Table
+model DomainRatingHistory {
+  id          Int       @id @default(autoincrement())
+  userId      Int       @map("user_id")
+  domainId    Int       @map("domain_id")
+  sessionId   Int?      @map("session_id")
+  sessionType String?   @map("session_type")
+  theta       Float
+  recordedAt  DateTime  @default(now()) @map("recorded_at") 
+
+  @@map("domain_rating_history")
+}
+
+model EnrollmentCode {
+  id        Int       @id @default(autoincrement())
+  code      String    @unique
+  batchId   Int       @map("batch_id")
+  maxUses   Int       @default(1) @map("max_uses")
+  usedCount Int       @default(0) @map("used_count")
+  expiresAt DateTime? @map("expires_at") 
+  isActive  Boolean   @default(true) @map("is_active")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  @@map("enrollment_codes")
+  
+}
+// Added to prevent Prisma from accidentally deleting the lead programmer's tables
+model PlatformSetting {
+  id           Int      @id @default(1)
+  settingsJson Json     @map("settings_json")
+  updatedBy    Int?     @map("updated_by")
+  updatedAt    DateTime @default(now()) @map("updated_at")
+
+  @@map("platform_settings")
+}
+
+model ProfileFormDefinition {
+  id         Int      @id @default(1)
+  surveyJson Json     @map("survey_json")
+  updatedBy  Int?     @map("updated_by")
+  updatedAt  DateTime @default(now()) @map("updated_at")
+
+  @@map("profile_form_definition")
+}
