@@ -1,10 +1,13 @@
-const express       = require('express');
-const path          = require('path');
-const fs            = require('fs');
-const crypto        = require('crypto');
-const multer        = require('multer');
-const requireAdmin  = require('../middleware/requireAdmin');
-const db            = require('../config/db');
+const express = require('express');
+const path = require('path');
+const fs = require('fs');
+const crypto = require('crypto');
+const bcrypt = require('bcrypt');
+const passport = require('passport');
+const multer = require('multer');
+const requireAdmin = require('../middleware/requireAdmin');
+const requireAdminBootstrap = require('../middleware/requireAdminBootstrap');
+const db = require('../config/db');
 const profileFormSurvey = require('../lib/profileFormSurvey');
 const platformSettings = require('../lib/platformSettings');
 
@@ -40,6 +43,228 @@ const MAT_EXAM = new Set(['professional', 'subprofessional', 'both']);
 const DIFF_TO_DB = { easy: 'basic', medium: 'intermediate', hard: 'advanced' };
 const DIFF_FROM_DB = { basic: 'easy', intermediate: 'medium', advanced: 'hard' };
 
+const ALLOWED_DOMAIN = 'my.cspc.edu.ph';
+
+function normalizeEmail(email) {
+  return String(email || '').trim().toLowerCase();
+}
+
+function emailBelongsToDomain(email) {
+  return normalizeEmail(email).endsWith(`@${ALLOWED_DOMAIN}`);
+}
+
+function sha256Hex(value) {
+  return crypto.createHash('sha256').update(String(value)).digest('hex');
+}
+
+function deriveNameParts(email) {
+  const localPart = normalizeEmail(email).split('@')[0] || 'admin';
+  const parts = localPart.replace(/[._-]+/g, ' ').split(/\s+/).filter(Boolean);
+  return {
+    firstName: (parts[0] || 'New').replace(/^./, c => c.toUpperCase()),
+    lastName: (parts.slice(1).join(' ') || 'Admin').replace(/\b\w/g, c => c.toUpperCase())
+  };
+}
+
+function buildSessionUser(user) {
+  return {
+    id: user.id,
+    role: user.role,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+    examLevel: user.examLevel,
+    isVerified: !!user.isVerified,
+    isEnrolled: !!user.isEnrolled,
+    isOnboarded: !!user.isOnboarded,
+    isApproved: !!user.isApproved,
+    isSuspended: !!user.isSuspended,
+    authProvider: user.authProvider || 'local',
+    providerId: user.providerId || null,
+    oauthEmailVerified: !!user.oauthEmailVerified
+  };
+}
+
+async function loadAdminInvitation(token) {
+  const tokenHash = sha256Hex(token);
+  const [rows] = await db.query(
+    `SELECT ai.*, CONCAT(u.first_name, ' ', u.last_name) AS createdByName
+       FROM admin_invitations ai
+       LEFT JOIN users u ON u.id = ai.created_by
+      WHERE ai.token_hash = ?
+      LIMIT 1`,
+    [tokenHash]
+  );
+  return rows[0] || null;
+}
+
+async function loadAdminInvitationById(id) {
+  const [rows] = await db.query(
+    `SELECT ai.*, CONCAT(u.first_name, ' ', u.last_name) AS createdByName
+       FROM admin_invitations ai
+       LEFT JOIN users u ON u.id = ai.created_by
+      WHERE ai.id = ?
+      LIMIT 1`,
+    [id]
+  );
+  return rows[0] || null;
+}
+
+function mapAdminInvitationRow(row) {
+  const now = new Date();
+  const expiresAt = new Date(row.expires_at);
+  return {
+    ...row,
+    status: row.revoked_at ? 'revoked' : row.accepted_at ? 'accepted' : (expiresAt < now ? 'expired' : 'pending')
+  };
+}
+
+function mapWhitelistRow(row) {
+  return {
+    ...row,
+    status: row.isActive ? 'active' : 'revoked'
+  };
+}
+
+async function issueAdminInvitation({ email, createdBy, invitationId = null }) {
+  const token = crypto.randomBytes(32).toString('hex');
+  const tokenHash = sha256Hex(token);
+  const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000);
+
+  if (invitationId) {
+    const [result] = await db.query(
+      `UPDATE admin_invitations
+          SET token_hash = ?,
+              expires_at = ?,
+              revoked_at = NULL,
+              accepted_at = NULL
+        WHERE id = ? AND accepted_at IS NULL`,
+      [tokenHash, expiresAt, invitationId]
+    );
+
+    if (result.affectedRows === 0) {
+      throw new Error('invitation_not_refreshable');
+    }
+
+    return {
+      invitationId,
+      token,
+      activationUrl: `/admin/activate?token=${token}`,
+      expiresAt
+    };
+  }
+
+  const [existingRows] = await db.query(
+    `SELECT id, accepted_at
+       FROM admin_invitations
+      WHERE LOWER(email) = LOWER(?)
+      LIMIT 1`,
+    [email]
+  );
+
+  const existing = existingRows[0] || null;
+  if (existing?.accepted_at) {
+    throw new Error('invitation_already_accepted');
+  }
+
+  if (existing) {
+    await db.query(
+      `UPDATE admin_invitations
+          SET token_hash = ?,
+              expires_at = ?,
+              revoked_at = NULL,
+              accepted_at = NULL,
+              created_by = ?
+        WHERE id = ?`,
+      [tokenHash, expiresAt, createdBy, existing.id]
+    );
+
+    return {
+      invitationId: existing.id,
+      token,
+      activationUrl: `/admin/activate?token=${token}`,
+      expiresAt
+    };
+  }
+
+  const [result] = await db.query(
+    `INSERT INTO admin_invitations (email, token_hash, expires_at, created_by)
+     VALUES (?, ?, ?, ?)`,
+    [email, tokenHash, expiresAt, createdBy]
+  );
+
+  return {
+    invitationId: result.insertId,
+    token,
+    activationUrl: `/admin/activate?token=${token}`,
+    expiresAt
+  };
+}
+
+async function loadWhitelistEntryById(id) {
+  const [rows] = await db.query(
+    `SELECT rw.id,
+            rw.email,
+            rw.first_name AS firstName,
+            rw.last_name AS lastName,
+            rw.batch_id AS batchId,
+            rw.enrollment_code_id AS enrollmentCodeId,
+            rw.is_active AS isActive,
+            rw.claimed_by_user_id AS claimedByUserId,
+            rw.claimed_at AS claimedAt,
+            rw.created_by AS createdBy,
+            rw.created_at AS createdAt,
+            CONCAT(b.name, ' (', b.exam_level, ')') AS batchLabel,
+            ec.code AS enrollmentCode,
+            CONCAT(claimed.first_name, ' ', claimed.last_name) AS claimedByName,
+            CONCAT(created.first_name, ' ', created.last_name) AS createdByName
+       FROM reviewee_whitelist rw
+       LEFT JOIN batches b ON b.id = rw.batch_id
+       LEFT JOIN enrollment_codes ec ON ec.id = rw.enrollment_code_id
+       LEFT JOIN users claimed ON claimed.id = rw.claimed_by_user_id
+       LEFT JOIN users created ON created.id = rw.created_by
+      WHERE rw.id = ?
+      LIMIT 1`,
+    [id]
+  );
+  return rows[0] || null;
+}
+
+async function loadWhitelistEntryByEmail(email) {
+  const [rows] = await db.query(
+    `SELECT rw.id,
+            rw.email,
+            rw.first_name AS firstName,
+            rw.last_name AS lastName,
+            rw.batch_id AS batchId,
+            rw.enrollment_code_id AS enrollmentCodeId,
+            rw.is_active AS isActive,
+            rw.claimed_by_user_id AS claimedByUserId,
+            rw.claimed_at AS claimedAt,
+            rw.created_by AS createdBy,
+            rw.created_at AS createdAt,
+            CONCAT(b.name, ' (', b.exam_level, ')') AS batchLabel,
+            ec.code AS enrollmentCode,
+            CONCAT(claimed.first_name, ' ', claimed.last_name) AS claimedByName,
+            CONCAT(created.first_name, ' ', created.last_name) AS createdByName
+       FROM reviewee_whitelist rw
+       LEFT JOIN batches b ON b.id = rw.batch_id
+       LEFT JOIN enrollment_codes ec ON ec.id = rw.enrollment_code_id
+       LEFT JOIN users claimed ON claimed.id = rw.claimed_by_user_id
+       LEFT JOIN users created ON created.id = rw.created_by
+      WHERE LOWER(rw.email) = LOWER(?)
+      LIMIT 1`,
+    [email]
+  );
+  return rows[0] || null;
+}
+
+function optionalInt(value) {
+  if (value === '' || value === null || value === undefined) return null;
+  const parsed = parseInt(value, 10);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 function mapDifficultyToDbStrict(ui) {
   const k = String(ui || '').toLowerCase();
   return DIFF_TO_DB[k] || null;
@@ -47,12 +272,596 @@ function mapDifficultyToDbStrict(ui) {
 
 const router = express.Router();
 
+router.get('/setup', requireAdminBootstrap, (req, res) => {
+  return res.render('admin/setup', { setupToken: req.query.token || req.body.bootstrap_token });
+});
+
+router.post('/setup', requireAdminBootstrap, async (req, res) => {
+  try {
+    const { email, firstName, lastName, password, confirmPassword } = req.body || {};
+    const setupToken = req.query.token || req.body.bootstrap_token;
+    const normalizedEmail = normalizeEmail(email);
+
+    if (!normalizedEmail || !firstName?.trim() || !lastName?.trim() || !password || !confirmPassword) {
+      return res.status(400).render('admin/setup', { setupToken, error: 'All fields are required.' });
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      return res.status(400).render('admin/setup', { setupToken, error: 'Please enter a valid email address.' });
+    }
+
+    if (!emailBelongsToDomain(normalizedEmail)) {
+      return res.status(400).render('admin/setup', { setupToken, error: 'Only @my.cspc.edu.ph emails are permitted.' });
+    }
+
+    if (password.length < 8) {
+      return res.status(400).render('admin/setup', { setupToken, error: 'Password must be at least 8 characters.' });
+    }
+
+    if (password !== confirmPassword) {
+      return res.status(400).render('admin/setup', { setupToken, error: 'Passwords do not match.' });
+    }
+
+    const [countRows] = await db.query("SELECT COUNT(*) AS adminCount FROM users WHERE role = 'admin'");
+    if (Number(countRows?.[0]?.adminCount || 0) > 0) {
+      req.app.locals.adminBootstrapEnabled = false;
+      return res.status(403).send('Forbidden');
+    }
+
+    const [existingRows] = await db.query('SELECT id FROM users WHERE LOWER(email) = LOWER(?) LIMIT 1', [normalizedEmail]);
+    if (existingRows.length > 0) {
+      return res.status(409).render('admin/setup', { setupToken, error: 'That email already exists.' });
+    }
+
+    // Hash password and save everything to session for the OAuth bridge
+    const passwordHash = await bcrypt.hash(password, 10);
+    req.session.pendingAdminSetup = {
+      flow: 'setup',
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      email: normalizedEmail,
+      passwordHash,
+      bootstrapToken: setupToken,
+    };
+
+    return req.session.save(err => {
+      if (err) {
+        console.error('[Bootstrap] Session save error:', err);
+        return res.status(500).render('admin/setup', { setupToken, error: 'Could not save session data.' });
+      }
+      return res.redirect('/admin/setup/google');
+    });
+  } catch (err) {
+    console.error('[Bootstrap] Master admin setup error:', err);
+    return res.status(500).render('admin/setup', { setupToken: req.query.token || req.body.bootstrap_token, error: 'Server error while processing setup.' });
+  }
+});
+
+// OAuth trigger for setup flow
+router.get('/setup/google', (req, res, next) => {
+  if (!req.session.pendingAdminSetup) return res.redirect('/admin/setup?token=' + (req.query.token || ''));
+  req.session.oauthSource = 'setup_review';
+  return req.session.save(err => {
+    if (err) return res.redirect('/admin/setup?token=' + (req.session.pendingAdminSetup?.bootstrapToken || ''));
+    return passport.authenticate('google', {
+      scope: ['profile', 'email'],
+      prompt: 'select_account',
+      session: false,
+    })(req, res, next);
+  });
+});
+
+// Review & Confirm page
+router.get('/setup/review', (req, res) => {
+  const pending = req.session.pendingAdminSetup;
+  const googleProfile = req.session.pendingGoogleProfile;
+  if (!pending || !googleProfile) {
+    return res.redirect('/login');
+  }
+  return res.render('admin/setup-review', {
+    pending,
+    googleProfile,
+    error: req.query.error || null,
+  });
+});
+
+// Final provisioning
+router.post('/setup/review', async (req, res) => {
+  try {
+    const pending = req.session.pendingAdminSetup;
+    const googleProfile = req.session.pendingGoogleProfile;
+    if (!pending || !googleProfile) {
+      return res.redirect('/login');
+    }
+
+    if (!req.body.confirmation) {
+      return res.render('admin/setup-review', { pending, googleProfile, error: 'You must confirm the declaration checkbox.' });
+    }
+
+    const flow = pending.flow; // 'setup' or 'activate'
+
+    if (flow === 'setup') {
+      // One-time bootstrap guard
+      const [countRows] = await db.query("SELECT COUNT(*) AS adminCount FROM users WHERE role = 'admin'");
+      if (Number(countRows?.[0]?.adminCount || 0) > 0) {
+        req.app.locals.adminBootstrapEnabled = false;
+        delete req.session.pendingAdminSetup;
+        delete req.session.pendingGoogleProfile;
+        return res.status(403).send('Forbidden — an admin already exists.');
+      }
+    }
+
+    // Check for existing user
+    const [existingRows] = await db.query('SELECT id, role FROM users WHERE LOWER(email) = LOWER(?) LIMIT 1', [pending.email]);
+    const existing = existingRows[0] || null;
+    let userId;
+
+    if (existing) {
+      if (existing.role !== 'admin') {
+        return res.render('admin/setup-review', { pending, googleProfile, error: 'That email belongs to a non-admin account.' });
+      }
+      await db.query(
+        `UPDATE users
+            SET first_name = ?,
+                last_name = ?,
+                password = ?,
+                auth_provider = 'google',
+                provider_id = ?,
+                is_verified = TRUE,
+                is_enrolled = TRUE,
+                is_onboarded = TRUE,
+                is_approved = TRUE,
+                oauth_email_verified = TRUE
+          WHERE id = ?`,
+        [pending.firstName, pending.lastName, pending.passwordHash, googleProfile.providerId, existing.id]
+      );
+      userId = existing.id;
+    } else {
+      const [result] = await db.query(
+        `INSERT INTO users
+          (role, first_name, last_name, email, password, is_verified, is_enrolled, is_onboarded, is_approved, auth_provider, provider_id, oauth_email_verified)
+         VALUES
+          ('admin', ?, ?, ?, ?, TRUE, TRUE, TRUE, TRUE, 'google', ?, TRUE)`,
+        [pending.firstName, pending.lastName, pending.email, pending.passwordHash, googleProfile.providerId]
+      );
+      userId = result.insertId;
+    }
+
+    // If this was an activation flow, mark the invitation accepted
+    if (flow === 'activate' && pending.invitationId) {
+      await db.query(
+        `UPDATE admin_invitations
+            SET accepted_by = ?, accepted_at = NOW()
+          WHERE id = ?`,
+        [userId, pending.invitationId]
+      );
+    }
+
+    // Fetch the full user record for the session
+    const [rows] = await db.query(
+      `SELECT id, role, first_name AS firstName, last_name AS lastName, email,
+              exam_level AS examLevel, is_verified AS isVerified, is_enrolled AS isEnrolled,
+              is_onboarded AS isOnboarded, is_approved AS isApproved, is_suspended AS isSuspended,
+              auth_provider AS authProvider, provider_id AS providerId,
+              oauth_email_verified AS oauthEmailVerified
+         FROM users WHERE id = ?`,
+      [userId]
+    );
+
+    // Clean up session and log them in
+    delete req.session.pendingAdminSetup;
+    delete req.session.pendingGoogleProfile;
+    req.session.user = buildSessionUser(rows[0]);
+    if (flow === 'setup') req.app.locals.adminBootstrapEnabled = false;
+
+    return req.session.save(err => {
+      if (err) {
+        console.error('[Admin] Session save error after provisioning:', err);
+        return res.redirect('/login');
+      }
+      return res.redirect('/admin/home');
+    });
+  } catch (err) {
+    console.error('[Admin] Final provisioning error:', err);
+    return res.status(500).render('admin/setup-review', {
+      pending: req.session.pendingAdminSetup,
+      googleProfile: req.session.pendingGoogleProfile,
+      error: 'Server error during provisioning.'
+    });
+  }
+});
+
+router.get('/activate', async (req, res) => {
+  try {
+    const token = String(req.query.token || '').trim();
+    if (!token) return res.status(400).send('Missing activation token.');
+
+    const invite = await loadAdminInvitation(token);
+    if (!invite || invite.revoked_at || invite.accepted_at || new Date(invite.expires_at) < new Date()) {
+      return res.status(410).send('Activation link is invalid or expired.');
+    }
+
+    return res.render('admin/activate', { invite, token });
+  } catch (err) {
+    console.error('[Admin] Invite activation page error:', err);
+    return res.status(500).send('Server error');
+  }
+});
+
+// Old standalone /activate/google removed — now handled by POST /admin/activate session bridge
+
+router.post('/activate', async (req, res) => {
+  try {
+    const token = String(req.body.token || '').trim();
+    const firstName = String(req.body.firstName || '').trim();
+    const lastName = String(req.body.lastName || '').trim();
+    const password = String(req.body.password || '');
+    const confirmPassword = String(req.body.confirmPassword || '');
+
+    if (!token) return res.status(400).send('Missing activation token.');
+
+    const invite = await loadAdminInvitation(token);
+    if (!invite || invite.revoked_at || invite.accepted_at || new Date(invite.expires_at) < new Date()) {
+      return res.status(410).send('Activation link is invalid or expired.');
+    }
+
+    const email = normalizeEmail(invite.email);
+
+    if (!firstName || !lastName || !password || !confirmPassword) {
+      return res.status(400).render('admin/activate', { token, invite, error: 'All fields are required.' });
+    }
+    if (!emailBelongsToDomain(email)) {
+      return res.status(400).render('admin/activate', { token, invite, error: 'Only @my.cspc.edu.ph emails are permitted.' });
+    }
+    if (password.length < 8) return res.status(400).render('admin/activate', { token, invite, error: 'Password must be at least 8 characters.' });
+    if (password !== confirmPassword) return res.status(400).render('admin/activate', { token, invite, error: 'Passwords do not match.' });
+
+    // Hash password and save everything to session for the OAuth bridge
+    const passwordHash = await bcrypt.hash(password, 10);
+    req.session.pendingAdminSetup = {
+      flow: 'activate',
+      firstName,
+      lastName,
+      email,
+      passwordHash,
+      invitationId: invite.id,
+      activationToken: token,
+    };
+
+    req.session.oauthSource = 'setup_review';
+
+    return req.session.save(err => {
+      if (err) {
+        console.error('[Admin] Session save error:', err);
+        return res.status(500).render('admin/activate', { token, invite, error: 'Could not save session data.' });
+      }
+      return passport.authenticate('google', {
+        scope: ['profile', 'email'],
+        prompt: 'select_account',
+        session: false,
+      })(req, res, () => {});
+    });
+  } catch (err) {
+    console.error('[Admin] Invitation activation error:', err);
+    return res.status(500).send('Server error');
+  }
+});
+
 router.get('/home', requireAdmin, (req, res) => {
   res.render('admin/dashboard');
 });
 
-router.get('/reviewees', requireAdmin, (req, res) => {
-  res.render('admin/users');
+router.get('/api/admin-invitations', requireAdmin, async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      `SELECT ai.id,
+              ai.email,
+              ai.expires_at,
+              ai.accepted_at,
+              ai.revoked_at,
+              ai.created_at,
+              CONCAT(u.first_name, ' ', u.last_name) AS createdByName
+         FROM admin_invitations ai
+         LEFT JOIN users u ON u.id = ai.created_by
+        ORDER BY ai.created_at DESC
+        LIMIT 20`
+    );
+
+    const invites = rows.map(mapAdminInvitationRow);
+
+    res.json({ invites });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+router.post('/api/admin-invitations', requireAdmin, async (req, res) => {
+  try {
+    const email = normalizeEmail(req.body.email);
+    if (!email) return res.status(400).json({ error: 'Email is required.' });
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: 'Please enter a valid email address.' });
+    }
+    if (!emailBelongsToDomain(email)) {
+      return res.status(400).json({ error: 'Only @my.cspc.edu.ph emails are permitted for admin invitations.' });
+    }
+
+    const [existingUserRows] = await db.query('SELECT id, role FROM users WHERE LOWER(email) = LOWER(?) LIMIT 1', [email]);
+    const existingUser = existingUserRows[0] || null;
+    if (existingUser && existingUser.role !== 'admin') {
+      return res.status(409).json({ error: 'That email belongs to a non-admin account.' });
+    }
+
+    const invite = await issueAdminInvitation({
+      email,
+      createdBy: req.session.user.id
+    });
+
+    console.log(`[Admin Invite] ${email} => ${invite.activationUrl} (expires ${invite.expiresAt.toISOString()})`);
+
+    return res.json({
+      success: true,
+      invitationId: invite.invitationId,
+      activationUrl: invite.activationUrl,
+      expiresAt: invite.expiresAt.toISOString()
+    });
+  } catch (err) {
+    if (err.message === 'invitation_already_accepted') {
+      return res.status(409).json({ error: 'That invitation has already been accepted.' });
+    }
+    console.error(err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+router.post('/api/admin-invitations/:id/revoke', requireAdmin, async (req, res) => {
+  try {
+    const invitationId = parseInt(req.params.id, 10);
+    const invite = await loadAdminInvitationById(invitationId);
+    if (!invite) return res.status(404).json({ error: 'Not found' });
+    if (invite.accepted_at) return res.status(409).json({ error: 'Accepted invitations cannot be revoked.' });
+
+    await db.query(
+      `UPDATE admin_invitations
+          SET revoked_at = NOW()
+        WHERE id = ?`,
+      [invitationId]
+    );
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+router.post('/api/admin-invitations/:id/resend', requireAdmin, async (req, res) => {
+  try {
+    const invitationId = parseInt(req.params.id, 10);
+    const invite = await loadAdminInvitationById(invitationId);
+    if (!invite) return res.status(404).json({ error: 'Not found' });
+    if (invite.accepted_at) return res.status(409).json({ error: 'Accepted invitations cannot be resent.' });
+
+    const refreshed = await issueAdminInvitation({
+      email: normalizeEmail(invite.email),
+      createdBy: invite.created_by,
+      invitationId
+    });
+
+    res.json({
+      success: true,
+      activationUrl: refreshed.activationUrl,
+      expiresAt: refreshed.expiresAt.toISOString()
+    });
+  } catch (err) {
+    console.error(err);
+    if (err.message === 'invitation_not_refreshable') {
+      return res.status(409).json({ error: 'Accepted invitations cannot be resent.' });
+    }
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+router.get('/api/reviewee-whitelist', requireAdmin, async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      `SELECT rw.id,
+              rw.email,
+              rw.first_name AS firstName,
+              rw.last_name AS lastName,
+              rw.batch_id AS batchId,
+              rw.enrollment_code_id AS enrollmentCodeId,
+              rw.is_active AS isActive,
+              rw.claimed_by_user_id AS claimedByUserId,
+              rw.claimed_at AS claimedAt,
+              rw.created_at AS createdAt,
+              CONCAT(b.name, ' (', b.exam_level, ')') AS batchLabel,
+              ec.code AS enrollmentCode,
+              CONCAT(claimed.first_name, ' ', claimed.last_name) AS claimedByName,
+              CONCAT(created.first_name, ' ', created.last_name) AS createdByName
+         FROM reviewee_whitelist rw
+         LEFT JOIN batches b ON b.id = rw.batch_id
+         LEFT JOIN enrollment_codes ec ON ec.id = rw.enrollment_code_id
+         LEFT JOIN users claimed ON claimed.id = rw.claimed_by_user_id
+         LEFT JOIN users created ON created.id = rw.created_by
+        ORDER BY rw.created_at DESC
+        LIMIT 100`
+    );
+
+    res.json({ whitelist: rows.map(mapWhitelistRow) });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+router.post('/api/reviewee-whitelist', requireAdmin, async (req, res) => {
+  try {
+    const email = normalizeEmail(req.body.email);
+    const firstName = String(req.body.firstName || '').trim() || null;
+    const lastName = String(req.body.lastName || '').trim() || null;
+    const batchId = optionalInt(req.body.batchId);
+    const enrollmentCodeId = optionalInt(req.body.enrollmentCodeId);
+    const isActive = req.body.isActive === undefined ? true : !(String(req.body.isActive).toLowerCase() === 'false' || req.body.isActive === false || req.body.isActive === 0 || req.body.isActive === '0');
+
+    if (!email) return res.status(400).json({ error: 'Email is required.' });
+    if (!firstName || !lastName || batchId === null || enrollmentCodeId === null) {
+      return res.status(400).json({ error: 'Missing required fields. First Name, Last Name, Batch ID, and Enrollment Code ID must be provided.' });
+    }
+    
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: 'Please enter a valid email address.' });
+    }
+    if (!email.endsWith('@my.cspc.edu.ph')) {
+      return res.status(400).json({ error: 'Only @my.cspc.edu.ph emails are permitted.' });
+    }
+
+    const [userRows] = await db.query('SELECT id, role FROM users WHERE LOWER(email) = LOWER(?) LIMIT 1', [email]);
+    const existingUser = userRows[0] || null;
+    if (existingUser && existingUser.role === 'admin') {
+      return res.status(409).json({ error: 'That email belongs to an admin account.' });
+    }
+
+    if (batchId !== null) {
+      const [batchRows] = await db.query('SELECT id FROM batches WHERE id = ? LIMIT 1', [batchId]);
+      if (!batchRows.length) {
+        return res.status(404).json({ error: 'Batch not found.' });
+      }
+    }
+
+    if (enrollmentCodeId !== null) {
+      const [codeRows] = await db.query('SELECT id, batch_id AS batchId FROM enrollment_codes WHERE id = ? LIMIT 1', [enrollmentCodeId]);
+      if (!codeRows.length) {
+        return res.status(404).json({ error: 'Enrollment code not found.' });
+      }
+      if (batchId !== null && Number(codeRows[0].batchId) !== Number(batchId)) {
+        return res.status(409).json({ error: 'Enrollment code does not belong to the selected batch.' });
+      }
+    }
+
+    const existing = await loadWhitelistEntryByEmail(email);
+    if (existing) {
+      await db.query(
+        `UPDATE reviewee_whitelist
+            SET first_name = ?,
+                last_name = ?,
+                batch_id = ?,
+                enrollment_code_id = ?,
+                is_active = ?
+          WHERE id = ?`,
+        [firstName, lastName, batchId, enrollmentCodeId, isActive ? 1 : 0, existing.id]
+      );
+    } else {
+      await db.query(
+        `INSERT INTO reviewee_whitelist
+          (email, first_name, last_name, batch_id, enrollment_code_id, is_active, created_by)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [email, firstName, lastName, batchId, enrollmentCodeId, isActive ? 1 : 0, req.session.user.id]
+      );
+    }
+
+    const entry = await loadWhitelistEntryByEmail(email);
+    return res.json({ success: true, whitelist: mapWhitelistRow(entry) });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+router.post('/api/reviewee-whitelist/:id/revoke', requireAdmin, async (req, res) => {
+  try {
+    const whitelistId = parseInt(req.params.id, 10);
+    const entry = await loadWhitelistEntryById(whitelistId);
+    if (!entry) return res.status(404).json({ error: 'Not found' });
+
+    await db.query(
+      `UPDATE reviewee_whitelist
+          SET is_active = FALSE
+        WHERE id = ?`,
+      [whitelistId]
+    );
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+router.post('/api/reviewee-whitelist/:id/reactivate', requireAdmin, async (req, res) => {
+  try {
+    const whitelistId = parseInt(req.params.id, 10);
+    const entry = await loadWhitelistEntryById(whitelistId);
+    if (!entry) return res.status(404).json({ error: 'Not found' });
+
+    await db.query(
+      `UPDATE reviewee_whitelist
+          SET is_active = TRUE
+        WHERE id = ?`,
+      [whitelistId]
+    );
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+router.get('/reviewees', requireAdmin, async (req, res) => {
+  try {
+    const [whitelistRows] = await db.query(
+      `SELECT rw.id,
+              rw.email,
+              rw.first_name AS firstName,
+              rw.last_name AS lastName,
+              rw.batch_id AS batchId,
+              rw.enrollment_code_id AS enrollmentCodeId,
+              rw.is_active AS isActive,
+              rw.claimed_by_user_id AS claimedByUserId,
+              rw.claimed_at AS claimedAt,
+              rw.created_at AS createdAt,
+              CONCAT(b.name, ' (', b.exam_level, ')') AS batchLabel,
+              ec.code AS enrollmentCode,
+              CONCAT(claimed.first_name, ' ', claimed.last_name) AS claimedByName,
+              CONCAT(created.first_name, ' ', created.last_name) AS createdByName
+         FROM reviewee_whitelist rw
+         LEFT JOIN batches b ON b.id = rw.batch_id
+         LEFT JOIN enrollment_codes ec ON ec.id = rw.enrollment_code_id
+         LEFT JOIN users claimed ON claimed.id = rw.claimed_by_user_id
+         LEFT JOIN users created ON created.id = rw.created_by
+        ORDER BY rw.created_at DESC
+        LIMIT 100`
+    );
+
+    const whitelist = whitelistRows.map(row => ({
+      ...row,
+      status: !row.isActive ? 'revoked' : (row.claimedByUserId ? 'claimed' : 'active')
+    }));
+
+    const [batchesRows] = await db.query('SELECT id, name, exam_level FROM batches ORDER BY id DESC');
+    
+    // Fetch available codes for the dependent dropdown
+    const [availableCodesRows] = await db.query(`
+      SELECT ec.id, ec.code, ec.batch_id
+      FROM enrollment_codes ec
+      WHERE ec.is_active = TRUE 
+        AND ec.used_count < ec.max_uses
+        AND ec.id NOT IN (
+            SELECT enrollment_code_id 
+            FROM reviewee_whitelist 
+            WHERE enrollment_code_id IS NOT NULL 
+              AND is_active = TRUE
+        )
+      ORDER BY ec.created_at DESC
+    `);
+
+    res.render('admin/reviewees', { whitelist, batches: batchesRows, availableCodes: availableCodesRows });
+  } catch (err) {
+    console.error(err);
+    res.render('admin/reviewees', { whitelist: [], batches: [], availableCodes: [] });
+  }
 });
 
 router.get('/reviewees/:id', requireAdmin, (req, res) => {
@@ -87,8 +896,32 @@ router.get('/batches', requireAdmin, (req, res) => {
   res.render('admin/batches');
 });
 
+router.get('/admins', requireAdmin, async (req, res) => {
+  try {
+    const [adminRows] = await db.query(
+      `SELECT id, first_name AS firstName, last_name AS lastName, email, created_at AS createdAt
+         FROM users
+        WHERE role = 'admin'
+        ORDER BY created_at DESC`
+    );
+    res.render('admin/admins', { admins: adminRows });
+  } catch (err) {
+    console.error(err);
+    res.render('admin/admins', { admins: [] });
+  }
+});
+
 router.get('/settings', requireAdmin, (req, res) => {
   res.render('admin/account-settings');
+});
+
+router.get('/settings/bind-google', requireAdmin, (req, res, next) => {
+  req.session.oauthSource = 'bind_admin';
+  return passport.authenticate('google', {
+    scope: ['profile', 'email'],
+    prompt: 'select_account',
+    session: false,
+  })(req, res, next);
 });
 
 /* ── API: Batches & Enrollment ───────────────────────────── */
@@ -262,9 +1095,9 @@ router.get('/api/batches/:id/codes/export', requireAdmin, async (req, res) => {
 router.post('/api/batches/:id/codes', requireAdmin, async (req, res) => {
   try {
     const batchId = parseInt(req.params.id, 10);
-    const { quantity = 1, max_uses = 1, expires_at } = req.body || {};
+    const { quantity = 1, expires_at } = req.body || {};
     const n = Math.min(Math.max(parseInt(quantity, 10) || 1, 1), 500);
-    const maxU = Math.max(1, parseInt(max_uses, 10) || 1);
+    const maxU = 1; // Strict default matching Prisma schema
     const exp = expires_at && String(expires_at).trim() ? String(expires_at).trim() : null;
 
     const inserted = [];
@@ -306,6 +1139,74 @@ router.post('/api/enrollment-codes/:id/revoke', requireAdmin, async (req, res) =
   }
 });
 
+// ── POST /admin/api/reviewee-whitelist ──────────────────────────────────────
+router.post('/admin/api/reviewee-whitelist', requireAdmin, async (req, res) => {
+  try {
+    let { email, firstName, lastName, batchId, enrollmentCodeId } = req.body || {};
+
+    // 1. Basic Email Validation
+    if (!email || !email.trim()) {
+      return res.status(400).json({ error: 'Email address field is required.' });
+    }
+    email = email.trim().toLowerCase();
+    
+    if (!email.endsWith('@my.cspc.edu.ph')) {
+      return res.status(400).json({ error: 'Only @my.cspc.edu.ph emails are permitted.' });
+    }
+
+    // 2. Normalize optional parameters to numbers or null values
+    const assignedBatchId = batchId && batchId.trim() !== '' ? parseInt(batchId, 10) : null;
+    const assignedCodeId = enrollmentCodeId && enrollmentCodeId.trim() !== '' ? parseInt(enrollmentCodeId, 10) : null;
+
+    // 3. Operational Guard: If a batch is specified, verify that it actually exists
+    if (assignedBatchId) {
+      const [batches] = await db.query('SELECT id, status FROM batches WHERE id = ? LIMIT 1', [assignedBatchId]);
+      if (!batches.length) {
+        return res.status(404).json({ error: `Target Batch ID ${assignedBatchId} does not exist.` });
+      }
+      if (batches[0].status !== 'active') {
+        return res.status(400).json({ error: 'Cannot link a whitelist entry to an inactive batch configuration.' });
+      }
+    }
+
+    // 4. Operational Guard: If an enrollment code is specified, verify it matches the batch rules
+    if (assignedCodeId) {
+      const [codes] = await db.query('SELECT id, batch_id FROM enrollment_codes WHERE id = ? LIMIT 1', [assignedCodeId]);
+      if (!codes.length) {
+        return res.status(404).json({ error: `Target Enrollment Code ID ${assignedCodeId} does not exist.` });
+      }
+      if (assignedBatchId && codes[0].batch_id !== assignedBatchId) {
+        return res.status(400).json({ error: 'Mismatched constraints: Specified Enrollment Code does not belong to the selected Batch.' });
+      }
+    }
+
+    // 5. Commit record to database (using INSERT IGNORE or checking duplicates)
+    const [existing] = await db.query('SELECT id FROM reviewee_whitelist WHERE email = ? LIMIT 1', [email]);
+    if (existing.length) {
+      return res.status(400).json({ error: 'This email address is already registered on the active whitelist board.' });
+    }
+
+    await db.query(
+      `INSERT INTO reviewee_whitelist (email, first_name, last_name, batch_id, enrollment_code_id, created_by)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [
+        email,
+        firstName ? firstName.trim() : null,
+        lastName ? lastName.trim() : null,
+        assignedBatchId,
+        assignedCodeId,
+        req.session.user.id
+      ]
+    );
+
+    return res.status(201).json({ success: true, message: 'Reviewee email successfully added to the system gateway whitelist!' });
+
+  } catch (err) {
+    console.error('[Admin API] Error creating whitelist record:', err);
+    return res.status(500).json({ error: 'Internal server database transaction error.' });
+  }
+});
+
 /* ── API: update admin profile ──────────────────────────── */
 router.post('/api/profile/update', requireAdmin, async (req, res) => {
   try {
@@ -325,15 +1226,15 @@ router.post('/api/profile/update', requireAdmin, async (req, res) => {
     );
 
     req.session.user.firstName = firstName.trim();
-    req.session.user.lastName  = lastName.trim();
-    req.session.user.email     = email.trim();
+    req.session.user.lastName = lastName.trim();
+    req.session.user.email = email.trim();
 
     res.json({
       success: true,
       user: {
         firstName: req.session.user.firstName,
-        lastName:  req.session.user.lastName,
-        email:     req.session.user.email,
+        lastName: req.session.user.lastName,
+        email: req.session.user.email,
       },
     });
   } catch (err) {
@@ -350,9 +1251,11 @@ router.post('/api/settings/password', requireAdmin, async (req, res) => {
     if (!currentPassword || !newPassword || !confirmPassword) {
       return res.status(400).json({ error: 'All fields are required.' });
     }
-    if (newPassword.length < 6) {
-      return res.status(400).json({ error: 'New password must be at least 6 characters.' });
+
+    if (!newPassword || String(newPassword).length < 8) {
+      return res.status(400).json({ error: 'New password must be at least 8 characters.' });
     }
+
     if (newPassword !== confirmPassword) {
       return res.status(400).json({ error: 'New passwords do not match.' });
     }
@@ -360,16 +1263,30 @@ router.post('/api/settings/password', requireAdmin, async (req, res) => {
     const userId = req.session.user.id;
     const [rows] = await db.query('SELECT password FROM users WHERE id = ?', [userId]);
 
-    if (rows.length === 0 || rows[0].password !== currentPassword) {
+    if (rows.length === 0 || !rows[0].password) {
       return res.status(400).json({ error: 'Current password is incorrect.' });
     }
 
-    await db.query('UPDATE users SET password = ? WHERE id = ?', [newPassword, userId]);
+    // 1. Verify that they provided the correct active password
+    const match = await bcrypt.compare(currentPassword, rows[0].password);
+    if (!match) {
+      return res.status(400).json({ error: 'Current password is incorrect.' });
+    }
 
-    res.json({ success: true });
+    // 2. BRAINSTORM ADDITION: Prevent setting the same password
+    const isSamePassword = await bcrypt.compare(newPassword, rows[0].password);
+    if (isSamePassword) {
+      return res.status(400).json({ error: 'New password cannot be the same as your current password.' });
+    }
+
+    // Securely Hash and Commit unique string
+    const newHash = await bcrypt.hash(newPassword, 10);
+    await db.query('UPDATE users SET password = ? WHERE id = ?', [newHash, userId]);
+
+    return res.json({ success: true });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Database error' });
+    return res.status(500).json({ error: 'Database error' });
   }
 });
 
@@ -386,7 +1303,7 @@ async function tryLogServerError(req, err) {
       'INSERT INTO system_error_logs (route, message, stack) VALUES (?, ?, ?)',
       [req?.originalUrl || null, String(err?.message || 'Unknown error'), err?.stack ? String(err.stack).slice(0, 60000) : null]
     );
-  } catch (_) {}
+  } catch (_) { }
 }
 
 router.get('/api/settings/platform', requireAdmin, async (_req, res) => {
@@ -680,16 +1597,16 @@ router.get('/api/questions', requireAdmin, async (req, res) => {
     }
     if (exam_level) { sql += ' AND q.exam_level = ?'; params.push(exam_level); }
     if (difficulty) { sql += ' AND q.difficulty = ?'; params.push(difficulty); }
-    if (status)     { sql += ' AND q.status = ?';     params.push(status); }
+    if (status) { sql += ' AND q.status = ?'; params.push(status); }
 
     sql += ' GROUP BY q.id ORDER BY q.id DESC';
 
     const [rows] = await db.query(sql, params);
 
     // KPI counts (no filters applied, always full set)
-    const [[{ total }]]    = await db.query("SELECT COUNT(*) AS total FROM questions");
-    const [[{ active }]]   = await db.query("SELECT COUNT(*) AS active FROM questions WHERE status='active'");
-    const [[{ draft }]]    = await db.query("SELECT COUNT(*) AS draft FROM questions WHERE status='draft'");
+    const [[{ total }]] = await db.query("SELECT COUNT(*) AS total FROM questions");
+    const [[{ active }]] = await db.query("SELECT COUNT(*) AS active FROM questions WHERE status='active'");
+    const [[{ draft }]] = await db.query("SELECT COUNT(*) AS draft FROM questions WHERE status='draft'");
     const [[{ archived }]] = await db.query("SELECT COUNT(*) AS archived FROM questions WHERE status='archived'");
 
     // Domain list for filters
@@ -747,7 +1664,7 @@ router.get('/api/questions/:id', requireAdmin, async (req, res) => {
       [id]
     );
 
-    const times_seen    = (Number(practiceStats.times_seen)    || 0) + (Number(diagStats.times_seen)    || 0);
+    const times_seen = (Number(practiceStats.times_seen) || 0) + (Number(diagStats.times_seen) || 0);
     const times_correct = (Number(practiceStats.times_correct) || 0) + (Number(diagStats.times_correct) || 0);
 
     res.json({
@@ -772,13 +1689,13 @@ router.post('/api/questions', requireAdmin, async (req, res) => {
     if (!question_text?.trim()) return res.status(400).json({ error: 'Question text is required.' });
     if (!choice_a?.trim() || !choice_b?.trim() || !choice_c?.trim() || !choice_d?.trim())
       return res.status(400).json({ error: 'All four choices are required.' });
-    if (!['a','b','c','d'].includes(correct_choice))
+    if (!['a', 'b', 'c', 'd'].includes(correct_choice))
       return res.status(400).json({ error: 'Correct choice must be a, b, c, or d.' });
-    if (!['easy','medium','hard'].includes(difficulty))
+    if (!['easy', 'medium', 'hard'].includes(difficulty))
       return res.status(400).json({ error: 'Invalid difficulty.' });
-    if (!['professional','subprofessional','both'].includes(exam_level))
+    if (!['professional', 'subprofessional', 'both'].includes(exam_level))
       return res.status(400).json({ error: 'Invalid exam level.' });
-    if (!['active','draft'].includes(status))
+    if (!['active', 'draft'].includes(status))
       return res.status(400).json({ error: 'Status must be active or draft.' });
 
     const melo = parseFloat(melo_difficulty) || 1200.0;
@@ -827,13 +1744,13 @@ router.put('/api/questions/:id', requireAdmin, async (req, res) => {
     if (!question_text?.trim()) return res.status(400).json({ error: 'Question text is required.' });
     if (!choice_a?.trim() || !choice_b?.trim() || !choice_c?.trim() || !choice_d?.trim())
       return res.status(400).json({ error: 'All four choices are required.' });
-    if (!['a','b','c','d'].includes(correct_choice))
+    if (!['a', 'b', 'c', 'd'].includes(correct_choice))
       return res.status(400).json({ error: 'Correct choice must be a, b, c, or d.' });
-    if (!['easy','medium','hard'].includes(difficulty))
+    if (!['easy', 'medium', 'hard'].includes(difficulty))
       return res.status(400).json({ error: 'Invalid difficulty.' });
-    if (!['professional','subprofessional','both'].includes(exam_level))
+    if (!['professional', 'subprofessional', 'both'].includes(exam_level))
       return res.status(400).json({ error: 'Invalid exam level.' });
-    if (!['active','draft','archived'].includes(status))
+    if (!['active', 'draft', 'archived'].includes(status))
       return res.status(400).json({ error: 'Invalid status.' });
 
     const melo = parseFloat(melo_difficulty) || 1200.0;
@@ -902,7 +1819,7 @@ router.get('/api/dashboard', requireAdmin, async (req, res) => {
   try {
     // 1. Total Users
     const [[{ totalUsers }]] = await db.query("SELECT COUNT(*) as totalUsers FROM users WHERE role = 'reviewee'");
-    
+
     // 2. Active Reviewees (practiced/diagnostic in last 7 days)
     const [[{ activeReviewees }]] = await db.query(`
       SELECT COUNT(DISTINCT user_id) as activeReviewees 
@@ -1033,7 +1950,7 @@ function tryUnlinkUploadedFile(contentUrl) {
   if (!contentUrl.startsWith('/uploads/materials/')) return;
   const rel = contentUrl.replace(/^\//, '');
   const abs = path.join(__dirname, '..', 'public', rel);
-  fs.unlink(abs, () => {});
+  fs.unlink(abs, () => { });
 }
 
 async function resolveMaterialContentFields(body, file, existing) {
@@ -1169,7 +2086,7 @@ router.post('/api/materials', requireAdmin, materialsUploadMw, async (req, res) 
   try {
     const mode = String((req.body || {}).content_mode || '').toLowerCase();
     if (req.file && mode !== 'file') {
-      fs.unlink(req.file.path, () => {});
+      fs.unlink(req.file.path, () => { });
       req.file = undefined;
     }
     const b = req.body || {};
@@ -1233,7 +2150,7 @@ router.put('/api/materials/:id', requireAdmin, materialsUploadMw, async (req, re
   try {
     const modePre = String((req.body || {}).content_mode || '').toLowerCase();
     if (req.file && modePre !== 'file') {
-      fs.unlink(req.file.path, () => {});
+      fs.unlink(req.file.path, () => { });
       req.file = undefined;
     }
     const id = parseInt(req.params.id, 10);
@@ -1890,8 +2807,8 @@ router.get('/api/profile-form/responses', requireAdmin, async (req, res) => {
         submittedAt: r.completed_at,
         targetExamDate: r.target_exam_date
           ? (r.target_exam_date instanceof Date
-              ? r.target_exam_date.toISOString().slice(0, 10)
-              : String(r.target_exam_date).slice(0, 10))
+            ? r.target_exam_date.toISOString().slice(0, 10)
+            : String(r.target_exam_date).slice(0, 10))
           : null,
         studyHoursPerWeek: r.study_hours_per_week,
         preferredStudyTime: r.preferred_study_time,
@@ -1983,8 +2900,8 @@ router.get('/api/profile-form/responses/export', requireAdmin, async (req, res) 
         r.completed_at ? new Date(r.completed_at).toISOString() : '',
         r.target_exam_date
           ? (r.target_exam_date instanceof Date
-              ? r.target_exam_date.toISOString().slice(0, 10)
-              : String(r.target_exam_date).slice(0, 10))
+            ? r.target_exam_date.toISOString().slice(0, 10)
+            : String(r.target_exam_date).slice(0, 10))
           : '',
         r.study_hours_per_week != null ? r.study_hours_per_week : '',
         r.preferred_study_time || '',

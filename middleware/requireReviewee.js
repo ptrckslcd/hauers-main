@@ -13,5 +13,11 @@ module.exports = (req, res, next) => {
     });
   }
 
+  if (req.session.user.isSuspended) {
+    return res.status(403).render('errors/403', {
+      message: 'This account has been suspended.'
+    });
+  }
+
   next();
 };

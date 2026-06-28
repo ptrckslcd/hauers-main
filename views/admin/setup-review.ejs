@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Review & Confirm | Hauers</title>
+  <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/auth.css">
+  <script src="/js/theme-toggle.js"></script>
+  <style>
+    .review-card {
+      background: var(--bg-card, #1a1a2e);
+      border: 1px solid var(--border-default, #2a2a4a);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+    .review-card h3 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted, #888);
+      margin: 0 0 0.75rem 0;
+    }
+    .review-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border-subtle, rgba(255,255,255,0.05));
+    }
+    .review-row:last-child {
+      border-bottom: none;
+    }
+    .review-label {
+      font-size: 0.85rem;
+      color: var(--text-muted, #888);
+    }
+    .review-value {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-primary, #fff);
+    }
+    .review-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .review-badge--success {
+      background: rgba(52, 168, 83, 0.15);
+      color: #34a853;
+      border: 1px solid rgba(52, 168, 83, 0.3);
+    }
+    .review-badge--password {
+      background: rgba(66, 133, 244, 0.15);
+      color: #4285f4;
+      border: 1px solid rgba(66, 133, 244, 0.3);
+    }
+    .confirmation-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin: 1.25rem 0;
+    }
+    .confirmation-row input[type="checkbox"] {
+      margin-top: 3px;
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent, #4285f4);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .confirmation-row label {
+      font-size: 0.85rem;
+      color: var(--text-secondary, #ccc);
+      cursor: pointer;
+      line-height: 1.45;
+    }
+  </style>
+</head>
+<body>
+  <main class="auth-main">
+    <div class="auth-column">
+      <div class="greeting-area">
+        <div class="greeting">Review & Confirm</div>
+        <div class="greeting-sub">Please verify your account details before completing provisioning.</div>
+      </div>
+
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div class="auth-error-banner" style="margin-bottom:1rem;">
+          <span class="auth-error-text"><%= error %></span>
+        </div>
+      <% } %>
+
+      <!-- Local Credentials Summary -->
+      <div class="review-card">
+        <h3>Local Credentials</h3>
+        <div class="review-row">
+          <span class="review-label">Name</span>
+          <span class="review-value"><%= pending.firstName %> <%= pending.lastName %></span>
+        </div>
+        <div class="review-row">
+          <span class="review-label">Email</span>
+          <span class="review-value"><%= pending.email %></span>
+        </div>
+        <div class="review-row">
+          <span class="review-label">Password</span>
+          <span class="review-badge review-badge--password">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+            Securely hashed
+          </span>
+        </div>
+      </div>
+
+      <!-- Google Account Status -->
+      <div class="review-card">
+        <h3>Google Account</h3>
+        <div class="review-row">
+          <span class="review-label">Bound Account</span>
+          <span class="review-badge review-badge--success">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="14" height="14">
+              <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+              <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+            </svg>
+            <%= googleProfile.googleEmail %>
+          </span>
+        </div>
+        <div class="review-row">
+          <span class="review-label">Status</span>
+          <span class="review-badge review-badge--success">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+            Verified & Ready
+          </span>
+        </div>
+      </div>
+
+      <form method="POST" action="/admin/setup/review" class="auth-form" style="margin-top: 0;">
+        <div class="confirmation-row">
+          <input type="checkbox" id="confirmation" name="confirmation" value="1" required>
+          <label for="confirmation">I hereby declare that the information above is correct and I authorize the creation of this administrator account.</label>
+        </div>
+        <button type="submit" class="submit-btn">Complete Provisioning</button>
+      </form>
+    </div>
+  </main>
+</body>
+</html>

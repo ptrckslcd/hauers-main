@@ -28,3 +28,5 @@ npm-debug.log*
 # Build output (if any)
 dist/
 build/
+
+/lib/generated/prisma

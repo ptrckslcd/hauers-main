@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Admins | Hauers Admin</title>
+  <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block">
+  <script src="/js/theme-toggle.js"></script>
+  <style>
+    .adm-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .adm-panel-section {
+      background: var(--card-bg);
+      border: 1px solid var(--border-subdued);
+      border-radius: 16px;
+      padding: 1.25rem 1.35rem 1.35rem;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    }
+
+    .adm-panel-section .home-recs-title {
+      font-family: var(--font-heading, 'Plus Jakarta Sans', sans-serif);
+    }
+
+    .adm-panel-section .home-recs-sub {
+      font-family: var(--font-body, 'Inter', sans-serif);
+    }
+
+    .adm-table-wrap {
+      margin-top: 0.85rem;
+      margin-bottom: 0;
+    }
+
+    #authorized-admins-table,
+    #invitations-table {
+      table-layout: fixed;
+      width: 100%;
+      font-family: var(--font-body, 'Inter', sans-serif);
+    }
+
+    #authorized-admins-table th,
+    #authorized-admins-table td,
+    #invitations-table th,
+    #invitations-table td {
+      padding: 14px 16px !important;
+      text-align: left;
+      vertical-align: middle !important;
+    }
+
+    #authorized-admins-table th,
+    #invitations-table th {
+      font-family: var(--font-heading, 'Plus Jakarta Sans', sans-serif);
+    }
+
+    #authorized-admins-table col.col-name,
+    #invitations-table col.col-name { width: 22%; }
+
+    #authorized-admins-table col.col-email,
+    #invitations-table col.col-email { width: 28%; }
+
+    #authorized-admins-table col.col-role,
+    #invitations-table col.col-role { width: 14%; }
+
+    #authorized-admins-table col.col-status,
+    #invitations-table col.col-status { width: 14%; }
+
+    #authorized-admins-table col.col-actions,
+    #invitations-table col.col-actions { width: 22%; }
+
+    #authorized-admins-table tbody tr,
+    #invitations-table tbody tr {
+      cursor: default;
+    }
+
+    #authorized-admins-table tbody tr:hover,
+    #invitations-table tbody tr:hover {
+      background: rgba(37, 99, 235, 0.04);
+    }
+
+    .adm-cell-name {
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .adm-cell-email {
+      color: var(--text-subdued);
+    }
+
+    .adm-cell-role {
+      font-size: 0.875rem;
+      color: var(--text-main);
+    }
+
+    .adm-empty-cell {
+      text-align: center;
+      color: var(--text-subdued);
+      padding: 2rem 1.25rem !important;
+    }
+
+    .actions-cell-wrapper {
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      justify-content: flex-start;
+    }
+
+    .adm-col-actions,
+    .adm-cell-actions {
+      text-align: left !important;
+    }
+
+    .adm-actions-empty {
+      color: var(--text-subdued);
+      font-size: 0.9rem;
+    }
+
+    .adm-action-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.3rem;
+      min-height: 32px;
+      padding: 0.35rem 0.55rem;
+      border: 1px solid var(--border-default);
+      border-radius: 8px;
+      background: var(--card-bg);
+      color: var(--text-main);
+      font-family: var(--font-body, 'Inter', sans-serif);
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.12s, border-color 0.12s, color 0.12s;
+    }
+
+    .adm-action-btn .material-symbols-outlined {
+      font-size: 1rem;
+    }
+
+    .adm-action-btn:hover {
+      background: rgba(37, 99, 235, 0.06);
+      border-color: rgba(37, 99, 235, 0.25);
+    }
+
+    .adm-action-btn--danger:hover {
+      background: rgba(239, 68, 68, 0.08);
+      border-color: rgba(239, 68, 68, 0.28);
+      color: #b91c1c;
+    }
+
+    .adm-action-label {
+      white-space: nowrap;
+    }
+
+    .status-badge--active {
+      background: rgba(22, 163, 74, 0.12);
+      color: #15803d;
+      border: 1px solid rgba(22, 163, 74, 0.22);
+    }
+
+    .status-badge--pending {
+      background: rgba(245, 158, 11, 0.12);
+      color: #c2410c;
+      border: 1px solid rgba(245, 158, 11, 0.25);
+    }
+
+    .status-badge--revoked {
+      background: rgba(239, 68, 68, 0.1);
+      color: #b91c1c;
+      border: 1px solid rgba(239, 68, 68, 0.22);
+    }
+
+    .adm-link-modal-body {
+      padding: 0 1.35rem 1.35rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .adm-link-modal-desc {
+      margin: 0;
+      font-size: 0.875rem;
+      color: var(--text-subdued);
+      line-height: 1.5;
+      font-family: var(--font-body, 'Inter', sans-serif);
+    }
+
+    .adm-link-copy-box {
+      display: flex;
+      gap: 0.5rem;
+      align-items: stretch;
+    }
+
+    .activation-url-box {
+      font-family: 'Inter', sans-serif !important;
+      font-size: 13px !important;
+      color: var(--text-muted, #4b5563) !important;
+      background-color: var(--bg-secondary, #f3f4f6) !important;
+      border: 1px solid var(--border-color, #e5e7eb) !important;
+      border-radius: 6px !important;
+      padding: 10px 14px !important;
+      word-break: break-all !important;
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
+      outline: none;
+    }
+
+    input.activation-url-box {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .adm-link-unavailable {
+      margin: 0;
+      font-size: 0.82rem;
+      color: var(--text-subdued);
+      line-height: 1.5;
+      padding: 0.75rem 0.85rem;
+      border-radius: 10px;
+      background: rgba(245, 158, 11, 0.08);
+      border: 1px solid rgba(245, 158, 11, 0.18);
+    }
+
+    #adm-link-copy-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      white-space: nowrap;
+    }
+
+    #adm-link-copy-btn .material-symbols-outlined {
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body data-role="admin">
+
+  <div id="navbar-placeholder"><%- include('../partials/navbar') %></div>
+
+  <div class="app-shell sidebar-collapsed">
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div id="sidebar-placeholder"><%- include('../partials/admin-sidebar') %></div>
+
+    <main class="page-content">
+
+      <header class="page-header">
+        <h1 class="page-title">Manage Admins</h1>
+      </header>
+
+      <div class="adm-panel">
+
+        <!-- Authorized Administrators -->
+        <section class="adm-panel-section">
+          <div class="home-recs-header" style="margin-bottom: 0.75rem;">
+            <div>
+              <h2 class="home-recs-title">Authorized Administrators</h2>
+              <p class="home-recs-sub">All accounts with administrator privileges on the platform.</p>
+            </div>
+          </div>
+
+          <div class="admin-table-wrap adm-table-wrap">
+            <div style="overflow-x:auto">
+              <table class="admin-table adm-table" id="authorized-admins-table">
+                <colgroup>
+                  <col class="col-name">
+                  <col class="col-email">
+                  <col class="col-role">
+                  <col class="col-status">
+                  <col class="col-actions">
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th class="adm-col-actions">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% if (locals.admins && admins.length > 0) { %>
+                    <% admins.forEach(function(admin) { %>
+                      <tr>
+                        <td class="adm-cell-name">
+                          <%= admin.firstName %> <%= admin.lastName %>
+                          <span style="display:block;font-size:0.78rem;font-weight:400;color:var(--text-subdued);margin-top:0.15rem;">
+                            Joined <%= new Date(admin.createdAt).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) %>
+                          </span>
+                        </td>
+                        <td class="adm-cell-email"><%= admin.email %></td>
+                        <td class="adm-cell-role">Administrator</td>
+                        <td><span class="status-badge status-badge--active">Active</span></td>
+                        <td class="adm-cell-actions">
+                          <div class="actions-cell-wrapper">
+                            <span class="adm-actions-empty">—</span>
+                          </div>
+                        </td>
+                      </tr>
+                    <% }); %>
+                  <% } else { %>
+                    <tr><td colspan="5" class="adm-empty-cell">No administrators found.</td></tr>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Admin Invitations -->
+        <section class="adm-panel-section">
+          <div class="home-recs-header" style="margin-bottom: 0.75rem;">
+            <div>
+              <h2 class="home-recs-title">Admin Invitations</h2>
+              <p class="home-recs-sub">Generate secure activation links for new admin staff members.</p>
+            </div>
+          </div>
+
+          <form id="admin-invite-form" class="invite-form">
+            <div class="form-group" style="flex:1;min-width:240px;">
+              <label class="input-label" for="invite-email">Colleague email</label>
+              <input id="invite-email" name="email" type="email" placeholder="name@my.cspc.edu.ph" required>
+            </div>
+            <button type="submit" class="home-btn home-btn--primary">Generate Invite</button>
+          </form>
+
+          <div id="invite-result" class="invite-result-box">
+            <p style="margin:0 0 0.5rem 0;font-weight:700;">Activation URL</p>
+            <input type="text" id="invite-url" readonly class="activation-url-box" value="—" aria-label="Activation URL">
+          </div>
+
+          <div class="invite-entries-label">
+            <p class="home-recs-sub">Recent invitations</p>
+            <div class="admin-table-wrap adm-table-wrap">
+              <div style="overflow-x:auto">
+                <table class="admin-table adm-table" id="invitations-table">
+                  <colgroup>
+                    <col class="col-name">
+                    <col class="col-email">
+                    <col class="col-role">
+                    <col class="col-status">
+                    <col class="col-actions">
+                  </colgroup>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Email</th>
+                      <th>Role</th>
+                      <th>Status</th>
+                      <th class="adm-col-actions">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="invite-list">
+                    <tr><td colspan="5" class="adm-empty-cell">Loading…</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+    </main>
+  </div>
+
+  <!-- View Link modal -->
+  <div class="bat-modal-overlay" id="adm-link-modal" hidden>
+    <div class="bat-modal bat-modal--sm" role="dialog" aria-modal="true" aria-labelledby="adm-link-modal-title">
+      <div class="bat-modal-head">
+        <h2 class="bat-modal-title" id="adm-link-modal-title">Activation Link</h2>
+        <button type="button" class="bat-modal-x" id="adm-link-modal-close" aria-label="Close">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="adm-link-modal-body">
+        <p class="adm-link-modal-desc">Copy this registration URL for the pending admin. The link remains valid until it expires or is revoked.</p>
+        <div class="adm-link-copy-box" id="adm-link-copy-row">
+          <input type="text" id="adm-link-input" readonly class="activation-url-box" aria-label="Activation URL">
+          <button type="button" class="home-btn home-btn--primary" id="adm-link-copy-btn">
+            <span class="material-symbols-outlined">content_copy</span>
+            Copy
+          </button>
+        </div>
+        <p id="adm-link-unavailable" class="adm-link-unavailable" hidden>
+          This activation link is not available in the current session. Use <strong>Resend</strong> only if you need a newly generated link sent to the colleague.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/admin-shell.js"></script>
+  <script>
+    (async () => {
+      const INVITE_URL_CACHE_KEY = 'hauersAdminInviteUrls';
+      const inviteForm = document.getElementById('admin-invite-form');
+      const inviteResult = document.getElementById('invite-result');
+      const inviteUrl = document.getElementById('invite-url');
+      const inviteList = document.getElementById('invite-list');
+      const linkModal = document.getElementById('adm-link-modal');
+      const linkInput = document.getElementById('adm-link-input');
+      const linkCopyRow = document.getElementById('adm-link-copy-row');
+      const linkUnavailable = document.getElementById('adm-link-unavailable');
+      const linkCopyBtn = document.getElementById('adm-link-copy-btn');
+      const linkModalClose = document.getElementById('adm-link-modal-close');
+
+      function escapeHtml(value) {
+        return String(value ?? '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      function readInviteUrlCache() {
+        try {
+          return JSON.parse(sessionStorage.getItem(INVITE_URL_CACHE_KEY) || '{}');
+        } catch (_) {
+          return {};
+        }
+      }
+
+      function cacheInviteUrl(id, activationUrl) {
+        if (!id || !activationUrl) return;
+        const cache = readInviteUrlCache();
+        cache[String(id)] = activationUrl.startsWith('http')
+          ? activationUrl
+          : `${window.location.origin}${activationUrl}`;
+        sessionStorage.setItem(INVITE_URL_CACHE_KEY, JSON.stringify(cache));
+      }
+
+      function getCachedInviteUrl(id) {
+        const cache = readInviteUrlCache();
+        return cache[String(id)] || null;
+      }
+
+      function statusBadge(status) {
+        const normalized = String(status || '').toLowerCase();
+        if (normalized === 'accepted' || normalized === 'active') {
+          return '<span class="status-badge status-badge--active">Active</span>';
+        }
+        if (normalized === 'pending') {
+          return '<span class="status-badge status-badge--pending">Pending</span>';
+        }
+        if (normalized === 'revoked' || normalized === 'suspended') {
+          const label = normalized === 'suspended' ? 'Suspended' : 'Revoked';
+          return `<span class="status-badge status-badge--revoked">${label}</span>`;
+        }
+        if (normalized === 'expired') {
+          return '<span class="status-badge status-badge--revoked">Expired</span>';
+        }
+        return `<span class="status-badge status-badge--pending">${escapeHtml(status)}</span>`;
+      }
+
+      function displayNameFromEmail(email) {
+        const local = String(email || '').split('@')[0] || 'Invitee';
+        return local.replace(/[._-]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+      }
+
+      function renderInvites(invites) {
+        if (!inviteList) return;
+        if (!invites.length) {
+          inviteList.innerHTML = '<tr><td colspan="5" class="adm-empty-cell">No invitations yet.</td></tr>';
+          return;
+        }
+
+        inviteList.innerHTML = invites.map((invite) => {
+          const canResend = invite.status !== 'accepted';
+          const canRevoke = invite.status !== 'accepted' && invite.status !== 'revoked';
+          const showViewLink = invite.status === 'pending';
+          return `
+            <tr>
+              <td class="adm-cell-name">${escapeHtml(displayNameFromEmail(invite.email))}</td>
+              <td class="adm-cell-email">${escapeHtml(invite.email)}</td>
+              <td class="adm-cell-role">Administrator</td>
+              <td>${statusBadge(invite.status)}</td>
+              <td class="adm-cell-actions">
+                <div class="actions-cell-wrapper">
+                  ${showViewLink ? `
+                    <button type="button" class="adm-action-btn invite-view-link" data-id="${invite.id}" title="View activation link">
+                      <span class="material-symbols-outlined">link</span>
+                      <span class="adm-action-label">View Link</span>
+                    </button>
+                  ` : ''}
+                  ${canResend ? `
+                    <button type="button" class="adm-action-btn invite-resend" data-id="${invite.id}" title="Resend invitation">
+                      <span class="material-symbols-outlined">send</span>
+                    </button>
+                  ` : ''}
+                  ${canRevoke ? `
+                    <button type="button" class="adm-action-btn adm-action-btn--danger invite-revoke" data-id="${invite.id}" title="Revoke invitation">
+                      <span class="material-symbols-outlined">block</span>
+                    </button>
+                  ` : ''}
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      function openLinkModal(inviteId) {
+        const url = getCachedInviteUrl(inviteId);
+        const hasUrl = Boolean(url);
+
+        if (linkInput) linkInput.value = url || '';
+        if (linkCopyRow) linkCopyRow.hidden = !hasUrl;
+        if (linkUnavailable) linkUnavailable.hidden = hasUrl;
+        if (linkModal) linkModal.hidden = false;
+      }
+
+      function closeLinkModal() {
+        if (linkModal) linkModal.hidden = true;
+      }
+
+      async function loadInvites() {
+        try {
+          const response = await fetch('/admin/api/admin-invitations');
+          if (!response.ok) return;
+          const data = await response.json();
+          renderInvites(data.invites || []);
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
+      if (inviteForm) {
+        inviteForm.addEventListener('submit', async (event) => {
+          event.preventDefault();
+          const formData = new FormData(inviteForm);
+
+          try {
+            const response = await fetch('/admin/api/admin-invitations', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: formData.get('email') })
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+              throw new Error(data.error || 'Failed to create invitation');
+            }
+
+            if (data.invitationId && data.activationUrl) {
+              cacheInviteUrl(data.invitationId, data.activationUrl);
+            }
+
+            if (inviteResult && inviteUrl) {
+              inviteUrl.value = `${window.location.origin}${data.activationUrl}`;
+              inviteResult.style.display = 'block';
+            }
+
+            inviteForm.reset();
+            await loadInvites();
+          } catch (error) {
+            alert(error.message || 'Could not create invite.');
+          }
+        });
+      }
+
+      inviteList?.addEventListener('click', async (event) => {
+        const viewLinkBtn = event.target.closest('.invite-view-link');
+        const resendBtn = event.target.closest('.invite-resend');
+        const revokeBtn = event.target.closest('.invite-revoke');
+
+        if (viewLinkBtn) {
+          openLinkModal(viewLinkBtn.dataset.id);
+          return;
+        }
+
+        if (resendBtn) {
+          try {
+            const response = await fetch(`/admin/api/admin-invitations/${resendBtn.dataset.id}/resend`, { method: 'POST' });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || 'Could not resend invite');
+            if (resendBtn.dataset.id && data.activationUrl) {
+              cacheInviteUrl(resendBtn.dataset.id, data.activationUrl);
+            }
+            if (inviteResult && inviteUrl) {
+              inviteUrl.value = `${window.location.origin}${data.activationUrl}`;
+              inviteResult.style.display = 'block';
+            }
+            await loadInvites();
+          } catch (error) {
+            alert(error.message || 'Could not resend invite.');
+          }
+        }
+
+        if (revokeBtn) {
+          if (!confirm('Revoke this invitation?')) return;
+          try {
+            const response = await fetch(`/admin/api/admin-invitations/${revokeBtn.dataset.id}/revoke`, { method: 'POST' });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || 'Could not revoke invite');
+            await loadInvites();
+          } catch (error) {
+            alert(error.message || 'Could not revoke invite.');
+          }
+        }
+      });
+
+      linkCopyBtn?.addEventListener('click', async () => {
+        if (!linkInput?.value) return;
+        try {
+          await navigator.clipboard.writeText(linkInput.value);
+          const original = linkCopyBtn.innerHTML;
+          linkCopyBtn.innerHTML = '<span class="material-symbols-outlined">check</span>Copied';
+          setTimeout(() => { linkCopyBtn.innerHTML = original; }, 1600);
+        } catch (_) {
+          linkInput.select();
+          document.execCommand('copy');
+        }
+      });
+
+      linkModalClose?.addEventListener('click', closeLinkModal);
+      linkModal?.addEventListener('click', (event) => {
+        if (event.target === linkModal) closeLinkModal();
+      });
+
+      await loadInvites();
+    })();
+  </script>
+
+</body>
+</html>

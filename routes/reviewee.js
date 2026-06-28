@@ -1,9 +1,9 @@
-const express  = require('express');
-const bcrypt    = require('bcrypt');
-const requireAuth              = require('../middleware/requireAuth');
-const requireReviewee          = require('../middleware/requireReviewee');
-const requireOnboarded         = require('../middleware/requireOnboarded');
-const requireEnrolled          = require('../middleware/requireEnrolled');
+const express = require('express');
+const bcrypt = require('bcrypt');
+const requireAuth = require('../middleware/requireAuth');
+const requireReviewee = require('../middleware/requireReviewee');
+const requireOnboarded = require('../middleware/requireOnboarded');
+const requireEnrolled = require('../middleware/requireEnrolled');
 const requireDiagnosticComplete = require('../middleware/requireDiagnosticComplete');
 const blockIfDiagnosticComplete = require('../middleware/blockIfDiagnosticComplete');
 const db = require('../config/db');
@@ -12,17 +12,17 @@ const profileFormSurvey = require('../lib/profileFormSurvey');
 const router = express.Router();
 
 // Shorthand guard chains (Blueprint §12.2)
-const authReviewee         = [requireAuth, requireReviewee];
-const authOnboarded        = [requireAuth, requireReviewee, requireOnboarded];
-const authEnrolled         = [requireAuth, requireReviewee, requireOnboarded, requireEnrolled];
-const authDiagDone         = [requireAuth, requireReviewee, requireOnboarded, requireEnrolled, requireDiagnosticComplete];
+const authReviewee = [requireAuth, requireReviewee];
+const authOnboarded = [requireAuth, requireReviewee, requireOnboarded];
+const authEnrolled = [requireAuth, requireReviewee, requireOnboarded, requireEnrolled];
+const authDiagDone = [requireAuth, requireReviewee, requireOnboarded, requireEnrolled, requireDiagnosticComplete];
 
 /* ── helpers ──────────────────────────────────────────────── */
 const DOMAIN_COLORS = {
-  'Verbal Ability':      '#818cf8',
-  'Numerical Ability':   '#ff9933',
-  'Analytical Ability':  '#2dd4bf',
-  'Clerical Ability':    '#f472b6',
+  'Verbal Ability': '#818cf8',
+  'Numerical Ability': '#ff9933',
+  'Analytical Ability': '#2dd4bf',
+  'Clerical Ability': '#f472b6',
   'General Information': '#60a5fa',
 };
 
@@ -154,7 +154,7 @@ async function getProgRow(userId) {
     const weekMs = 7 * 86400000;
     let weekStreak = 0;
     for (let w = 0; w < 52; w++) {
-      const wEnd   = new Date(now.getTime() - w * weekMs);
+      const wEnd = new Date(now.getTime() - w * weekMs);
       const wStart = new Date(wEnd.getTime() - weekMs);
       const hasSession = practiceRows.some(r => {
         const d = new Date(r.startedAt);
@@ -199,14 +199,14 @@ async function getProgRow(userId) {
     });
 
     const domainDeepDive = deepDiveRows.map(r => ({
-      domain:       r.domain,
-      theta:        Math.round(r.theta),
-      current:      Math.round((r.theta / 2400) * 100),
+      domain: r.domain,
+      theta: Math.round(r.theta),
+      current: Math.round((r.theta / 2400) * 100),
       sessionCount: Number(r.sessionCount) || 0,
-      totalQ:       Number(r.totalQ)       || 0,
-      correctQ:     Number(r.correctQ)     || 0,
-      accuracy:     r.totalQ > 0 ? Math.round((r.correctQ / r.totalQ) * 100) : 0,
-      bestSession:  domainBestMap[r.domain] || 0,
+      totalQ: Number(r.totalQ) || 0,
+      correctQ: Number(r.correctQ) || 0,
+      accuracy: r.totalQ > 0 ? Math.round((r.correctQ / r.totalQ) * 100) : 0,
+      bestSession: domainBestMap[r.domain] || 0,
     }));
 
     // ── Day streak from actual consecutive days (not just last 7)
@@ -217,8 +217,8 @@ async function getProgRow(userId) {
       current: Math.round((r.theta / 2400) * 100),
     }));
 
-    const avgTheta = ratings.length > 0 
-      ? ratings.reduce((sum, r) => sum + r.theta, 0) / ratings.length 
+    const avgTheta = ratings.length > 0
+      ? ratings.reduce((sum, r) => sum + r.theta, 0) / ratings.length
       : 0;
 
     return {
@@ -479,7 +479,7 @@ async function buildStudyPlanForUser(userId) {
     });
     adjustments.sort((a, b) => (a.date < b.date ? 1 : -1));
     adjustments.splice(6);
-  } catch (_) {}
+  } catch (_) { }
 
   if (!adjustments.length) {
     adjustments.push({
@@ -498,10 +498,10 @@ async function buildStudyPlanForUser(userId) {
     examDate: examDateStr || null,
     examDateDisplay: examDateStr
       ? new Date(examDateStr + 'T12:00:00').toLocaleDateString('en-PH', {
-          month: 'long',
-          day: 'numeric',
-          year: 'numeric',
-        })
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+      })
       : null,
     profileUrl: '/reviewee/profile',
     weeksRemaining,
@@ -603,7 +603,7 @@ router.post('/api/enroll', authReviewee, async (req, res) => {
 
     // 7. Update session so middleware guards re-evaluate correctly
     req.session.user.isEnrolled = true;
-    req.session.user.examLevel  = codeRow.batchExamLevel;
+    req.session.user.examLevel = codeRow.batchExamLevel;
 
     console.log(`[Enroll] User ${userId} enrolled in batch "${codeRow.batchName}" (${codeRow.batchExamLevel})`);
 
@@ -613,7 +613,7 @@ router.post('/api/enroll', authReviewee, async (req, res) => {
         return res.status(500).json({ error: 'Failed to save session.' });
       }
       return res.json({
-        success:   true,
+        success: true,
         examLevel: codeRow.batchExamLevel,
         batchName: codeRow.batchName,
       });
@@ -633,15 +633,15 @@ router.get('/api/dashboard', authOnboarded, async (req, res) => {
     const examDate = await getExamDate(user.id);
 
     const readinessScore = prog?.readinessScore ?? 0;
-    const streak         = prog?.streak         ?? 0;
+    const streak = prog?.streak ?? 0;
     const domainProgress = prog?.domainProgress ?? [];
-    const stats          = prog?.stats          ?? {};
+    const stats = prog?.stats ?? {};
 
     const pretestComplete = !!(stats.diagnosticCompletedAt);
-    const sessions        = stats.sessions || [];
-    const sessionCount    = sessions.length;
+    const sessions = stats.sessions || [];
+    const sessionCount = sessions.length;
 
-    const weakDomains  = domainProgress.filter(d => d.current < 70).map(d => d.domain);
+    const weakDomains = domainProgress.filter(d => d.current < 70).map(d => d.domain);
     const domainScores = domainProgress.map(d => ({ domain: d.domain, score: d.current }));
 
     // Today's focus from study plan
@@ -665,7 +665,7 @@ router.get('/api/dashboard', authOnboarded, async (req, res) => {
       if (focusRows.length) {
         todayFocus = focusRows[0];
       }
-    } catch (_) {}
+    } catch (_) { }
 
     if (!todayFocus && weakDomains.length) {
       // fallback
@@ -721,7 +721,7 @@ router.get('/api/dashboard', authOnboarded, async (req, res) => {
           type: formatMaterialType(m.type)
         }));
       }
-    } catch (_) {}
+    } catch (_) { }
 
     let examCycleYear = new Date().getFullYear();
     if (examDate) {
@@ -734,8 +734,8 @@ router.get('/api/dashboard', authOnboarded, async (req, res) => {
     res.json({
       user: {
         firstName: user.firstName,
-        lastName:  user.lastName,
-        email:     user.email,
+        lastName: user.lastName,
+        email: user.email,
         examLevel: user.examLevel || 'Professional',
       },
       readinessScore,
@@ -744,7 +744,7 @@ router.get('/api/dashboard', authOnboarded, async (req, res) => {
       sessionCount,
       totalQuestions,
       examCycleYear,
-      examDate:   examDate || null,
+      examDate: examDate || null,
       todayFocus,
       recentActivity: sessions.slice(0, 3) || [],
       weakDomains: weakDomains.length ? weakDomains : [],
@@ -752,10 +752,10 @@ router.get('/api/dashboard', authOnboarded, async (req, res) => {
       diagnostic: {
         latestScore: readinessScore || 0,
         domainScores: domainScores.length ? domainScores : [
-          { domain: 'Verbal Ability',      score: 0 },
-          { domain: 'Numerical Ability',   score: 0 },
-          { domain: 'Analytical Ability',  score: 0 },
-          { domain: 'Clerical Ability',    score: 0 },
+          { domain: 'Verbal Ability', score: 0 },
+          { domain: 'Numerical Ability', score: 0 },
+          { domain: 'Analytical Ability', score: 0 },
+          { domain: 'Clerical Ability', score: 0 },
           { domain: 'General Information', score: 0 },
         ],
       }
@@ -771,8 +771,8 @@ router.get('/api/user', requireAuth, (req, res) => {
   const u = req.session.user;
   res.json({
     firstName: u.firstName,
-    lastName:  u.lastName,
-    email:     u.email,
+    lastName: u.lastName,
+    email: u.email,
     examLevel: u.examLevel || 'Professional',
   });
 });
@@ -785,12 +785,12 @@ router.get('/api/profile', requireAuth, async (req, res) => {
     const examDate = await getExamDate(user.id);
 
     const readinessScore = prog?.readinessScore ?? 0;
-    const streak         = prog?.streak         ?? 0;
+    const streak = prog?.streak ?? 0;
     const domainProgress = prog?.domainProgress ?? [];
-    const stats          = prog?.stats          ?? {};
+    const stats = prog?.stats ?? {};
 
     const pretestComplete = !!(stats.diagnosticCompletedAt);
-    const weakDomains  = domainProgress.filter(d => d.current < 70).map(d => d.domain);
+    const weakDomains = domainProgress.filter(d => d.current < 70).map(d => d.domain);
     const domainScores = domainProgress.map(d => ({ domain: d.domain, score: d.current }));
 
     // Learner profile preferences
@@ -837,19 +837,19 @@ router.get('/api/profile', requireAuth, async (req, res) => {
     res.json({
       user: {
         firstName: user.firstName,
-        lastName:  user.lastName,
-        email:     user.email,
+        lastName: user.lastName,
+        email: user.email,
         examLevel: user.examLevel || 'Professional',
         createdAt: createdRow?.created_at || null,
       },
-      batchName:    batchRow?.batchName  || null,
+      batchName: batchRow?.batchName || null,
       learnerProfile: lpRow || null,
-      selfRatings:  selfRatingRows,
+      selfRatings: selfRatingRows,
       domainThetas: thetaRows,
       readinessScore,
       streak,
       pretestComplete,
-      examDate:   examDate || null,
+      examDate: examDate || null,
       weakDomains,
       domainProgress,
       diagnostic: {
@@ -882,30 +882,33 @@ router.post('/api/profile/update', requireAuth, async (req, res) => {
     );
 
     // Upsert learner profile preferences
-    await db.query(
-      `INSERT INTO learner_profiles (user_id, study_hours_per_week, preferred_study_time, primary_device)
-       VALUES (?, ?, ?, ?)
-       ON DUPLICATE KEY UPDATE
-         study_hours_per_week = VALUES(study_hours_per_week),
-         preferred_study_time = VALUES(preferred_study_time),
-         primary_device       = VALUES(primary_device)`,
-      [
-        userId,
-        studyHours      != null ? Number(studyHours)     : 5,
-        preferredStudyTime || null,
-        primaryDevice   || null,
-      ]
-    );
+    await db.query(`
+      INSERT INTO learner_profiles
+        (user_id, target_date, study_hours_per_week, preferred_time, custom_field_responses, completed_at)
+      VALUES (?, ?, ?, ?, ?, NOW())
+      ON DUPLICATE KEY UPDATE
+        target_date          = VALUES(target_date),
+        study_hours_per_week = VALUES(study_hours_per_week),
+        preferred_time       = VALUES(preferred_time),
+        custom_field_responses = COALESCE(VALUES(custom_field_responses), custom_field_responses),
+        completed_at         = NOW()
+    `, [
+      userId,
+      domain_self_ratings.target_exam_date || '2026-08-09', // Fallback safely
+      parseInt(domain_self_ratings.study_hours_per_week) || 7,
+      domain_self_ratings.preferred_study_time || 'evening',
+      JSON.stringify({})
+    ]);
 
     req.session.user.firstName = firstName.trim();
-    req.session.user.lastName  = lastName.trim();
+    req.session.user.lastName = lastName.trim();
 
     res.json({
       success: true,
       user: {
         firstName: req.session.user.firstName,
-        lastName:  req.session.user.lastName,
-        email:     req.session.user.email,
+        lastName: req.session.user.lastName,
+        email: req.session.user.email,
         examLevel: req.session.user.examLevel || 'Professional',
       },
     });
@@ -964,7 +967,7 @@ router.post('/api/session/start', authDiagDone, async (req, res) => {
 router.post('/api/session/answer', authDiagDone, async (req, res) => {
   const { sessionId, questionId, chosenAnswerText, timeSpentMs } = req.body;
   const userId = req.session.user.id;
-  
+
   let connection;
   try {
     connection = await db.getConnection();
@@ -979,10 +982,10 @@ router.post('/api/session/answer', authDiagDone, async (req, res) => {
       JOIN domains d ON qd.domain_id = d.id
       WHERE q.id = ?
     `, [questionId]);
-    
+
     if (!qRows.length) return res.status(404).json({ error: 'Question not found' });
     const q = qRows[0];
-    
+
     let correctChoiceText = '';
     if (q.correct_choice === 'a') correctChoiceText = q.choice_a;
     if (q.correct_choice === 'b') correctChoiceText = q.choice_b;
@@ -994,13 +997,13 @@ router.post('/api/session/answer', authDiagDone, async (req, res) => {
     // 2. M-Elo Update (Practice session k-factor = 16)
     let delta = 0;
     const [ratingsRows] = await connection.query('SELECT * FROM domain_ratings WHERE user_id = ? AND domain_id = ? FOR UPDATE', [userId, q.domain_id]);
-    
+
     let rating = ratingsRows.length ? ratingsRows[0] : { theta: 1200.0, k_factor: 16.0 };
-    
+
     const probability = 1 / (1 + Math.pow(10, (q.melo_difficulty - rating.theta) / 400));
     const actual = isCorrect ? 1 : 0;
     delta = rating.k_factor * (actual - probability);
-    
+
     if (ratingsRows.length) {
       await connection.query('UPDATE domain_ratings SET theta = theta + ?, sessions_count = sessions_count + 1 WHERE id = ?', [delta, rating.id]);
     } else {
@@ -1100,7 +1103,7 @@ router.get('/api/session/result/:id', authDiagDone, async (req, res) => {
       try {
         const delta = JSON.parse(a.theta_delta_json || '{}');
         Object.values(delta).forEach(v => { domainMap[dom].thetaDelta += Number(v) || 0; });
-      } catch {}
+      } catch { }
     });
     const domainBreakdown = Object.values(domainMap).map(d => ({
       domain: d.domain,
@@ -1193,24 +1196,24 @@ router.get('/api/progress', authEnrolled, async (req, res) => {
     const stats = prog.stats || {};
 
     res.json({
-      readinessScore:    prog.readinessScore,
-      readinessChange:   prog.readinessChange,
-      streak:            prog.streak,
-      weekStreak:        prog.weekStreak        || 0,
-      consistencyScore:  prog.consistencyScore  || 0,
-      activityMap:       prog.activityMap       || {},
-      scoreHistory:      prog.scoreHistory,
-      domainProgress:    prog.domainProgress,
-      domainDeepDive:    prog.domainDeepDive    || [],
+      readinessScore: prog.readinessScore,
+      readinessChange: prog.readinessChange,
+      streak: prog.streak,
+      weekStreak: prog.weekStreak || 0,
+      consistencyScore: prog.consistencyScore || 0,
+      activityMap: prog.activityMap || {},
+      scoreHistory: prog.scoreHistory,
+      domainProgress: prog.domainProgress,
+      domainDeepDive: prog.domainDeepDive || [],
       domainScoreHistory: stats.domainScoreHistory || {},
-      examDate:          examDate || null,
+      examDate: examDate || null,
       stats: {
-        totalSessions:  stats.totalSessions  || 0,
+        totalSessions: stats.totalSessions || 0,
         avgSessionMins: stats.avgSessionMins || 0,
         totalQuestions: stats.totalQuestions || 0,
         diagnosticCompletedAt: stats.diagnosticCompletedAt || null,
       },
-      quizHistory:  (stats.sessions || []),
+      quizHistory: (stats.sessions || []),
       achievements: [],
     });
   } catch (err) {
@@ -1409,7 +1412,7 @@ router.post('/api/diagnostic/submit', [requireAuth, blockIfDiagnosticComplete], 
     `, [questionIds]);
 
     if (qRows.length === 0) {
-       return res.status(400).json({ error: 'Invalid questions' });
+      return res.status(400).json({ error: 'Invalid questions' });
     }
 
     // 2. Fetch existing domain ratings for user
@@ -1426,7 +1429,7 @@ router.post('/api/diagnostic/submit', [requireAuth, blockIfDiagnosticComplete], 
     }
 
     let totalCorrect = 0;
-    const domainMap = {}; 
+    const domainMap = {};
     const diagnosticAnswers = [];
 
     // 3. Score questions and calculate M-Elo
@@ -1531,7 +1534,7 @@ router.post('/api/diagnostic/submit', [requireAuth, blockIfDiagnosticComplete], 
       for (let weekNum = 1; weekNum <= 4; weekNum++) {
         const weekStart = new Date(planStart);
         weekStart.setDate(planStart.getDate() + ((weekNum - 1) * 7));
-        
+
         const weekEnd = new Date(weekStart);
         weekEnd.setDate(weekStart.getDate() + 6);
 
@@ -1548,12 +1551,12 @@ router.post('/api/diagnostic/submit', [requireAuth, blockIfDiagnosticComplete], 
           const dId = sortedRatings[domainIndex]?.domain_id || defaultDomainId;
           const dNameObj = dRows.find(d => d.id === dId);
           const dName = dNameObj ? dNameObj.name.replace(' Ability', '') : 'General';
-          
+
           // Optionally make just one day a light day or rest day, but we'll leave it as active studying
           // to maximize flexibility for the reviewee.
           daysData.push([weekId, dayOfWeek, dId, `Review ${dName}`, 30, 0]);
         }
-        
+
         await connection.query(
           'INSERT INTO study_plan_days (week_id, day_of_week, domain_id, focus_label, est_minutes, is_rest_day) VALUES ?',
           [daysData]
@@ -1571,7 +1574,7 @@ router.post('/api/diagnostic/submit', [requireAuth, blockIfDiagnosticComplete], 
       correct,
       total,
     }));
-    
+
     const weakDomains = domainScores.filter(d => d.score < 70).map(d => d.domain);
     const grade = overallScore >= 90 ? 'Excellent' : overallScore >= 80 ? 'Above Average' : overallScore >= 70 ? 'Average' : 'Needs Improvement';
 
@@ -1676,7 +1679,6 @@ router.post('/api/profile', authReviewee, async (req, res) => {
   const {
     first_name,
     last_name,
-    exam_level,
     target_exam_date,
     study_hours_per_week,
     preferred_study_time,
@@ -1687,9 +1689,47 @@ router.post('/api/profile', authReviewee, async (req, res) => {
   } = req.body || {};
 
   try {
+    // 0. Whitelist Synchronization & Enforcement
+    const userEmail = req.session.user.email;
+    const [wlRows] = await db.query(
+      `SELECT rw.first_name, rw.last_name, rw.enrollment_code_id, b.exam_level, ec.code AS assignedCode
+       FROM reviewee_whitelist rw
+       LEFT JOIN batches b ON rw.batch_id = b.id
+       LEFT JOIN enrollment_codes ec ON rw.enrollment_code_id = ec.id
+       WHERE LOWER(rw.email) = LOWER(?) AND rw.is_active = TRUE
+       LIMIT 1`,
+      [userEmail]
+    );
+
+    if (!wlRows.length) {
+      return res.status(403).json({ error: 'Your email is not on the active whitelist. Please contact the administrator.' });
+    }
+
+    const wl = wlRows[0];
+
+    // Name validation
+    if (
+      (first_name && wl.first_name && first_name.trim().toLowerCase() !== wl.first_name.toLowerCase()) ||
+      (last_name && wl.last_name && last_name.trim().toLowerCase() !== wl.last_name.toLowerCase())
+    ) {
+      return res.status(400).json({ error: 'Credentials do not match the whitelisted record. Please check your spelling.' });
+    }
+
+    // Exam Level Assignment
+    if (!wl.exam_level) {
+      return res.status(400).json({ error: 'Your account has not been assigned to a valid batch. Please contact the administrator.' });
+    }
+    const assignedExamLevel = wl.exam_level;
+
     // 1. Process optional enrollment code if provided
     if (enrollment_code && enrollment_code.trim()) {
       const code = enrollment_code.trim().toUpperCase();
+
+      // Strict Cross-Reference Validation
+      if (!wl.assignedCode || code !== wl.assignedCode.toUpperCase()) {
+        return res.status(400).json({ error: 'The enrollment code entered does not match the code assigned to your whitelisted email account.' });
+      }
+
       const [codes] = await db.query(
         `SELECT ec.*, b.exam_level AS batchExamLevel, b.name AS batchName, b.status AS batchStatus
          FROM enrollment_codes ec JOIN batches b ON ec.batch_id = b.id
@@ -1700,7 +1740,9 @@ router.post('/api/profile', authReviewee, async (req, res) => {
       if (!codes.length) return res.status(400).json({ error: 'Invalid or expired enrollment code.' });
       const codeRow = codes[0];
       if (codeRow.batchStatus !== 'active') return res.status(400).json({ error: 'This batch is no longer accepting enrollments.' });
-      if (codeRow.used_count >= codeRow.max_uses) return res.status(400).json({ error: 'This enrollment code has already been fully used.' });
+      if (codeRow.used_count >= codeRow.max_uses && codeRow.id !== wl.enrollment_code_id) {
+        return res.status(400).json({ error: 'This enrollment code has already been fully used.' });
+      }
 
       const [existing] = await db.query('SELECT id FROM enrollments WHERE user_id = ? AND batch_id = ?', [userId, codeRow.batch_id]);
       if (!existing.length) {
@@ -1714,23 +1756,21 @@ router.post('/api/profile', authReviewee, async (req, res) => {
         }
 
         req.session.user.isEnrolled = true;
-        req.session.user.examLevel  = codeRow.batchExamLevel;
+        req.session.user.examLevel = codeRow.batchExamLevel;
       }
     }
 
     // 2. Update users table with name
     if (first_name && last_name) {
       // If enrollment_code wasn't processed above, we still update the name 
-      // and potentially the exam_level if they chose it manually.
+      // and explicitly assign the exam_level from the whitelist.
       await db.query(
-        'UPDATE users SET first_name = ?, last_name = ?, exam_level = COALESCE(exam_level, ?) WHERE id = ?',
-        [first_name, last_name, exam_level || null, userId]
+        'UPDATE users SET first_name = ?, last_name = ?, exam_level = ? WHERE id = ?',
+        [first_name, last_name, assignedExamLevel, userId]
       );
       req.session.user.firstName = first_name;
       req.session.user.lastName = last_name;
-      if (exam_level && !req.session.user.examLevel) {
-        req.session.user.examLevel = exam_level;
-      }
+      req.session.user.examLevel = assignedExamLevel;
     }
 
     let customJson = null;
@@ -1740,6 +1780,11 @@ router.post('/api/profile', authReviewee, async (req, res) => {
       } catch (_) {
         customJson = null;
       }
+    }
+
+    // 2.5. Tentative Schedule Validation
+    if (target_exam_date && target_exam_date.toLowerCase().includes('tentative')) {
+      return res.status(400).json({ error: 'Tentative schedules are not currently open for enrollment. Please select an official schedule to proceed.' });
     }
 
     // 3. Upsert learner_profiles
@@ -1756,10 +1801,10 @@ router.post('/api/profile', authReviewee, async (req, res) => {
          completed_at         = NOW()`,
       [
         userId,
-        target_exam_date  || null,
+        target_exam_date || null,
         study_hours_per_week || 5,
         preferred_study_time || null,
-        primary_device   || null,
+        primary_device || null,
         customJson,
       ]
     );
@@ -1791,10 +1836,10 @@ router.post('/api/profile', authReviewee, async (req, res) => {
         console.error('[Profile] Session save error:', err);
         return res.status(500).json({ error: 'Failed to save session.' });
       }
-      return res.json({ 
-        success: true, 
+      return res.json({
+        success: true,
         examLevel: req.session.user.examLevel,
-        isEnrolled: req.session.user.isEnrolled 
+        isEnrolled: req.session.user.isEnrolled
       });
     });
 
@@ -1832,7 +1877,7 @@ router.get('/api/announcements', authOnboarded, async (req, res) => {
 
     res.json({
       announcements: rows,
-      unreadCount:   rows.filter(r => !r.isRead).length,
+      unreadCount: rows.filter(r => !r.isRead).length,
     });
   } catch (err) {
     console.error('[Announcements] API error:', err);
@@ -1842,7 +1887,7 @@ router.get('/api/announcements', authOnboarded, async (req, res) => {
 
 router.post('/api/announcements/:id/read', authOnboarded, async (req, res) => {
   const userId = req.session.user.id;
-  const annId  = Number(req.params.id);
+  const annId = Number(req.params.id);
   if (!annId) return res.status(400).json({ error: 'Invalid id.' });
   try {
     await db.query(
@@ -1857,27 +1902,62 @@ router.post('/api/announcements/:id/read', authOnboarded, async (req, res) => {
 });
 
 /* ── Page routes (Blueprint §12.2 Guard Matrix) ──────────── */
-router.get('/dashboard',         authOnboarded, (req, res) => res.render('app/dashboard'));
-router.get('/announcements',     authOnboarded, (req, res) => res.render('app/announcements'));
+router.get('/dashboard', authOnboarded, (req, res) => res.render('app/dashboard'));
+router.get('/announcements', authOnboarded, (req, res) => res.render('app/announcements'));
 
 // Onboarding: auth + reviewee only (not yet enrolled)
-router.get('/onboarding',        authReviewee, (req, res) => res.render('app/onboarding'));
+router.get('/onboarding', authReviewee, async (req, res) => {
+  try {
+    // 🌟 FORCE BYPASS SYNC: Directly update the DB row for your test user to guarantee it's TRUE
+    // await db.query('UPDATE users SET is_onboarded = TRUE WHERE id = ?', [req.session.user.id]);
+
+    // Now look up the value normally
+    const [rows] = await db.query('SELECT is_onboarded FROM users WHERE id = ?', [req.session.user.id]);
+    const alreadyOnboarded = rows.length && (rows[0].is_onboarded === 1 || rows[0].is_onboarded === true) ? true : false;
+
+    if (alreadyOnboarded) {
+      req.session.user.isOnboarded = true;
+    }
+
+    let whitelistedExamLevel = null;
+    const [wlRows] = await db.query(
+      `SELECT b.exam_level
+       FROM reviewee_whitelist rw
+       LEFT JOIN batches b ON rw.batch_id = b.id
+       WHERE LOWER(rw.email) = LOWER(?) AND rw.is_active = TRUE
+       LIMIT 1`,
+      [req.session.user.email]
+    );
+    if (wlRows.length && wlRows[0].exam_level) {
+      whitelistedExamLevel = wlRows[0].exam_level;
+    }
+
+    res.render('app/onboarding', {
+      user: req.session.user,
+      alreadyOnboarded: alreadyOnboarded,
+      whitelistedExamLevel: whitelistedExamLevel
+    });
+  } catch (err) {
+    console.error('[Onboarding Route View Error]:', err);
+    res.render('app/onboarding', { user: req.session.user, alreadyOnboarded: false });
+  }
+});
 
 // Diagnostic: auth + reviewee + enrolled
-router.get('/diagnostic',        [...authEnrolled, blockIfDiagnosticComplete], (req, res) => res.render('app/diagnostic'));
+router.get('/diagnostic', [...authEnrolled, blockIfDiagnosticComplete], (req, res) => res.render('app/diagnostic'));
 router.get('/diagnostic-result', authEnrolled, (req, res) => res.render('app/diagnostic-result'));
 
 // Pages requiring enrollment (but not necessarily a completed diagnostic)
-router.get('/review',            authEnrolled,  (req, res) => res.render('app/review'));
-router.get('/review/session',    authDiagDone,  (req, res) => res.render('app/review-session'));
-router.get('/review/result',     authDiagDone,  (req, res) => res.render('app/review-result'));
-router.get('/quiz',              authDiagDone,  (req, res) => res.render('app/quiz'));
-router.get('/study-plan',        authEnrolled, (req, res) => res.render('app/study-plan'));
-router.get('/progress',          authEnrolled, (req, res) => res.render('app/progress'));
-router.get('/materials',         authEnrolled, (req, res) => res.render('app/materials'));
+router.get('/review', authEnrolled, (req, res) => res.render('app/review'));
+router.get('/review/session', authDiagDone, (req, res) => res.render('app/review-session'));
+router.get('/review/result', authDiagDone, (req, res) => res.render('app/review-result'));
+router.get('/quiz', authDiagDone, (req, res) => res.render('app/quiz'));
+router.get('/study-plan', authEnrolled, (req, res) => res.render('app/study-plan'));
+router.get('/progress', authEnrolled, (req, res) => res.render('app/progress'));
+router.get('/materials', authEnrolled, (req, res) => res.render('app/materials'));
 
 // Profile and settings
-router.get('/profile',           authOnboarded, (req, res) => res.render('app/learner-profile'));
-router.get('/settings',          authReviewee, (req, res) => res.render('app/account-settings'));
+router.get('/profile', authOnboarded, (req, res) => res.render('app/learner-profile'));
+router.get('/settings', authReviewee, (req, res) => res.render('app/account-settings'));
 
 module.exports = router;
