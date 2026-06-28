@@ -22,7 +22,7 @@ A UI prototype / simulation of an adaptive review platform for **CSPC ACCESS** r
 
 **Prerequisites:** [Node.js](https://nodejs.org) v18 or later.
 
-Before starting the app, copy `.env.example` to `.env` and fill in the database and Google OAuth values. Reviewee sign-in now expects a Google OAuth client plus a whitelist entry.
+Before starting the app, copy `.env.example` to `.env` and fill in the database and Google OAuth values. Reviewee sign-in now expects a Google OAuth client plus a whitelist entry
 
 ```bash
 # 1. Clone / download the project
@@ -31,12 +31,17 @@ cd hauers
 # 2. Install dependencies
 npm install
 
-# 3. Start the server
+# 3. Setup the database architecture
+npx prisma migrate dev
+npx prisma generate
+(💡 Note: If you have an old local database and want a clean slate matching the latest schema, run npx prisma migrate reset instead.)
+
+# 4. Start the server
 npm start          # production-style: node server.js
 # or
 npm run dev        # auto-restarts on file change (uses nodemon)
 
-# 4. Open in browser
+# 5. Open in browser
 http://localhost:3000
 ```
 
